@@ -1,30 +1,53 @@
 import { db } from "./index";
-import { users, worships } from "./schema";
+import { users, worships, mutabaahLogs } from "./schema";
 
 async function seed() {
-  console.log("Seeding database...");
+  console.log("Cleaning up old data...");
+  // Delete all data
+  await db.delete(mutabaahLogs);
+  await db.delete(users);
+  await db.delete(worships);
 
-  // Seed Users
-  await db.insert(users).values([
-    { name: "Ayah", role: "admin", targetPoints: 100 },
-    { name: "Ibu", role: "admin", targetPoints: 100 },
-    { name: "Kakak", role: "member", targetPoints: 80 },
-    { name: "Adik", role: "member", targetPoints: 50 },
-  ]);
+  console.log("Seeding Family...");
+  const familyMembers = [
+    { name: "Abi Cecep", role: "parent", pin: "123456", avatarUrl: "user-check" },
+    { name: "Umi Rini", role: "parent", pin: "123456", avatarUrl: "heart" },
+    { name: "Kakak Fatih", role: "child", avatarUrl: "star" },
+    { name: "Kakak Harun", role: "child", avatarUrl: "smile" },
+    { name: "Kakak Ibrahim", role: "child", avatarUrl: "sun" },
+    { name: "Teteh Khadijah", role: "child", avatarUrl: "moon" },
+  ];
 
-  // Seed Worships
-  await db.insert(worships).values([
-    { name: "Shalat Subuh", type: "boolean", category: "wajib", points: 20, iconName: "Sunrise" },
-    { name: "Shalat Dzuhur", type: "boolean", category: "wajib", points: 10, iconName: "Sun" },
-    { name: "Shalat Ashar", type: "boolean", category: "wajib", points: 10, iconName: "Sunset" },
-    { name: "Shalat Maghrib", type: "boolean", category: "wajib", points: 10, iconName: "Moon" },
-    { name: "Shalat Isya", type: "boolean", category: "wajib", points: 10, iconName: "MoonStar" },
-    { name: "Tilawah (Halaman)", type: "counter", category: "sunnah", points: 5, targetUnit: 1, iconName: "BookOpen" },
-    { name: "Dzikir Pagi/Petang", type: "boolean", category: "sunnah", points: 15, iconName: "HeartHandshake" },
-    { name: "Sedekah Subuh", type: "boolean", category: "sunnah", points: 15, iconName: "Coins" },
-  ]);
+  for (const member of familyMembers) {
+      await db.insert(users).values(member as any);
+  }
 
-  console.log("Seeding complete!");
+  console.log("Seeding Worships...");
+  const worshipList = [
+    { name: "Sahur", points: 5, category: "sunnah", type: "boolean" },
+    { name: "Puasa", points: 20, category: "wajib", type: "boolean" },
+    { name: "Dzikir Pagi", points: 5, category: "sunnah", type: "boolean" },
+    { name: "Sedekah", points: 5, category: "sunnah", type: "boolean" },
+    { name: "Tilawah 1 Juz", points: 15, category: "sunnah", type: "boolean" },
+    { name: "Subuh Berjamaah Di Masjid", points: 10, category: "wajib", type: "boolean" },
+    { name: "Duha", points: 5, category: "sunnah", type: "boolean" },
+    { name: "Dzuhur Berjamaah Di Masjid", points: 10, category: "wajib", type: "boolean" },
+    { name: "Ashar Berjamaah Di Masjid", points: 10, category: "wajib", type: "boolean" },
+    { name: "Murajaah", points: 5, category: "sunnah", type: "boolean" },
+    { name: "Magrib Berjamaah Di Masjid", points: 10, category: "wajib", type: "boolean" },
+    { name: "Isya Berjamaah Di Masjid", points: 10, category: "wajib", type: "boolean" },
+    { name: "Tarawih", points: 10, category: "sunnah", type: "boolean" },
+    { name: "Tulis Agenda Besok", points: 2, category: "sunnah", type: "boolean" },
+    { name: "Belajar & Membaca Buku", points: 10, category: "sunnah", type: "boolean" },
+    { name: "Istigfar 100x", points: 5, category: "sunnah", type: "boolean" },
+    { name: "Bantu Orang Tua Banyak", points: 20, category: "sunnah", type: "boolean" },
+    { name: "Bantu Orang Tua Sedang", points: 10, category: "sunnah", type: "boolean" },
+    { name: "Bantu Orang Tua Sedikit", points: 5, category: "sunnah", type: "boolean" },
+  ];
+
+  await db.insert(worships).values(worshipList as any);
+
+  console.log("Seeding V2 Complete!");
 }
 
 seed().catch((err) => {
