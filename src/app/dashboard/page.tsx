@@ -84,7 +84,7 @@ export default async function DashboardPage() {
       });
 
       return (
-        <div className="min-h-screen bg-slate-50 pb-20">
+        <div className="min-h-screen bg-slate-50 pb-20 text-slate-900">
            <header className="bg-indigo-600 text-white p-6 rounded-b-3xl shadow-lg mb-6">
             <div className="flex justify-between items-center">
               <div>
@@ -94,6 +94,9 @@ export default async function DashboardPage() {
               <div className="flex gap-2">
                  <a href="/report" className="p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors text-white" title="Laporan">
                      📊
+                 </a>
+                 <a href="/dashboard/settings" className="p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors text-white" title="Pengaturan">
+                     ⚙️
                  </a>
                  <form action={logout}>
                     <button className="p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors text-white" title="Keluar">
@@ -157,7 +160,7 @@ export default async function DashboardPage() {
   const percentage = Math.min(100, Math.round((totalPoints / (user.targetPoints || 100)) * 100));
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20 text-slate-900">
       {/* Header */}
       <header className="bg-blue-600 text-white p-6 rounded-b-3xl shadow-lg">
         <div className="flex justify-between items-center mb-6">

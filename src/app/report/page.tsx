@@ -54,7 +54,7 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6 text-slate-900">
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-6">
         <h1 className="text-2xl font-bold text-slate-800 mb-6">Laporan Detail Mutabaah</h1>
         
@@ -65,7 +65,7 @@ export default function ReportPage() {
               type="date" 
               value={startDate} 
               onChange={(e) => setStartDate(e.target.value)}
-              className="p-2 border rounded-lg"
+              className="p-2 border rounded-lg text-slate-900 bg-white"
             />
           </div>
           <div>
@@ -74,7 +74,7 @@ export default function ReportPage() {
               type="date" 
               value={endDate} 
               onChange={(e) => setEndDate(e.target.value)}
-              className="p-2 border rounded-lg"
+              className="p-2 border rounded-lg text-slate-900 bg-white"
             />
           </div>
           <button 
@@ -97,7 +97,7 @@ export default function ReportPage() {
 
         {data && (
             <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
+                <table className="w-full text-left border-collapse text-sm text-slate-900">
                     <thead>
                         <tr className="bg-slate-100 border-b-2 border-slate-200">
                             <th className="p-3 text-slate-600 border">Tanggal</th>
@@ -120,7 +120,7 @@ export default function ReportPage() {
                                return (
                                    <tr key={log.id} className={`border-b border-slate-50 hover:bg-slate-50 ${isPenalty ? 'bg-red-50' : ''}`}>
                                        <td className="p-2 border">{format(parseISO(log.date), "dd MMM yyyy", { locale: id })}</td>
-                                       <td className="p-2 border font-medium">{user.name}</td>
+                                       <td className="p-2 border font-medium text-slate-900">{user.name}</td>
                                        <td className="p-2 border">
                                             <span className={isPenalty ? "text-red-600 font-medium" : "text-slate-700"}>
                                                 {worship.name}
@@ -130,7 +130,7 @@ export default function ReportPage() {
                                             {isPenalty ? "⚠️" : "✅"}
                                        </td>
                                        <td className={`p-2 border text-right font-medium ${isPenalty ? "text-red-600" : "text-green-600"}`}>
-                                           {worship.points}
+                                            {worship.points}
                                        </td>
                                        <td className="p-2 border text-slate-500 italic">
                                            {log.note || "-"}
@@ -147,7 +147,7 @@ export default function ReportPage() {
                             </tr>
                         )}
                     </tbody>
-                     <tfoot className="bg-slate-100 font-bold">
+                     <tfoot className="bg-slate-100 font-bold text-slate-900">
                         {data.report.map((user: any) => (
                              <tr key={`total-${user.id}`}>
                                 <td colSpan={4} className="p-2 border text-right">Total Poin {user.name}:</td>
