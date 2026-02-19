@@ -9,6 +9,8 @@ import { ParentView } from "./parent-view";
 import { LogOut } from "lucide-react";
 import { logout } from "../actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const userIdStr = cookieStore.get("mutabaah-user-id")?.value;
