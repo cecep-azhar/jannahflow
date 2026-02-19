@@ -8,6 +8,8 @@ import { LogList } from "./log-list";
 import { ParentView } from "./parent-view";
 import { LogOut } from "lucide-react";
 import { logout } from "../actions";
+import { FAQ } from "@/components/faq";
+import { Footer } from "@/components/footer";
 
 export const dynamic = "force-dynamic";
 
@@ -113,7 +115,7 @@ export default async function DashboardPage() {
                   <ParentView familyData={familyData} />
               </section>
               
-              <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+               <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                   <h2 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
                        <span>📝</span> Mutabaah Saya ({format(new Date(), "dd MMM")})
                   </h2>
@@ -123,7 +125,13 @@ export default async function DashboardPage() {
                       date={today} 
                     />
               </section>
+
+              <div className="pt-8 border-t border-slate-200">
+                 <FAQ />
+              </div>
           </main>
+          
+          <Footer />
         </div>
       );
   }
@@ -199,7 +207,13 @@ export default async function DashboardPage() {
           userId={userId} 
           date={today} 
         />
+        
+        <div className="pt-8 border-t border-slate-200 mt-8">
+            <FAQ />
+        </div>
       </main>
+      
+      <Footer />
     </div>
   );
 }

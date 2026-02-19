@@ -117,7 +117,7 @@ function UserGrid({ users }: { users: UserType[] }) {
                  <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     {(() => {
                         const Icon = IconMap[selectedUser.avatarUrl || "default"] || IconMap["default"];
-                        return <Icon className="w-12 h-12 text-blue-600" />;
+                        return <Icon suppressHydrationWarning className="w-12 h-12 text-blue-600" />;
                     })()}
                  </div>
                  <h2 className="text-xl font-bold mb-6">Masuk sebagai {selectedUser.name}?</h2>
@@ -207,7 +207,9 @@ function UserGrid({ users }: { users: UserType[] }) {
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 transition-colors ${
                 user.role === 'parent' ? 'bg-indigo-100 group-hover:bg-indigo-200' : 'bg-green-100 group-hover:bg-green-200'
             }`}>
-                <Icon className={`w-8 h-8 ${
+                <Icon 
+                    suppressHydrationWarning
+                    className={`w-8 h-8 ${
                      user.role === 'parent' ? 'text-indigo-600' : 'text-green-600'
                 }`} />
             </div>

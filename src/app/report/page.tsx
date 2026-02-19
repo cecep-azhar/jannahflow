@@ -9,8 +9,7 @@ import { id } from "date-fns/locale";
 export default function ReportPage() {
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
   const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>("all");
 
   async function handleFetch() {
     setLoading(true);
@@ -24,11 +23,16 @@ export default function ReportPage() {
 
     const wb = XLSX.utils.book_new();
 
+    // Filter users for export
+    const filteredReport = selectedUserId === "all" 
+        ? data.report 
+        : data.report.filter((u: any) => u.id === Number(selectedUserId));
+
     // Detail Sheet
     const detailRows: any[] = [];
     const interval = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) });
 
-    data.report.forEach((user: any) => {
+    filteredReport.forEach((user: any) => {
         interval.forEach(date => {
             const dateStr = format(date, "yyyy-MM-dd");
              data.allWorships.forEach((w: any) => {
@@ -50,15 +54,28 @@ export default function ReportPage() {
     const wsDetail = XLSX.utils.json_to_sheet(detailRows);
     XLSX.utils.book_append_sheet(wb, wsDetail, "Laporan Detail");
 
-    XLSX.writeFile(wb, `Laporan_Mutabaah_${startDate}_${endDate}.xlsx`);
+    const fileNameFragment = selectedUserId === "all" ? "Semua" : filteredReport[0]?.name.replace(/\s+/g, "_");
+    XLSX.writeFile(wb, `Laporan_Mutabaah_${fileNameFragment}_${startDate}_${endDate}.xlsx`);
   }
+
+  const filteredData = data ? (
+      selectedUserId === "all" 
+        ? data.report 
+        : data.report.filter((u: any) => u.id === Number(selectedUserId))
+  ) : [];
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 text-slate-900">
+
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-6">
-        <h1 className="text-2xl font-bold text-slate-800 mb-6">Laporan Detail Mutabaah</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h1 className="text-2xl font-bold text-slate-800">Laporan Detail Mutabaah</h1>
+            <a href="/dashboard" className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium">
+                ← Kembali ke Dashboard
+            </a>
+        </div>
         
-        <div className="flex flex-wrap gap-4 mb-6 items-end bg-slate-50 p-4 rounded-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-end bg-slate-50 p-4 rounded-lg">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Dari Tanggal</label>
             <input 
@@ -86,12 +103,28 @@ export default function ReportPage() {
           </button>
           
           {data && (
-             <button 
-                onClick={handleExport}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
-              >
-                <span>📥</span> Export Excel
-              </button>
+            <>
+               <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Filter Nama</label>
+                    <select
+                        value={selectedUserId}
+                        onChange={(e) => setSelectedUserId(e.target.value)}
+                        className="p-2 border rounded-lg text-slate-900 bg-white min-w-[150px]"
+                    >
+                        <option value="all">Semua Anggota</option>
+                        {data.report.map((u: any) => (
+                            <option key={u.id} value={u.id}>{u.name}</option>
+                        ))}
+                    </select>
+               </div>
+
+               <button 
+                    onClick={handleExport}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                  >
+                    <span>📥</span> Export Excel
+               </button>
+            </>
           )}
         </div>
 
@@ -109,7 +142,7 @@ export default function ReportPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {data.report.flatMap((user: any) => {
+                        {filteredData.flatMap((user: any) => {
                            // Flatten logs for table
                            return user.logs.map((log: any) => {
                                const worship = data.allWorships.find((w: any) => w.id === log.worshipId);
@@ -139,16 +172,16 @@ export default function ReportPage() {
                                );
                            }).filter(Boolean);
                         })}
-                        {data.report.every((u: any) => u.logs.length === 0) && (
+                        {filteredData.every((u: any) => u.logs.length === 0) && (
                             <tr>
                                 <td colSpan={6} className="p-8 text-center text-slate-400">
-                                    Belum ada data pada periode ini
+                                    Belum ada data pada periode ini {selectedUserId !== "all" && "untuk pengguna ini"}
                                 </td>
                             </tr>
                         )}
                     </tbody>
                      <tfoot className="bg-slate-100 font-bold text-slate-900">
-                        {data.report.map((user: any) => (
+                        {filteredData.map((user: any) => (
                              <tr key={`total-${user.id}`}>
                                 <td colSpan={4} className="p-2 border text-right">Total Poin {user.name}:</td>
                                 <td className="p-2 border text-right text-blue-700">{user.totalPoints}</td>
