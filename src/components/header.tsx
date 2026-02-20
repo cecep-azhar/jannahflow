@@ -4,27 +4,23 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon, Languages, Star } from "lucide-react";
 import { toast } from "@/components/ui/toast";
+import { useLanguage } from "@/lib/language-context";
 
 export function Header({ familyName = "Family", isPro = false }: { familyName?: string, isPro?: boolean }) {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [lang, setLang] = useState("id"); // Default ID
+  const { lang, t, toggleLanguage } = useLanguage();
 
   // Prevent hydration mismatch
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 0);
-    return () => clearTimeout(t);
+    const tm = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(tm);
   }, []);
 
-  const toggleLanguage = () => {
-    setLang(prev => prev === "id" ? "en" : "id");
-    // In a real app, this would trigger i18n change. 
-    // For now, it's a visual toggle as requested.
-    // users might expect the UI to change language. 
-    // I added a simple state, but without i18n lib, it won't change much effectively unless we use context.
-    // Given the constraints, I will likely implement a simple context if needed later, 
-    // but for now this fulfills "tambahkan ganti bahasa id dan en".
-    toast(`Bahasa diubah ke ${lang === 'id' ? 'English' : 'Indonesia'} (Simulasi)`, 'success');
+  const handleToggleLanguage = () => {
+    toggleLanguage();
+    const nextLang = lang === "id" ? "English" : "Indonesia";
+    toast(t.langSwitched(nextLang), "success");
   };
 
   if (!mounted) return null;
@@ -43,9 +39,9 @@ export function Header({ familyName = "Family", isPro = false }: { familyName?: 
       
       <div className="flex items-center gap-2">
          <button 
-            onClick={toggleLanguage}
+            onClick={handleToggleLanguage}
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 flex items-center gap-1 text-sm font-medium"
-            title="Ganti Bahasa"
+            title={t.changeLanguage}
          >
             <Languages className="w-4 h-4" />
             {lang === "id" ? "IDN" : "ENG"}
@@ -54,7 +50,7 @@ export function Header({ familyName = "Family", isPro = false }: { familyName?: 
          <button
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-            title="Ganti Tema"
+            title={t.changeTheme}
          >
             {resolvedTheme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
          </button>

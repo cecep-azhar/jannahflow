@@ -146,7 +146,7 @@ export default async function DashboardPage() {
                   <div className="text-4xl mb-3">📝</div>
                   <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Mutabaah Harian</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Yuk lengkapi amalan dan laporan mutabaah harianmu hari ini.</p>
-                  <a href="/dashboard/mutabaah" className="inline-block bg-indigo-600 text-white font-medium px-6 py-2 rounded-full hover:bg-indigo-700 transition">
+                  <a href="/mutabaah" className="inline-block bg-indigo-600 text-white font-medium px-6 py-2 rounded-full hover:bg-indigo-700 transition">
                      Isi Mutabaah Saya
                   </a>
               </div>
@@ -278,7 +278,7 @@ export default async function DashboardPage() {
             <div className="text-4xl mb-3">📝</div>
             <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Mutabaah Harian</h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Yuk lengkapi amalan dan mutabaah harianmu agar target poin tercapai.</p>
-            <a href="/dashboard/mutabaah" className="inline-block bg-blue-600 text-white font-medium px-6 py-2 rounded-full hover:bg-blue-700 transition">
+            <a href="/mutabaah" className="inline-block bg-blue-600 text-white font-medium px-6 py-2 rounded-full hover:bg-blue-700 transition">
                Isi Mutabaah Sekarang
             </a>
         </div>

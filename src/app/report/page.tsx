@@ -121,41 +121,47 @@ export default function ReportPage() {
             </button>
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4 mb-6 items-end bg-slate-50 p-4 rounded-lg">
-          <div className="w-full md:w-auto">
+        <div className="flex flex-wrap gap-4 mb-6 items-end bg-slate-50 p-4 rounded-lg">
+          <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Dari Tanggal</label>
             <input 
               type="date" 
               value={startDate} 
               onChange={(e) => setStartDate(e.target.value)}
-              className="p-2 border rounded-lg text-slate-900 bg-white w-full"
+              title="Dari Tanggal"
+              aria-label="Dari Tanggal"
+              className="p-2 border rounded-lg text-slate-900 bg-white"
             />
           </div>
-          <div className="w-full md:w-auto">
+          <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Sampai Tanggal</label>
             <input 
               type="date" 
               value={endDate} 
               onChange={(e) => setEndDate(e.target.value)}
-              className="p-2 border rounded-lg text-slate-900 bg-white w-full"
+              title="Sampai Tanggal"
+              aria-label="Sampai Tanggal"
+              className="p-2 border rounded-lg text-slate-900 bg-white"
             />
           </div>
           <button 
             onClick={handleFetch}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 w-full md:w-auto shrink-0"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 shrink-0"
           >
             {loading ? "Memuat..." : "Tampilkan Laporan"}
           </button>
           
           {activeTab === "mutabaah" && data && (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full md:w-auto md:ml-auto mt-4 md:mt-0 xl:min-w-fit">
-               <div className="w-full sm:w-auto flex-1 sm:flex-none">
+            <>
+               <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Filter Nama</label>
                     <select
                         value={selectedUserId}
                         onChange={(e) => setSelectedUserId(e.target.value)}
-                        className="p-2 border rounded-lg text-slate-900 bg-white w-full sm:min-w-[140px]"
+                        title="Filter Nama"
+                        aria-label="Filter Nama"
+                        className="p-2 border rounded-lg text-slate-900 bg-white min-w-[160px]"
                     >
                         <option value="all">Semua Anggota</option>
                         {data.report.map((u) => (
@@ -166,11 +172,11 @@ export default function ReportPage() {
 
                <button 
                     onClick={handleExport}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 w-full sm:w-auto shrink-0 whitespace-nowrap"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 shrink-0 whitespace-nowrap"
                   >
-                    <span>📥</span> Export
+                    <span>📥</span> Export Excel
                </button>
-            </div>
+            </>
           )}
         </div>
 

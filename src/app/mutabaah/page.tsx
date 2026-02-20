@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { format } from "date-fns";
-import { LogList } from "../log-list"; 
+import { LogList } from "@/app/dashboard/log-list"; 
 
 export const dynamic = "force-dynamic";
 

@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { Wallet, CreditCard, ArrowRightLeft, Target, ShieldAlert, BadgeDollarSign } from "lucide-react";
+import { Lock } from "lucide-react";
+import { FinanceNav } from "./finance-nav";
+
 import { db } from "@/db";
-import { accounts } from "@/db/schema";
-import { sql } from "drizzle-orm";
+import { accounts, systemStats } from "@/db/schema";
+import { eq, sql } from "drizzle-orm";
+import { verifyProToken } from "@/lib/pro-utils";
+import { headers } from "next/headers";
 
 export default async function FinanceLayout({ children }: { children: React.ReactNode }) {
     try {
@@ -14,14 +18,38 @@ export default async function FinanceLayout({ children }: { children: React.Reac
         await db.run(sql`CREATE TABLE IF NOT EXISTS \`budgets\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`category\` text NOT NULL, \`monthly_limit\` integer NOT NULL, \`period_type\` text DEFAULT 'MASEHI' NOT NULL)`);
         await db.run(sql`CREATE TABLE IF NOT EXISTS \`assets\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`purchase_price\` integer NOT NULL, \`current_valuation\` integer NOT NULL, \`asset_type\` text NOT NULL)`);
     }
-    const tabs = [
-        { name: "Ringkasan", href: "/dashboard/finance", icon: <BadgeDollarSign className="w-5 h-5" /> },
-        { name: "Dompet", href: "/dashboard/finance/accounts", icon: <Wallet className="w-5 h-5" /> },
-        { name: "Transaksi", href: "/dashboard/finance/transactions", icon: <ArrowRightLeft className="w-5 h-5" /> },
-        { name: "Anggaran", href: "/dashboard/finance/budgets", icon: <CreditCard className="w-5 h-5" /> },
-        { name: "Target Tabungan", href: "/dashboard/finance/saving-goals", icon: <Target className="w-5 h-5" /> },
-        { name: "Aset & Zakat", href: "/dashboard/finance/assets", icon: <ShieldAlert className="w-5 h-5" /> },
-    ];
+
+    let isPro = false;
+    try {
+        const tokenStat = await db.query.systemStats.findFirst({
+            where: eq(systemStats.key, "pro_token")
+        });
+        const headersList = await headers();
+        const host = headersList.get("host") || "localhost";
+        const hostname = host.split(":")[0];
+        isPro = await verifyProToken(tokenStat?.value, hostname);
+    } catch {
+       // defaults to false
+    }
+
+    if (!isPro) {
+        return (
+            <div className="p-4 max-w-5xl mx-auto space-y-6 pb-20 flex flex-col items-center justify-center min-h-[70vh] text-center">
+                <div className="bg-slate-100 dark:bg-slate-900/50 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-sm flex flex-col items-center">
+                    <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mb-6">
+                        <Lock className="w-10 h-10" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-3">Fitur Terkunci</h2>
+                    <p className="text-slate-600 dark:text-slate-400 mb-8">
+                        Fitur pencatatan keuangan (Financial Family) merupakan fitur eksklusif untuk lisensi Pro. Silakan aktivasi lisensi Pro untuk mulai menggunakannya.
+                    </p>
+                    <Link href="/settings" className="bg-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:bg-indigo-700 transition-colors w-full">
+                        Buka Halaman Aktivasi
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 max-w-5xl mx-auto space-y-6 pb-20">
@@ -30,17 +58,8 @@ export default async function FinanceLayout({ children }: { children: React.Reac
                 <p className="text-indigo-100 text-sm md:text-base opacity-90">Kelola keuangan keluarga dengan berkah, pantau zakat, dan capai impian bersama secara transparan.</p>
             </div>
 
-            <div className="flex overflow-x-auto pb-4 gap-3 hide-scrollbar snap-x">
-                {tabs.map((tab) => (
-                    <Link
-                        key={tab.name}
-                        href={tab.href}
-                        className="flex items-center gap-2 px-5 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-base font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all whitespace-nowrap shadow-sm snap-start"
-                    >
-                        {tab.icon} {tab.name}
-                    </Link>
-                ))}
-            </div>
+            <FinanceNav />
+
 
             <div className="mt-4">
                 {children}

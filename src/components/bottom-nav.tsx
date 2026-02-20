@@ -9,11 +9,11 @@ export function BottomNav() {
 
   const navItems = [
     { name: "Beranda", href: "/dashboard", icon: <Home className="w-6 h-6" /> },
-    { name: "Mutabaah", href: "/dashboard/mutabaah", icon: <ClipboardList className="w-6 h-6" /> },
+    { name: "Mutabaah", href: "/mutabaah", icon: <ClipboardList className="w-6 h-6" /> },
     { name: "Jurnal", href: "/journal", icon: <BookHeart className="w-6 h-6" /> },
-    { name: "Keuangan", href: "/dashboard/finance", icon: <Wallet className="w-6 h-6" />, pro: true },
+    { name: "Keuangan", href: "/finance", icon: <Wallet className="w-6 h-6" />, pro: true },
     { name: "Laporan", href: "/report", icon: <PieChart className="w-6 h-6" /> },
-    { name: "Pengaturan", href: "/dashboard/settings", icon: <Settings className="w-6 h-6" /> },
+    { name: "Pengaturan", href: "/settings", icon: <Settings className="w-6 h-6" /> },
   ];
 
   return (

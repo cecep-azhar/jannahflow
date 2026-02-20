@@ -5,8 +5,10 @@ import { users, worships, systemStats } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 
-// --- Family Management ---
+import { headers } from "next/headers";
+import { verifyProToken } from "@/lib/pro-utils";
 
+// --- Family Management ---
 
 export async function addFamilyMember(formData: FormData) {
   const name = formData.get("name") as string;
@@ -21,13 +23,13 @@ export async function addFamilyMember(formData: FormData) {
     avatarUrl,
   });
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/settings");
   revalidatePath("/dashboard");
 }
 
 export async function deleteFamilyMember(id: number) {
   await db.delete(users).where(eq(users.id, id));
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/settings");
   revalidatePath("/dashboard");
 }
 
@@ -44,7 +46,7 @@ export async function updateFamilyMember(id: number, formData: FormData) {
         avatarUrl
     }).where(eq(users.id, id));
 
-    revalidatePath("/dashboard/settings");
+    revalidatePath("/settings");
     revalidatePath("/dashboard");
 }
 
@@ -62,13 +64,13 @@ export async function addWorshipItem(formData: FormData) {
     type: "boolean", 
   });
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/settings");
   revalidatePath("/dashboard");
 }
 
 export async function deleteWorshipItem(id: number) {
   await db.delete(worships).where(eq(worships.id, id));
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/settings");
   revalidatePath("/dashboard");
 }
 
@@ -83,7 +85,7 @@ export async function updateWorshipItem(id: number, formData: FormData) {
         category
     }).where(eq(worships.id, id));
 
-    revalidatePath("/dashboard/settings");
+    revalidatePath("/settings");
     revalidatePath("/dashboard");
 }
 
@@ -92,16 +94,27 @@ export async function updateWorshipItem(id: number, formData: FormData) {
 export async function saveProToken(formData: FormData) {
   const token = formData.get("token") as string;
   
-  // Insert or update
-  await db.insert(systemStats)
-    .values({ key: "pro_token", value: token })
-    .onConflictDoUpdate({
-      target: systemStats.key,
-      set: { value: token, lastUpdated: new Date().toISOString() }
-    });
+  const headersList = await headers();
+  const host = headersList.get("host") || "localhost";
+  const hostname = host.split(":")[0];
+  
+  const isValid = await verifyProToken(token, hostname);
 
-  revalidatePath("/dashboard/settings");
-  revalidatePath("/dashboard");
+  if (isValid) {
+    await db.insert(systemStats)
+      .values({ key: "pro_token", value: token })
+      .onConflictDoUpdate({
+        target: systemStats.key,
+        set: { value: token, lastUpdated: new Date().toISOString() }
+      });
+      
+    revalidatePath("/settings");
+    revalidatePath("/dashboard");
+    revalidatePath("/finance"); // Revalidate finance layout too
+    return { success: true, message: "Terima kasih sudah menggunakan versi pro." };
+  } else {
+    return { success: false, message: "Lisensi tidak cocok dengan domain ini." };
+  }
 }
 
 export async function saveFamilyName(formData: FormData) {
@@ -118,5 +131,16 @@ export async function saveFamilyName(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/auth");
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/settings");
+}
+
+export async function revokeProToken() {
+  await db.delete(systemStats).where(eq(systemStats.key, "pro_token"));
+  
+  revalidatePath("/");
+  revalidatePath("/auth");
+  revalidatePath("/settings");
+  revalidatePath("/finance");
+  revalidatePath("/dashboard");
+  return { success: true, message: "Lisensi Pro berhasil dihapus." };
 }

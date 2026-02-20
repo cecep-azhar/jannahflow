@@ -266,8 +266,9 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
     );
 }
 
-import { saveProToken, saveFamilyName } from "./actions";
-import { Check } from "lucide-react";
+import { saveProToken, saveFamilyName, revokeProToken } from "./actions";
+import { Check, Loader2, Trash2 } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 
 function FamilyNameSettings({ initialName }: { initialName: string }) {
     const [name, setName] = useState(initialName);
@@ -307,7 +308,24 @@ function FamilyNameSettings({ initialName }: { initialName: string }) {
 
 function ProSettings({ initialToken }: { initialToken: string }) {
     const [token, setToken] = useState(initialToken);
-    const [saved, setSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isRevoking, setIsRevoking] = useState(false);
+
+    const handleRevoke = async () => {
+        if (!confirm("Yakin ingin menghapus lisensi Pro? Fitur keuangan akan terkunci.")) return;
+        setIsRevoking(true);
+        try {
+            const result = await revokeProToken();
+            if (result?.success) {
+                toast(result.message, "success");
+                setToken("");
+            }
+        } catch {
+            toast("Gagal menghapus lisensi.", "error");
+        } finally {
+            setIsRevoking(false);
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -316,9 +334,19 @@ function ProSettings({ initialToken }: { initialToken: string }) {
             </div>
             
             <form action={async (formData) => {
-                await saveProToken(formData);
-                setSaved(true);
-                setTimeout(() => setSaved(false), 3000);
+                setIsSaving(true);
+                try {
+                    const result = await saveProToken(formData);
+                    if (result.success) {
+                        toast(result.message, "success");
+                    } else {
+                        toast(result.message, "error");
+                    }
+                } catch {
+                    toast("Terjadi kesalahan sistem.", "error");
+                } finally {
+                    setIsSaving(false);
+                }
             }} className="bg-linear-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/50 dark:to-blue-950/50 p-6 rounded-xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
                 <p className="text-sm text-indigo-800 dark:text-indigo-200">
                     Masukkan Lisensi JannahFlow Pro (JWT Token) untuk mengaktifkan fitur Financial Family. 
@@ -336,7 +364,7 @@ function ProSettings({ initialToken }: { initialToken: string }) {
                     />
                 </div>
                 
-                <div className="flex items-center justify-between pt-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
                     <a 
                         href="https://wa.me/6285220696117?text=Mau%20Fitur%20Pro%20JannahFlow" 
                         target="_blank" 
@@ -346,9 +374,21 @@ function ProSettings({ initialToken }: { initialToken: string }) {
                         Klik di sini untuk aktivasi via WhatsApp
                     </a>
                     
-                    <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
-                        {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan Token</>}
-                    </button>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {initialToken && (
+                            <button 
+                                type="button" 
+                                onClick={handleRevoke}
+                                disabled={isRevoking || isSaving} 
+                                className="bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-900/50 px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed flex-1 sm:flex-none"
+                            >
+                                {isRevoking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Hapus Lisensi
+                            </button>
+                        )}
+                        <button disabled={isSaving || isRevoking} type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed flex-1 sm:flex-none">
+                            {isSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Sedang Mengaktivasi</> : <><Check className="w-4 h-4" /> Aktivasi</>}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

@@ -37,33 +37,39 @@ export default async function FinanceDashboard() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="relative bg-indigo-500 to-indigo-700 p-6 rounded-2xl text-white shadow-lg">
-                    <div className="absolute inset-0 bg-linear-to-br from-indigo-500/20 to-purple-500/20" />
-                    <div className="flex items-center gap-2 text-indigo-100 mb-2">
-                        <Wallet className="w-5 h-5" />
-                        <span className="font-medium">Total Kekayaan Cair</span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="relative bg-indigo-500 to-indigo-700 p-6 rounded-2xl text-white shadow-lg min-h-[150px] flex flex-col justify-between">
+                    <div className="absolute inset-0 bg-linear-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl" />
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-2 text-indigo-100 mb-2">
+                            <Wallet className="w-5 h-5" />
+                            <span className="font-medium">Total Kekayaan Cair</span>
+                        </div>
+                        <div className="text-3xl font-bold">{formatRupiah(totalBalance)}</div>
                     </div>
-                    <div className="text-3xl font-bold">{formatRupiah(totalBalance)}</div>
-                    <div className="text-sm text-indigo-200 mt-2">Dari {allAccounts.length} Akun/Dompet</div>
+                    <p className="text-sm text-indigo-200 mt-2 relative z-10">Dari {allAccounts.length} Akun/Dompet</p>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
-                        <TrendingUp className="w-5 h-5 text-green-500 dark:text-green-400" />
-                        <span className="font-medium">Pemasukan Bulan Ini</span>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm min-h-[150px] flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
+                            <TrendingUp className="w-5 h-5 text-green-500 dark:text-green-400" />
+                            <span className="font-medium">Pemasukan Bulan Ini</span>
+                        </div>
+                        <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{formatRupiah(0)}*</div>
                     </div>
-                    <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{formatRupiah(0)}*</div>
-                    <div className="text-xs text-slate-400 dark:text-slate-500 mt-2">*Segera hadir - Pemasukan Masehi/Hijri</div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 leading-relaxed italic">*Segera hadir - Pemasukan Masehi/Hijri</p>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
-                        <TrendingDown className="w-5 h-5 text-red-500 dark:text-red-400" />
-                        <span className="font-medium">Pengeluaran Bulan Ini</span>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm min-h-[150px] flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
+                            <TrendingDown className="w-5 h-5 text-red-500 dark:text-red-400" />
+                            <span className="font-medium">Pengeluaran Bulan Ini</span>
+                        </div>
+                        <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{formatRupiah(0)}*</div>
                     </div>
-                    <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{formatRupiah(0)}*</div>
-                    <div className="text-xs text-slate-400 dark:text-slate-500 mt-2">*Segera hadir - Pengeluaran Masehi/Hijri</div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 leading-relaxed italic">*Segera hadir - Pengeluaran Masehi/Hijri</p>
                 </div>
             </div>
 

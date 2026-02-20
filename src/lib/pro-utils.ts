@@ -1,44 +1,66 @@
 import * as jose from "jose";
 
-// Optional: you can set this securely in your environment variables.
-const SECRET_KEY = new TextEncoder().encode("mutabaah-jannahflow-secret-key");
+// Master secret — must match the obfuscated value in the license generator HTML.
+const MASTER_SECRET = new TextEncoder().encode("bahagiabersamacacubehinggajannah");
 
 /**
- * Verifies if the request is running on a valid domain and has a valid Pro token.
- * We bypass localhost automatically since this is a local development/personal project.
+ * Derives a domain-specific signing key:
+ *   derivedKey = HMAC-SHA256(masterSecret, domain)
+ *
+ * Each domain produces a cryptographically unique 32-byte key, so a token
+ * minted for "app.familyA.com" is mathematically invalid on "app.familyB.com".
  */
-export async function verifyProToken(token: string | null | undefined, hostname: string): Promise<boolean> {
-  // 1. Bypass check for localhost or local IPs
-  if (
-    hostname === "localhost" ||
-    hostname.startsWith("127.") ||
-    hostname.startsWith("192.168.") ||
-    hostname.startsWith("10.") // Vercel dev sometimes uses this
-  ) {
-    return true;
-  }
+async function getDomainKey(domain: string): Promise<Uint8Array> {
+  const masterKey = await crypto.subtle.importKey(
+    "raw",
+    MASTER_SECRET,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const derived = await crypto.subtle.sign(
+    "HMAC",
+    masterKey,
+    new TextEncoder().encode(domain)
+  );
+  return new Uint8Array(derived); // 32 bytes, unique per domain
+}
 
-  // 2. No token provided
-  if (!token) {
-    return false;
-  }
+// A valid compact JWS has exactly 3 non-empty base64url segments.
+function looksLikeJWT(token: string): boolean {
+  const parts = token.split(".");
+  return parts.length === 3 && parts.every((p) => p.length > 0);
+}
 
-  // 3. Verify JWT token
+/**
+ * Verifies a JannahFlow Pro JWT license token.
+ *
+ * Rules:
+ *  - Token must be signed with HMAC-SHA256(masterSecret, hostname).
+ *  - Token payload must carry a `domain` claim that exactly matches hostname.
+ *  - localhost / LAN IPs are NOT bypassed — a valid token is always required.
+ */
+export async function verifyProToken(
+  token: string | null | undefined,
+  hostname: string
+): Promise<boolean> {
+  if (!token || !looksLikeJWT(token)) return false;
+
   try {
-    const { payload } = await jose.jwtVerify(token, SECRET_KEY, {
-      // You can define specific issuers or audiences if needed
-      // issuer: 'jannahflow',
-    });
+    // Derive the key expected for this hostname
+    const domainKey = await getDomainKey(hostname);
 
-    // Check if the token's allowed domain matches the current hostname
-    if (payload.domain && payload.domain !== hostname) {
-      console.warn("Pro Token domain mismatch", { expected: payload.domain, actual: hostname });
-      return false; // Domain mismatch
-    }
+    const { payload } = await jose.jwtVerify(token, domainKey);
 
-    return true; // Valid token
-  } catch (error) {
-    console.error("Invalid Pro Token", error);
+    // Double-check the embedded domain claim
+    if (!payload.domain || payload.domain !== hostname) return false;
+
+    return true;
+  } catch {
+    // Invalid signature, expired, or malformed token — silently reject
     return false;
   }
 }
+
+
+
