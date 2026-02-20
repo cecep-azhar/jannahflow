@@ -3,8 +3,10 @@
 import { db } from "@/db";
 import { users, worships, mutabaahLogs } from "@/db/schema";
 import { redirect } from "next/navigation";
+import { ensureDb } from "@/lib/ensure-db";
 
 export async function checkDatabaseEmpty() {
+  await ensureDb();
   const existingUsers = await db.select().from(users).limit(1);
   return existingUsers.length === 0;
 }

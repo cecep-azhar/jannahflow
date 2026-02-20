@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { mutabaahLogs, users, worships, transactions, accounts } from "@/db/schema";
-import { and, gte, lte } from "drizzle-orm";
+import { mutabaahLogs, users, worships, transactions, accounts, journals } from "@/db/schema";
+import { and, gte, lte, eq, desc } from "drizzle-orm";
 
 export async function getReportData(startDate: string, endDate: string) {
   const allUsers = await db.select().from(users);
@@ -82,22 +82,39 @@ export async function getFinanceReportData(startDate: string, endDate: string) {
 
 export async function getJournalReportData(startDate: string, endDate: string) {
   try {
-     const entries = await db.query.journals.findMany({
-         where: (journals, { and, gte, lte }) => and(
-             gte(journals.createdAt, startDate),
-             lte(journals.createdAt, endDate + "T23:59:59.999Z")
-         ),
-         with: {
-             user: {
-                 columns: {
-                     name: true,
-                     role: true
-                 }
-             }
+     const rows = await db
+         .select({
+             id: journals.id,
+             userId: journals.userId,
+             content: journals.content,
+             mediaUrls: journals.mediaUrls,
+             mood: journals.mood,
+             createdAt: journals.createdAt,
+             userName: users.name,
+             userRole: users.role,
+         })
+         .from(journals)
+         .leftJoin(users, eq(journals.userId, users.id))
+         .where(
+             and(
+                 gte(journals.createdAt, startDate),
+                 lte(journals.createdAt, endDate + "T23:59:59.999Z")
+             )
+         )
+         .orderBy(desc(journals.createdAt));
+
+     return rows.map((row) => ({
+         id: row.id,
+         userId: row.userId,
+         content: row.content,
+         mediaUrls: row.mediaUrls,
+         mood: row.mood,
+         createdAt: row.createdAt,
+         user: {
+             name: row.userName ?? "Unknown",
+             role: row.userRole ?? "child",
          },
-         orderBy: (journals, { desc }) => [desc(journals.createdAt)]
-     });
-     return entries;
+     }));
   } catch (e) {
       console.error(e);
       return [];

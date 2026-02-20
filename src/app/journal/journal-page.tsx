@@ -82,7 +82,7 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
         if (!content.trim()) return
 
         setIsSubmitting(true)
-        const result = await createJournalEntry(content, mood, mediaUrl ? JSON.stringify([mediaUrl]) : null)
+        const result = await createJournalEntry(content, mood, mediaUrl ? JSON.stringify([mediaUrl]) : undefined)
         
         if (result.success) {
             toast("Jurnal berhasil ditambahkan 📝", "success")

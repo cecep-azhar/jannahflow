@@ -74,4 +74,4 @@ async function seed() {
   console.log(`Seeded ${seedQuotes.length} quotes!`);
 }
 
-seed().catch(console.error);
+// Do NOT call seed() here — call it explicitly from a setup route or script.

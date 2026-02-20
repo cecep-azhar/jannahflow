@@ -2,12 +2,18 @@ import { db } from "@/db";
 import { accounts } from "@/db/schema";
 import { formatMasehiDate, convertToHijri, formatHijriReadable } from "@/lib/hijri-utils";
 import { Calendar, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function FinanceDashboard() {
-    // 1. Fetch Dashboard Data
-    const allAccounts = await db.select().from(accounts);
+    let allAccounts: { id: string; name: string; type: string; balance: number }[] = [];
+    try {
+        allAccounts = await db.select().from(accounts);
+    } catch (e) {
+        console.error("Finance DB error:", e);
+        redirect("/setup");
+    }
     const totalBalance = allAccounts.reduce((sum, acc) => sum + acc.balance, 0);
 
     const masehiToday = formatMasehiDate();

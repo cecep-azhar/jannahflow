@@ -10,12 +10,12 @@ export async function incrementViewCount() {
 
   if (stats) {
     await db.update(systemStats)
-      .set({ value: stats.value + 1, lastUpdated: new Date().toISOString() })
+      .set({ value: String(parseInt(stats.value || "0") + 1), lastUpdated: new Date().toISOString() })
       .where(eq(systemStats.key, "page_views"));
   } else {
     await db.insert(systemStats).values({
         key: "page_views",
-        value: 1,
+        value: "1",
         lastUpdated: new Date().toISOString()
     });
   }
@@ -52,7 +52,7 @@ export async function getSystemStats() {
     }
 
     return {
-        views: views?.value || 0,
+        views: parseInt(views?.value || "0"),
         lastUpdate: lastUpdateInfo
     };
 }

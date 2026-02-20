@@ -17,9 +17,14 @@ export default async function JournalPage() {
   }
 
   const userId = parseInt(userIdStr);
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, userId),
-  });
+  let user;
+  try {
+    user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+  } catch {
+    redirect("/setup");
+  }
 
   if (!user) {
     redirect("/auth");
