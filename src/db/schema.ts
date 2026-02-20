@@ -32,3 +32,9 @@ export const mutabaahLogs = sqliteTable("mutabaah_logs", {
   note: text("note"),
   timestamp: text("timestamp").default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const systemStats = sqliteTable("system_stats", {
+  key: text("key").primaryKey(), // e.g., 'page_views'
+  value: integer("value").notNull().default(0),
+  lastUpdated: text("last_updated").default(sql`CURRENT_TIMESTAMP`),
+});

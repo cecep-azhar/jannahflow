@@ -1,4 +1,5 @@
 import { Heart, Coffee } from "lucide-react";
+import { FooterStats } from "./footer-stats";
 
 export function Footer() {
   return (
@@ -26,6 +27,8 @@ export function Footer() {
         >
           Buy me a coffee <Coffee className="h-4 w-4" />
         </a>
+
+        <FooterStats />
       </div>
     </footer>
   );
