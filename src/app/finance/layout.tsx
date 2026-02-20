@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
 import { FinanceNav } from "./finance-nav";
+import { BottomNav } from "@/components/bottom-nav";
 
 import { db } from "@/db";
 import { accounts, systemStats } from "@/db/schema";
@@ -34,7 +35,8 @@ export default async function FinanceLayout({ children }: { children: React.Reac
 
     if (!isPro) {
         return (
-            <div className="p-4 max-w-5xl mx-auto space-y-6 pb-20 flex flex-col items-center justify-center min-h-[70vh] text-center">
+            <>
+                <div className="p-4 max-w-5xl w-full min-w-0 mx-auto space-y-6 pb-20 flex flex-col items-center justify-center min-h-[70vh] text-center">
                 <div className="bg-slate-100 dark:bg-slate-900/50 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-sm flex flex-col items-center">
                     <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mb-6">
                         <Lock className="w-10 h-10" />
@@ -48,12 +50,15 @@ export default async function FinanceLayout({ children }: { children: React.Reac
                     </Link>
                 </div>
             </div>
+            <BottomNav />
+            </>
         );
     }
 
     return (
-        <div className="p-4 max-w-5xl mx-auto space-y-6 pb-20">
-            <div className="bg-linear-to-br from-indigo-600 to-indigo-800 dark:from-indigo-800 dark:to-slate-900 text-white p-6 md:p-8 rounded-3xl shadow-lg border border-indigo-500/20">
+        <>
+            <div className="p-4 max-w-5xl w-full min-w-0 mx-auto space-y-6 pb-20">
+                <div className="bg-linear-to-br from-indigo-600 to-indigo-800 dark:from-indigo-800 dark:to-slate-900 text-white p-6 md:p-8 rounded-3xl shadow-lg border border-indigo-500/20">
                 <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight mb-2">Financial Family <span className="text-amber-300 text-lg align-top ml-1">PRO</span></h1>
                 <p className="text-indigo-100 text-sm md:text-base opacity-90">Kelola keuangan keluarga dengan berkah, pantau zakat, dan capai impian bersama secara transparan.</p>
             </div>
@@ -65,5 +70,7 @@ export default async function FinanceLayout({ children }: { children: React.Reac
                 {children}
             </div>
         </div>
+        <BottomNav />
+        </>
     );
 }

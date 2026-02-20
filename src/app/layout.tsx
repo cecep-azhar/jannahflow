@@ -69,7 +69,7 @@ export default async function RootLayout({
             <div className="w-full max-w-3xl bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen relative shadow-2xl flex flex-col overflow-x-hidden">
                 <SplashScreen />
                 <Header familyName={familyName} isPro={isPro} />
-                <main className="flex-1 flex flex-col">
+                <main className="flex-1 flex flex-col w-full min-w-0">
                     {children}
                 </main>
                 <ToastProvider />
