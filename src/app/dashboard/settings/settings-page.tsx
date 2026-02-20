@@ -2,18 +2,31 @@
 
 import { useState } from "react";
 import { addFamilyMember, deleteFamilyMember, addWorshipItem, deleteWorshipItem, updateFamilyMember, updateWorshipItem } from "./actions";
-import { Trash, Plus, User, AlertCircle, CheckCircle, Save, Pencil, X } from "lucide-react";
+import { Trash, Plus, AlertCircle, CheckCircle, Save, Pencil, User, Shield, Heart, Star, Smile, LucideIcon } from "lucide-react";
 
-function FamilySettings({ users }: { users: any[] }) {
+// Matches AuthUI mapping
+const IconMap: Record<string, LucideIcon> = {
+  "user-check": Shield,
+  "heart": Heart,
+  "star": Star,
+  "smile": Smile,
+  "default": User,
+  "user": User, // Added for fallback
+};
+
+type UserData = { id: number; name: string; role: string; avatarUrl: string | null; pin: string | null };
+type WorshipData = { id: number; name: string; category: string; points: number };
+
+function FamilySettings({ users }: { users: UserData[] }) {
     const [isAdding, setIsAdding] = useState(false);
-    const [editingItem, setEditingItem] = useState<any>(null);
+    const [editingItem, setEditingItem] = useState<UserData | null>(null);
 
     const showForm = isAdding || editingItem;
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="font-bold text-slate-700">Daftar Anggota Keluarga</h3>
+                <h3 className="font-bold text-slate-700 dark:text-slate-300">Daftar Anggota Keluarga</h3>
                 {!showForm && (
                      <button 
                         onClick={() => setIsAdding(true)}
@@ -25,7 +38,8 @@ function FamilySettings({ users }: { users: any[] }) {
             </div>
 
             {showForm && (
-                <form action={async (formData) => {
+                <div id="family-form-container" className="scroll-mt-24">
+                <form key={editingItem ? `edit-${editingItem.id}` : 'add-new'} action={async (formData) => {
                     if (editingItem) {
                         await updateFamilyMember(editingItem.id, formData);
                         setEditingItem(null);
@@ -33,19 +47,19 @@ function FamilySettings({ users }: { users: any[] }) {
                         await addFamilyMember(formData);
                         setIsAdding(false);
                     }
-                }} className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-                    <h4 className="font-semibold text-sm text-indigo-700">{editingItem ? `Edit ${editingItem.name}` : 'Tambah Anggota Baru'}</h4>
+                }} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
+                    <h4 className="font-semibold text-sm text-indigo-700 dark:text-indigo-400">{editingItem ? `Edit ${editingItem.name}` : 'Tambah Anggota Baru'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input 
                             name="name" 
                             placeholder="Nama" 
                             required 
                             defaultValue={editingItem?.name}
-                            className="p-2 border rounded text-slate-900" 
+                            className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950" 
                         />
                         <select 
                             name="role" 
-                            className="p-2 border rounded text-slate-900"
+                            className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950"
                             defaultValue={editingItem?.role || "child"}
                         >
                             <option value="child">Anak</option>
@@ -55,17 +69,18 @@ function FamilySettings({ users }: { users: any[] }) {
                             name="pin" 
                             placeholder="PIN (Khusus Orang Tua)" 
                             defaultValue={editingItem?.pin || ""}
-                            className="p-2 border rounded text-slate-900" 
+                            className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950" 
                         />
                         <select 
                             name="avatarUrl" 
-                            className="p-2 border rounded text-slate-900"
+                            className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950"
                             defaultValue={editingItem?.avatarUrl || "smile"}
                         >
                             <option value="smile">🙂 Smile</option>
                             <option value="star">⭐ Star</option>
                             <option value="heart">❤️ Heart</option>
                             <option value="user">👤 User</option>
+                            <option value="user-check">🛡️ Admin/Shield</option>
                         </select>
                     </div>
                     <div className="flex justify-end gap-2">
@@ -81,23 +96,30 @@ function FamilySettings({ users }: { users: any[] }) {
                         </button>
                     </div>
                 </form>
+                </div>
             )}
 
             <div className="space-y-2">
-                {users.map(u => (
-                    <div key={u.id} className="flex justify-between items-center p-3 bg-white border border-slate-200 rounded-lg hover:shadow-sm">
+                {users.map(u => {
+                    const Icon = IconMap[u.avatarUrl || "default"] || IconMap["default"];
+                    return (
+                    <div key={u.id} className="flex justify-between items-center p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-lg">
-                                {u.role === 'parent' ? '👨‍👩‍👧' : '👶'}
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${u.role === 'parent' ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400'}`}>
+                                <Icon className="w-5 h-5" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="font-semibold text-slate-800 truncate">{u.name}</div>
-                                <div className="text-xs text-slate-500 uppercase">{u.role}</div>
+                                <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">{u.name}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">{u.role}</div>
                             </div>
                         </div>
                         <div className="flex gap-1">
                             <button 
-                                onClick={() => { setEditingItem(u); setIsAdding(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                onClick={() => { 
+                                    setEditingItem(u); 
+                                    setIsAdding(false); 
+                                    setTimeout(() => document.getElementById('family-form-container')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+                                }}
                                 className="text-blue-400 hover:text-blue-600 p-2" 
                                 title="Edit"
                             >
@@ -110,15 +132,15 @@ function FamilySettings({ users }: { users: any[] }) {
                             </form>
                         </div>
                     </div>
-                ))}
+                )})}
             </div>
         </div>
     );
 }
 
-function WorshipSettings({ worships }: { worships: any[] }) {
+function WorshipSettings({ worships }: { worships: WorshipData[] }) {
     const [isAdding, setIsAdding] = useState(false);
-    const [editingItem, setEditingItem] = useState<any>(null);
+    const [editingItem, setEditingItem] = useState<WorshipData | null>(null);
 
     const showForm = isAdding || editingItem;
 
@@ -132,7 +154,7 @@ function WorshipSettings({ worships }: { worships: any[] }) {
     return (
         <div className="space-y-6">
              <div className="flex justify-between items-center">
-                <h3 className="font-bold text-slate-700">Daftar Ibadah & Penalti</h3>
+                <h3 className="font-bold text-slate-700 dark:text-slate-300">Daftar Ibadah & Penalti</h3>
                 {!showForm && (
                     <button 
                         onClick={() => setIsAdding(true)}
@@ -144,7 +166,8 @@ function WorshipSettings({ worships }: { worships: any[] }) {
             </div>
 
             {showForm && (
-                <form action={async (formData) => {
+                <div id="worship-form-container" className="scroll-mt-24">
+                <form key={editingItem ? `edit-${editingItem.id}` : 'add-new'} action={async (formData) => {
                     if (editingItem) {
                          await updateWorshipItem(editingItem.id, formData);
                          setEditingItem(null);
@@ -152,15 +175,15 @@ function WorshipSettings({ worships }: { worships: any[] }) {
                         await addWorshipItem(formData);
                         setIsAdding(false);
                     }
-                }} className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-                     <h4 className="font-semibold text-sm text-green-700">{editingItem ? `Edit ${editingItem.name}` : 'Tambah Item Baru'}</h4>
+                }} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
+                     <h4 className="font-semibold text-sm text-green-700 dark:text-green-500">{editingItem ? `Edit ${editingItem.name}` : 'Tambah Item Baru'}</h4>
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <input 
                             name="name" 
                             placeholder="Nama Ibadah / Kesalahan" 
                             required 
                             defaultValue={editingItem?.name}
-                            className="p-2 border rounded md:col-span-2 text-slate-900" 
+                            className="p-2 border dark:border-slate-700 rounded md:col-span-2 text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950" 
                         />
                         <input 
                             name="points" 
@@ -168,15 +191,16 @@ function WorshipSettings({ worships }: { worships: any[] }) {
                             placeholder="Poin (Negatif untuk Penalti)" 
                             required 
                             defaultValue={editingItem?.points}
-                            className="p-2 border rounded text-slate-900" 
+                            className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950" 
                         />
                         <select 
                             name="category" 
-                            className="p-2 border rounded text-slate-900"
+                            className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950"
                             defaultValue={editingItem?.category || "wajib"}
                         >
                             <option value="wajib">Wajib</option>
                             <option value="sunnah">Sunnah</option>
+                            <option value="kesalahan">Kesalahan</option>
                         </select>
                      </div>
                      <div className="flex justify-end gap-2">
@@ -192,24 +216,25 @@ function WorshipSettings({ worships }: { worships: any[] }) {
                         </button>
                     </div>
                 </form>
+                </div>
             )}
 
             <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
                 {sortedWorships.map(w => {
                     const isPenalty = w.points < 0;
                     return (
-                        <div key={w.id} className={`flex justify-between items-center p-3 border rounded-lg ${isPenalty ? "bg-red-50 border-red-100" : "bg-white border-slate-200"}`}>
+                        <div key={w.id} className={`flex justify-between items-center p-3 border rounded-lg ${isPenalty ? "bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900/50" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}>
                              <div className="flex items-center gap-3">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center`}>
                                    {isPenalty ? <AlertCircle className="w-5 h-5 text-red-500" /> : <CheckCircle className="w-5 h-5 text-green-500" />}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <div className={`font-medium truncate ${isPenalty ? "text-red-700" : "text-slate-700"}`}>{w.name}</div>
+                                    <div className={`font-medium truncate ${isPenalty ? "text-red-700 dark:text-red-400" : "text-slate-700 dark:text-slate-300"}`}>{w.name}</div>
                                     <div className="flex gap-2 text-xs">
-                                        <span className={`px-2 py-0.5 rounded-full ${w.category === 'wajib' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700 mr-1'}`}>
+                                        <span className={`px-2 py-0.5 rounded-full ${w.category === 'wajib' ? 'bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400' : 'bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 mr-1'}`}>
                                             {w.category}
                                         </span>
-                                        <span className={`font-bold ${isPenalty ? "text-red-600" : "text-green-600"}`}>
+                                        <span className={`font-bold ${isPenalty ? "text-red-600 dark:text-red-500" : "text-green-600 dark:text-green-500"}`}>
                                             {w.points > 0 ? `+${w.points}` : w.points} Poin
                                         </span>
                                     </div>
@@ -217,7 +242,11 @@ function WorshipSettings({ worships }: { worships: any[] }) {
                             </div>
                             <div className="flex gap-1">
                                 <button 
-                                    onClick={() => { setEditingItem(w); setIsAdding(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                    onClick={() => { 
+                                        setEditingItem(w); 
+                                        setIsAdding(false); 
+                                        setTimeout(() => document.getElementById('worship-form-container')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+                                    }}
                                     className="text-blue-400 hover:text-blue-600 p-2" 
                                     title="Edit"
                                 >
@@ -237,18 +266,119 @@ function WorshipSettings({ worships }: { worships: any[] }) {
     );
 }
 
-export default function SettingsPage({ users, worships }: { users: any[], worships: any[] }) {
+import { saveProToken, saveFamilyName } from "./actions";
+import { Check } from "lucide-react";
+
+function FamilyNameSettings({ initialName }: { initialName: string }) {
+    const [name, setName] = useState(initialName);
+    const [saved, setSaved] = useState(false);
+
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-4">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300">Nama Keluarga</h3>
+            </div>
+            
+            <form action={async (formData) => {
+                await saveFamilyName(formData);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+            }} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nama Keluarga / Grup (Muncul di layar Mutabaah)</label>
+                    <div className="flex items-center gap-2">
+                        <input 
+                            name="familyName"
+                            type="text"
+                            placeholder="Keluarga Berkah"
+                            className="flex-1 p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
+                        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                            {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan</>}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+function ProSettings({ initialToken }: { initialToken: string }) {
+    const [token, setToken] = useState(initialToken);
+    const [saved, setSaved] = useState(false);
+
+    return (
+        <div className="space-y-4">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300">Financial Family (Pro Edition)</h3>
+            </div>
+            
+            <form action={async (formData) => {
+                await saveProToken(formData);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+            }} className="bg-linear-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/50 dark:to-blue-950/50 p-6 rounded-xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
+                <p className="text-sm text-indigo-800 dark:text-indigo-200">
+                    Masukkan Lisensi JannahFlow Pro (JWT Token) untuk mengaktifkan fitur Financial Family. 
+                    Token akan divalidasi berdasarkan domain aplikasi Anda.
+                </p>
+                <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase">License Token</label>
+                    <textarea 
+                        name="token"
+                        rows={3}
+                        placeholder="eyJhbG..."
+                        className="w-full p-3 border border-indigo-200 dark:border-indigo-800 rounded-lg text-sm bg-white dark:bg-slate-900 font-mono text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+                        value={token}
+                        onChange={(e) => setToken(e.target.value)}
+                    />
+                </div>
+                
+                <div className="flex items-center justify-between pt-2">
+                    <a 
+                        href="https://wa.me/6285220696117?text=Mau%20Fitur%20Pro%20JannahFlow" 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-medium"
+                    >
+                        Klik di sini untuk aktivasi via WhatsApp
+                    </a>
+                    
+                    <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                        {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan Token</>}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+export default function SettingsPage({ users, worships, initialProToken, initialFamilyName }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string }) {
+    return (
+        <div className="p-4 max-w-5xl mx-auto space-y-8 pb-20">
             <div>
-                <h2 className="text-2xl font-bold text-slate-800 mb-4">Pengaturan Keluarga</h2>
+                <FamilyNameSettings initialName={initialFamilyName} />
+            </div>
+
+            <hr className="border-slate-200 dark:border-slate-800" />
+
+            <div>
+                <ProSettings initialToken={initialProToken} />
+            </div>
+
+            <hr className="border-slate-200 dark:border-slate-800" />
+
+            <div>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Keluarga</h2>
                 <FamilySettings users={users} />
             </div>
             
-            <hr className="border-slate-200" />
+            <hr className="border-slate-200 dark:border-slate-800" />
             
             <div>
-                <h2 className="text-2xl font-bold text-slate-800 mb-4">Pengaturan Ibadah</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Ibadah</h2>
                 <WorshipSettings worships={worships} />
             </div>
         </div>

@@ -30,24 +30,24 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4">
-      <h2 className="text-2xl font-bold text-center text-slate-800 mb-8">Frequently Asked Questions</h2>
+    <div className="max-w-4xl mx-auto py-12 px-4">
+      <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-800 dark:text-slate-100 mb-8">Tanya Jawab (FAQ)</h2>
       <div className="space-y-4">
         {faqs.map((faq, index) => (
-          <div key={index} className="border border-slate-200 rounded-lg bg-white overflow-hidden shadow-sm">
+          <div key={index} className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 overflow-hidden shadow-sm transition-colors">
             <button
               onClick={() => setOpenIndex(openIndex === index ? null : index)}
-              className="w-full text-left p-4 flex justify-between items-center hover:bg-slate-50 transition-colors"
+              className="w-full text-left p-5 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
             >
-              <span className="font-medium text-slate-700">{faq.question}</span>
+              <span className="font-medium text-base text-slate-800 dark:text-slate-200">{faq.question}</span>
               {openIndex === index ? (
-                <ChevronUp className="w-5 h-5 text-indigo-500" />
+                <ChevronUp className="w-6 h-6 text-indigo-500 dark:text-indigo-400 shrink-0 ml-4" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-slate-400" />
+                <ChevronDown className="w-6 h-6 text-slate-400 dark:text-slate-500 shrink-0 ml-4" />
               )}
             </button>
             {openIndex === index && (
-              <div className="p-4 pt-0 text-slate-600 text-sm bg-slate-50 border-t border-slate-100">
+              <div className="p-5 pt-0 text-slate-600 dark:text-slate-400 text-base bg-white dark:bg-slate-900 leading-relaxed border-t border-slate-100 dark:border-slate-800">
                 {faq.answer}
               </div>
             )}

@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { login, setupFamily } from "../actions";
-import { User, Shield, Heart, Star, Smile, Check, Lock } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { User, Shield, Heart, Star, Smile, Lock, LucideIcon } from "lucide-react";
 
 // Map icon names to components
-const IconMap: Record<string, any> = {
+const IconMap: Record<string, LucideIcon> = {
   "user-check": Shield,
   "heart": Heart,
   "star": Star,
@@ -21,34 +20,34 @@ type UserType = {
   avatarUrl: string | null;
 };
 
-export function AuthUI({ users }: { users: UserType[] }) {
+export function AuthUI({ users, familyName = "Keluarga" }: { users: UserType[], familyName?: string }) {
   if (users.length === 0) {
     return <SetupForm />;
   }
 
-  return <UserGrid users={users} />;
+  return <UserGrid users={users} familyName={familyName} />;
 }
 
 function SetupForm() {
     const [pin, setPin] = useState("");
     const [loading, setLoading] = useState(false);
 
-    async function handleSubmit(formData: FormData) {
+    async function handleSubmit() {
         setLoading(true);
         await setupFamily("Keluarga", pin);
-        setLoading(false);
+        // Server action will redirect on success
     }
 
   return (
-    <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+    <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-xl shadow-lg p-8">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-slate-800">Selamat Datang!</h1>
-        <p className="text-slate-500">Mari atur profil keluarga Anda.</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200">Selamat Datang!</h1>
+        <p className="text-slate-500 dark:text-slate-400">Mari atur profil keluarga Anda.</p>
       </div>
 
       <form action={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
             PIN Orang Tua
           </label>
           <input
@@ -56,7 +55,7 @@ function SetupForm() {
             name="pin"
             value={pin}
             onChange={(e) => setPin(e.target.value)}
-            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="w-full p-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             placeholder="Masukkan 6 digit angka"
             required
             pattern="[0-9]*"
@@ -80,7 +79,7 @@ function SetupForm() {
   );
 }
 
-function UserGrid({ users }: { users: UserType[] }) {
+function UserGrid({ users, familyName }: { users: UserType[], familyName: string }) {
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
@@ -99,7 +98,7 @@ function UserGrid({ users }: { users: UserType[] }) {
             setLoading(false);
         }
         // If success, redirect happens in server action
-    } catch (e) {
+    } catch {
         setError("Terjadi kesalahan");
         setLoading(false);
     }
@@ -113,14 +112,14 @@ function UserGrid({ users }: { users: UserType[] }) {
         // Let's just auto-call login for child.
         // Check if I should show a confirmation "Masuk sebagai [Name]?"
          return (
-            <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-                 <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-xl shadow-lg p-8 text-center">
+                 <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
                     {(() => {
                         const Icon = IconMap[selectedUser.avatarUrl || "default"] || IconMap["default"];
-                        return <Icon suppressHydrationWarning className="w-12 h-12 text-blue-600" />;
+                        return <Icon suppressHydrationWarning className="w-12 h-12 text-blue-600 dark:text-blue-400" />;
                     })()}
                  </div>
-                 <h2 className="text-xl font-bold mb-6">Masuk sebagai {selectedUser.name}?</h2>
+                 <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-slate-100">Masuk sebagai {selectedUser.name}?</h2>
                  <form action={async () => {
                     await login(selectedUser.id);
                  }}>
@@ -130,7 +129,7 @@ function UserGrid({ users }: { users: UserType[] }) {
                      <button 
                         type="button"
                         onClick={() => setSelectedUser(null)}
-                        className="w-full py-3 mt-2 text-slate-500 hover:text-slate-700 transition-colors"
+                        className="w-full py-3 mt-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                      >
                         Kembali
                      </button>
@@ -141,20 +140,20 @@ function UserGrid({ users }: { users: UserType[] }) {
 
     // Parent login with PIN
     return (
-      <div className="max-w-sm w-full bg-white rounded-xl shadow-lg p-8">
+      <div className="max-w-sm w-full bg-white dark:bg-slate-900 rounded-xl shadow-lg p-8">
         <button 
             onClick={() => setSelectedUser(null)}
-            className="mb-4 text-slate-400 hover:text-slate-600 flex items-center gap-1 text-sm"
+            className="mb-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1 text-sm"
         >
             ← Kembali
         </button>
         
         <div className="text-center mb-6">
-             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Lock className="w-10 h-10 text-blue-600" />
+             <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Lock className="w-10 h-10 text-blue-600 dark:text-blue-400" />
              </div>
-          <h2 className="text-xl font-bold">Masukkan PIN</h2>
-          <p className="text-slate-500 text-sm">Untuk akses {selectedUser.name}</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Masukkan PIN</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Untuk akses {selectedUser.name}</p>
         </div>
 
         <div className="space-y-4">
@@ -169,7 +168,7 @@ function UserGrid({ users }: { users: UserType[] }) {
             onKeyDown={(e) => {
                 if (e.key === "Enter") handleLogin();
             }}
-            className="w-full text-center text-2xl tracking-widest p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="w-full text-center text-2xl tracking-widest p-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             placeholder="••••••"
             maxLength={6}
           />
@@ -189,10 +188,10 @@ function UserGrid({ users }: { users: UserType[] }) {
   }
 
   return (
-    <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+    <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-xl shadow-lg p-8">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-slate-800">Mutabaah Keluarga</h1>
-        <p className="text-slate-500">Siapa yang ingin mengisi mutabaah?</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200">Mutabaah {familyName}</h1>
+        <p className="text-slate-500 dark:text-slate-400">Siapa yang ingin mengisi mutabaah?</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -202,21 +201,21 @@ function UserGrid({ users }: { users: UserType[] }) {
           <button
             key={user.id}
             onClick={() => setSelectedUser(user)}
-            className="w-full flex flex-col items-center p-4 border-2 border-slate-100 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group"
+            className="w-full flex flex-col items-center p-4 border-2 border-slate-100 dark:border-slate-800 rounded-xl hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 transition-all group"
           >
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 transition-colors ${
-                user.role === 'parent' ? 'bg-indigo-100 group-hover:bg-indigo-200' : 'bg-green-100 group-hover:bg-green-200'
+                user.role === 'parent' ? 'bg-indigo-100 dark:bg-indigo-900/50 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-800' : 'bg-green-100 dark:bg-green-900/50 group-hover:bg-green-200 dark:group-hover:bg-green-800'
             }`}>
                 <Icon 
                     suppressHydrationWarning
                     className={`w-8 h-8 ${
-                     user.role === 'parent' ? 'text-indigo-600' : 'text-green-600'
+                     user.role === 'parent' ? 'text-indigo-600 dark:text-indigo-400' : 'text-green-600 dark:text-green-400'
                 }`} />
             </div>
-            <span className="font-medium text-slate-700 group-hover:text-blue-700">
+            <span className="font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-700 dark:group-hover:text-blue-400">
               {user.name}
             </span>
-            <span className="text-xs text-slate-400 capitalize">
+            <span className="text-xs text-slate-400 dark:text-slate-500 capitalize">
                 {user.role === 'parent' ? 'Orang Tua' : 'Anak'}
             </span>
           </button>

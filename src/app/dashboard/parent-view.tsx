@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { User, Trophy, Calendar } from "lucide-react";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
+import { User, Trophy } from "lucide-react";
 
 type FamilyMember = {
   id: number;
@@ -20,49 +17,49 @@ export function ParentView({ familyData }: { familyData: FamilyMember[] }) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {familyData.map((member) => (
-          <div key={member.id} className="bg-white rounded-xl shadow p-6 border border-slate-100">
+          <div key={member.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-6 border border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-4 mb-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                member.role === 'parent' ? 'bg-indigo-100 text-indigo-600' : 'bg-green-100 text-green-600'
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                member.role === 'parent' ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400'
               }`}>
                 {/* Simplified avatar for now, can use IconMap if passed or just generic */}
-                <User className="w-6 h-6" />
+                <User className="w-7 h-7" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-slate-800">{member.name}</h3>
-                <p className="text-xs text-slate-500 capitalize">{member.role}</p>
+                <h3 className="font-bold text-lg md:text-xl text-slate-800 dark:text-slate-100">{member.name}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 capitalize">{member.role === 'parent' ? 'Orang Tua' : 'Anak'}</p>
               </div>
               <div className="ml-auto text-right">
-                <div className="text-2xl font-bold text-blue-600">{member.points}</div>
-                <div className="text-xs text-slate-400">/ {member.targetPoints} Poin</div>
+                <div className="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400">{member.points}</div>
+                <div className="text-sm md:text-base text-slate-500 dark:text-slate-400">/ {member.targetPoints} Poin</div>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-slate-100 rounded-full h-3 mb-2">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 overflow-hidden">
               <div 
                 className={`h-3 rounded-full transition-all ${
-                    member.percentage >= 80 ? 'bg-green-500' : 
-                    member.percentage >= 50 ? 'bg-blue-500' : 'bg-orange-500'
+                    member.percentage >= 80 ? 'bg-emerald-500 dark:bg-emerald-400' : 
+                    member.percentage >= 50 ? 'bg-indigo-500 dark:bg-indigo-400' : 'bg-amber-500 dark:bg-amber-400'
                 }`} 
                 style={{ width: `${member.percentage}%` }}
               ></div>
             </div>
-            <div className="text-right text-sm font-medium text-slate-600">
+            <div className="text-right text-sm font-medium text-slate-600 dark:text-slate-400">
                 {member.percentage}% Tercapai
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-6">
-        <h3 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
-            <Trophy className="w-5 h-5" /> Notifikasi & Insight
+      <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl p-6 shadow-sm">
+        <h3 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2 flex items-center gap-2 text-lg">
+            <Trophy className="w-6 h-6" /> Notifikasi & Insight
         </h3>
-        <p className="text-blue-600 text-sm">
-            Total capaian keluarga hari ini adalah {
-                Math.round(familyData.reduce((acc, curr) => acc + curr.percentage, 0) / familyData.length)
-            }%. 
+        <p className="text-indigo-700 dark:text-indigo-400 text-base leading-relaxed">
+            Total capaian keluarga hari ini adalah <span className="font-bold">{
+                Math.round(familyData.reduce((acc, curr) => acc + curr.percentage, 0) / (familyData.length || 1))
+            }%</span>. 
             {familyData.some(m => m.percentage < 50) ? " Ayo semangati yang belum mencapai target!" : " Alhamdulillah, pertahankan!"}
         </p>
       </div>

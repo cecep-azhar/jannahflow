@@ -2,16 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Languages } from "lucide-react";
+import { Sun, Moon, Languages, Star } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 
-export function Header() {
-  const { theme, setTheme } = useTheme();
+export function Header({ familyName = "Family", isPro = false }: { familyName?: string, isPro?: boolean }) {
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [lang, setLang] = useState("id"); // Default ID
 
   // Prevent hydration mismatch
   useEffect(() => {
-    setMounted(true);
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
   }, []);
 
   const toggleLanguage = () => {
@@ -22,7 +24,7 @@ export function Header() {
     // I added a simple state, but without i18n lib, it won't change much effectively unless we use context.
     // Given the constraints, I will likely implement a simple context if needed later, 
     // but for now this fulfills "tambahkan ganti bahasa id dan en".
-    alert(`Bahasa diubah ke ${lang === 'id' ? 'English' : 'Indonesia'} (Simulasi)`);
+    toast(`Bahasa diubah ke ${lang === 'id' ? 'English' : 'Indonesia'} (Simulasi)`, 'success');
   };
 
   if (!mounted) return null;
@@ -30,7 +32,13 @@ export function Header() {
   return (
     <header className="w-full py-4 px-6 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
       <div className="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
-         Mutabaah Keluarga Muslim <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">MKM</span>
+         JannahFlow 
+         <span className="text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">{familyName}</span>
+         {isPro && (
+            <span className="flex items-center gap-0.5 text-[10px] bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-500 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">
+               <Star className="w-3 h-3 fill-current" /> PRO
+            </span>
+         )}
       </div>
       
       <div className="flex items-center gap-2">
@@ -40,15 +48,15 @@ export function Header() {
             title="Ganti Bahasa"
          >
             <Languages className="w-4 h-4" />
-            {lang.toUpperCase()}
+            {lang === "id" ? "IDN" : "ENG"}
          </button>
 
          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
             title="Ganti Tema"
          >
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {resolvedTheme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
          </button>
       </div>
     </header>

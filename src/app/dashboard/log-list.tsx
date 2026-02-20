@@ -5,8 +5,10 @@ import { toggleLog, updateCounter } from "./actions";
 import { Check, BookOpen, Sun, Moon, Sunrise, Sunset, MoonStar, HeartHandshake, Coins } from "lucide-react";
 import { cn } from "@/lib/utils"; // Need to create utils
 
+import { type LucideIcon } from "lucide-react";
+
 // Map icon names to components
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   BookOpen, Sun, Moon, Sunrise, Sunset, MoonStar, HeartHandshake, Coins
 };
 
@@ -40,40 +42,40 @@ export function LogList({ items, userId, date }: { items: Item[]; userId: number
 
   return (
     <div className="space-y-6">
-      {['wajib', 'sunnah'].map((category) => (
+      {['wajib', 'sunnah', 'kesalahan'].map((category) => (
         <div key={category}>
-           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">{category}</h3>
+           <h3 className={cn("text-sm font-bold uppercase tracking-wider mb-3", category === 'kesalahan' ? "text-red-400" : "text-slate-400")}>{category}</h3>
            <div className="space-y-3">
              {optimisticItems.filter(i => i.category === category).map((item) => {
                 const Icon = item.iconName && iconMap[item.iconName] ? iconMap[item.iconName] : Check;
                 
                 return (
-                  <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+                  <div key={item.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between transition-colors">
                      <div className="flex items-center gap-4">
-                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors", 
-                            item.logValue > 0 ? "bg-green-100 text-green-600" : "bg-slate-100 text-slate-400"
+                        <div className={cn("w-12 h-12 rounded-full flex items-center justify-center transition-colors shrink-0", 
+                            item.logValue > 0 ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
                         )}>
-                           <Icon className="w-5 h-5" />
+                           <Icon className="w-6 h-6" />
                         </div>
                         <div>
-                           <p className="font-medium text-slate-700">{item.name}</p>
-                           <p className="text-xs text-slate-400">{item.points} Poin</p>
+                           <p className="font-semibold text-base text-slate-700 dark:text-slate-200">{item.name}</p>
+                           <p className="text-sm text-slate-400 dark:text-slate-500">{item.points} Poin</p>
                         </div>
                      </div>
 
                      {item.type === 'boolean' ? (
                         <button 
                           onClick={() => handleToggle(item)}
-                          className={cn("w-12 h-7 rounded-full transition-colors relative",
-                              item.logValue > 0 ? "bg-green-500" : "bg-slate-200"
+                          className={cn("w-14 h-8 rounded-full transition-colors relative shrink-0",
+                              item.logValue > 0 ? (category === 'kesalahan' ? "bg-red-500" : "bg-emerald-500 dark:bg-emerald-500") : "bg-slate-200 dark:bg-slate-700"
                           )}
                         >
-                           <div className={cn("w-5 h-5 bg-white rounded-full shadow-md absolute top-1 transition-all", 
-                               item.logValue > 0 ? "left-6" : "left-1"
+                           <div className={cn("w-6 h-6 bg-white rounded-full shadow-md absolute top-1 transition-all", 
+                               item.logValue > 0 ? "left-7" : "left-1"
                            )}></div>
                         </button>
                      ) : (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 shrink-0">
                            <button 
                              onClick={() => {
                                const newValue = Math.max(0, (item.logValue || 0) - 1);
@@ -82,16 +84,16 @@ export function LogList({ items, userId, date }: { items: Item[]; userId: number
                                // Server action
                                updateCounter(userId, item.id, date, newValue);
                              }}
-                             className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"
+                             className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                            >-</button>
-                           <span className="text-sm font-semibold text-slate-700 w-8 text-center">{item.logValue || 0}</span>
+                           <span className="text-base font-semibold text-slate-700 dark:text-slate-200 w-8 text-center">{item.logValue || 0}</span>
                            <button 
                              onClick={() => {
                                const newValue = (item.logValue || 0) + 1;
                                addOptimisticItem({ id: item.id, value: newValue });
                                updateCounter(userId, item.id, date, newValue);
                              }}
-                             className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"
+                             className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                            >+</button>
                         </div>
                      )}

@@ -1,11 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { users, worships } from "@/db/schema";
+import { users, worships, systemStats } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 
 // --- Family Management ---
+
 
 export async function addFamilyMember(formData: FormData) {
   const name = formData.get("name") as string;
@@ -84,4 +85,38 @@ export async function updateWorshipItem(id: number, formData: FormData) {
 
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard");
+}
+
+// --- System Settings ---
+
+export async function saveProToken(formData: FormData) {
+  const token = formData.get("token") as string;
+  
+  // Insert or update
+  await db.insert(systemStats)
+    .values({ key: "pro_token", value: token })
+    .onConflictDoUpdate({
+      target: systemStats.key,
+      set: { value: token, lastUpdated: new Date().toISOString() }
+    });
+
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard");
+}
+
+export async function saveFamilyName(formData: FormData) {
+  const name = formData.get("familyName") as string;
+  
+  if (name && name.trim().length > 0) {
+      await db.insert(systemStats)
+        .values({ key: "family_name", value: name.trim() })
+        .onConflictDoUpdate({
+          target: systemStats.key,
+          set: { value: name.trim(), lastUpdated: new Date().toISOString() }
+        });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/auth");
+  revalidatePath("/dashboard/settings");
 }

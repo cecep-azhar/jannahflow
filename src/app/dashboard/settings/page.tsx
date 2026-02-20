@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { users, worships } from "@/db/schema";
+import { users, worships, systemStats } from "@/db/schema";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
@@ -26,6 +26,14 @@ export default async function Page() {
 
   const allUsers = await db.select().from(users);
   const allWorships = await db.select().from(worships);
+  
+  const tokenStat = await db.query.systemStats.findFirst({
+    where: eq(systemStats.key, "pro_token")
+  });
 
-  return <SettingsPage users={allUsers} worships={allWorships} />;
+  const nameStat = await db.query.systemStats.findFirst({
+    where: eq(systemStats.key, "family_name")
+  });
+
+  return <SettingsPage users={allUsers} worships={allWorships} initialProToken={tokenStat?.value || ""} initialFamilyName={nameStat?.value || "Keluarga"} />;
 }
