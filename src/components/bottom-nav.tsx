@@ -30,7 +30,7 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 relative transition-colors ${
-                isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+                isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-300"
               }`}
             >
               {item.pro && (

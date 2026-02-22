@@ -1,17 +1,17 @@
+import { ParentView } from "./parent-view";
+import { LogOut, HeartHandshake, Trophy } from "lucide-react";
+import { logout } from "../actions";
+import { FAQ } from "@/components/faq";
+import { Footer } from "@/components/footer";
+import { HeaderClock } from "@/components/header-clock";
+import Link from "next/link";
+import { quotes, users, mutabaahLogs, worships } from "@/db/schema";
 import { db } from "@/db";
-import { mutabaahLogs, users, worships, quotes } from "@/db/schema";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq, and, sql } from "drizzle-orm";
 import { format } from "date-fns";
 import { seedQuotes } from "@/db/seed-quotes";
-
-import { ParentView } from "./parent-view";
-import { LogOut, HeartHandshake } from "lucide-react";
-import { logout } from "../actions";
-import { FAQ } from "@/components/faq";
-import { Footer } from "@/components/footer";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -102,31 +102,28 @@ export default async function DashboardPage() {
 
       return (
         <div className="min-h-screen bg-slate-50 pb-20 text-slate-900">
-           <header className="bg-indigo-600 text-white p-6 rounded-b-3xl shadow-lg mb-6">
+           <header className="bg-emerald-600 text-white p-6 rounded-b-3xl shadow-lg mb-6">
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-bold">Hi, {user.name}</h1>
-                <p className="text-indigo-100">Dashboard</p>
+                <p className="text-emerald-100">Dashboard</p>
               </div>
-              <div className="flex gap-2">
-
-                 <form action={logout}>
-                    <button className="p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors text-white" title="Keluar">
-                    <LogOut className="w-5 h-5" />
-                    </button>
-                </form>
+              <div className="flex items-center gap-4">
+                <HeaderClock />
+                <div className="flex gap-2">
+                  <form action={logout}>
+                     <button className="p-2 bg-emerald-500 rounded-full hover:bg-emerald-400 transition-colors text-white" title="Keluar">
+                     <LogOut className="w-5 h-5" />
+                     </button>
+                  </form>
+                </div>
               </div>
             </div>
           </header>
 
           <main className="p-4 space-y-8">
-              <section>
-                  <h2 className="font-bold text-slate-700 mb-4">Laporan Keluarga</h2>
-                  <ParentView familyData={familyData} />
-              </section>
-              
-              <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-xl p-6 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 text-indigo-500">
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-6 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
                       <span className="text-8xl font-serif">&quot;</span>
                   </div>
                   <h3 className="font-bold text-slate-500 dark:text-slate-400 text-sm mb-2 uppercase tracking-wide flex items-center gap-2">
@@ -135,18 +132,35 @@ export default async function DashboardPage() {
                   {randomQuote ? (
                       <blockquote className="space-y-2 relative z-10 mt-2">
                           <p className="text-base md:text-lg text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">&quot;{randomQuote.text}&quot;</p>
-                          <footer className="text-sm font-bold text-indigo-600 dark:text-indigo-400">— {randomQuote.source}</footer>
+                          <footer className="text-sm font-bold text-emerald-600 dark:text-emerald-400">— {randomQuote.source}</footer>
                       </blockquote>
                   ) : (
                       <p className="text-sm text-slate-500 italic z-10 relative">&quot;Keluarga adalah anugerah terindah. Jaga dan rawatlah dengan iman.&quot;</p>
                   )}
               </div>
 
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-bold text-emerald-800 dark:text-emerald-300 mb-2 flex items-center gap-2 text-lg">
+                    <Trophy className="w-6 h-6" /> Notifikasi & Insight
+                </h3>
+                <p className="text-emerald-700 dark:text-emerald-400 text-base leading-relaxed">
+                    Total capaian keluarga hari ini adalah <span className="font-bold">{
+                        Math.round(familyData.reduce((acc, curr) => acc + curr.percentage, 0) / (familyData.length || 1))
+                    }%</span>. 
+                    {familyData.some(m => m.percentage < 50) ? " Ayo semangati yang belum mencapai target!" : " Alhamdulillah, pertahankan!"}
+                </p>
+              </div>
+
+              <section>
+                  <h2 className="font-bold text-slate-700 mb-4">Laporan Keluarga</h2>
+                  <ParentView familyData={familyData} />
+              </section>
+
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center shadow-sm">
                   <div className="text-4xl mb-3">📝</div>
                   <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Mutabaah Harian</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Yuk lengkapi amalan dan laporan mutabaah harianmu hari ini.</p>
-                  <a href="/mutabaah" className="inline-block bg-indigo-600 text-white font-medium px-6 py-2 rounded-full hover:bg-indigo-700 transition">
+                  <a href="/mutabaah" className="inline-block bg-emerald-600 text-white font-medium px-6 py-2 rounded-full hover:bg-emerald-700 transition">
                      Isi Mutabaah Saya
                   </a>
               </div>
@@ -225,27 +239,30 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20 text-slate-900">
       {/* Header */}
-      <header className="bg-blue-600 text-white p-6 rounded-b-3xl shadow-lg">
+      <header className="bg-emerald-600 text-white p-6 rounded-b-3xl shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold">Assalamu&apos;alaikum,</h1>
-            <p className="text-blue-100 text-lg">{user.name}</p>
+            <p className="text-emerald-100 text-lg">{user.name}</p>
           </div>
-          <form action={logout}>
-            <button className="p-2 bg-blue-500 rounded-full hover:bg-blue-400 transition-colors">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </form>
+          <div className="flex items-center gap-4">
+            <HeaderClock />
+            <form action={logout}>
+              <button className="p-2 bg-emerald-500 rounded-full hover:bg-emerald-400 transition-colors">
+                <LogOut className="w-5 h-5" />
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* Progress Card */}
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center justify-between">
           <div>
-            <p className="text-blue-100 text-sm mb-1">Capaian Hari Ini</p>
-            <div className="text-3xl font-bold">{totalPoints} <span className="text-base font-normal text-blue-200">/ {maxPoints} Poin</span></div>
+            <p className="text-emerald-100 text-sm mb-1">Capaian Hari Ini</p>
+            <div className="text-3xl font-bold">{totalPoints} <span className="text-base font-normal text-emerald-200">/ {maxPoints} Poin</span></div>
           </div>
           <div className="relative w-16 h-16 flex items-center justify-center">
-             <div className="absolute inset-0 rounded-full border-4 border-blue-400/30"></div>
+             <div className="absolute inset-0 rounded-full border-4 border-emerald-400/30"></div>
              <div className="text-sm font-bold">{percentage}%</div>
           </div>
         </div>
@@ -253,12 +270,8 @@ export default async function DashboardPage() {
 
       {/* Content */}
       <main className="p-4">
-        <h2 className="text-slate-800 font-semibold mb-4 flex items-center gap-2">
-          <span>📅</span> {format(new Date(), "dd MMMM yyyy")}
-        </h2>
-
-        <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-xl p-6 shadow-sm mb-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10 text-indigo-500">
+        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-6 shadow-sm mb-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
                 <span className="text-8xl font-serif">&quot;</span>
             </div>
             <h3 className="font-bold text-slate-500 dark:text-slate-400 text-sm mb-2 uppercase tracking-wide flex items-center gap-2">
@@ -267,18 +280,22 @@ export default async function DashboardPage() {
             {randomQuote ? (
                 <blockquote className="space-y-2 relative z-10 mt-2">
                     <p className="text-base md:text-lg text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">&quot;{randomQuote.text}&quot;</p>
-                    <footer className="text-sm font-bold text-indigo-600 dark:text-indigo-400">— {randomQuote.source}</footer>
+                    <footer className="text-sm font-bold text-emerald-600 dark:text-emerald-400">— {randomQuote.source}</footer>
                 </blockquote>
             ) : (
                 <p className="text-sm text-slate-500 italic z-10 relative">&quot;Keluarga adalah anugerah terindah. Jaga dan rawatlah dengan iman.&quot;</p>
             )}
         </div>
+
+        <h2 className="text-slate-800 font-semibold mb-4 flex items-center gap-2">
+          <span>📅</span> {format(new Date(), "dd MMMM yyyy")}
+        </h2>
         
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center shadow-sm">
             <div className="text-4xl mb-3">📝</div>
             <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Mutabaah Harian</h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Yuk lengkapi amalan dan mutabaah harianmu agar target poin tercapai.</p>
-            <a href="/mutabaah" className="inline-block bg-blue-600 text-white font-medium px-6 py-2 rounded-full hover:bg-blue-700 transition">
+            <a href="/mutabaah" className="inline-block bg-emerald-600 text-white font-medium px-6 py-2 rounded-full hover:bg-emerald-700 transition">
                Isi Mutabaah Sekarang
             </a>
         </div>

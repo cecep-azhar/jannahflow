@@ -29,10 +29,10 @@ export function Header({ familyName = "Family", isPro = false }: { familyName?: 
     <header className="w-full py-4 px-6 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
       <div className="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
          JannahFlow 
-         <span className="text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">{familyName}</span>
+         <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">{familyName}</span>
          {isPro && (
             <span className="flex items-center gap-0.5 text-[10px] bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-500 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">
-               <Star className="w-3 h-3 fill-current" /> PRO
+               <Star className="w-3 h-3 fill-current" />
             </span>
          )}
       </div>

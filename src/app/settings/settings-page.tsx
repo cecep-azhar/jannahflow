@@ -30,7 +30,7 @@ function FamilySettings({ users }: { users: UserData[] }) {
                 {!showForm && (
                      <button 
                         onClick={() => setIsAdding(true)}
-                        className="flex items-center gap-1 bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 text-sm"
+                        className="flex items-center gap-1 bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 text-sm"
                     >
                         <Plus className="w-4 h-4" /> Tambah Anggota
                     </button>
@@ -48,7 +48,7 @@ function FamilySettings({ users }: { users: UserData[] }) {
                         setIsAdding(false);
                     }
                 }} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
-                    <h4 className="font-semibold text-sm text-indigo-700 dark:text-indigo-400">{editingItem ? `Edit ${editingItem.name}` : 'Tambah Anggota Baru'}</h4>
+                    <h4 className="font-semibold text-sm text-emerald-700 dark:text-emerald-400">{editingItem ? `Edit ${editingItem.name}` : 'Tambah Anggota Baru'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input 
                             name="name" 
@@ -91,7 +91,7 @@ function FamilySettings({ users }: { users: UserData[] }) {
                         >
                             Batal
                         </button>
-                        <button type="submit" className="bg-indigo-600 text-white px-4 py-1 rounded text-sm flex items-center gap-1">
+                        <button type="submit" className="bg-emerald-600 text-white px-4 py-1 rounded text-sm flex items-center gap-1">
                             <Save className="w-4 h-4" /> Simpan
                         </button>
                     </div>
@@ -105,7 +105,7 @@ function FamilySettings({ users }: { users: UserData[] }) {
                     return (
                     <div key={u.id} className="flex justify-between items-center p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${u.role === 'parent' ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400'}`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${u.role === 'parent' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400' : 'bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400'}`}>
                                 <Icon className="w-5 h-5" />
                             </div>
                             <div className="min-w-0 flex-1">
@@ -231,7 +231,7 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
                                 <div className="min-w-0 flex-1">
                                     <div className={`font-medium truncate ${isPenalty ? "text-red-700 dark:text-red-400" : "text-slate-700 dark:text-slate-300"}`}>{w.name}</div>
                                     <div className="flex gap-2 text-xs">
-                                        <span className={`px-2 py-0.5 rounded-full ${w.category === 'wajib' ? 'bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400' : 'bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 mr-1'}`}>
+                                        <span className={`px-2 py-0.5 rounded-full ${w.category === 'wajib' ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400' : 'bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 mr-1'}`}>
                                             {w.category}
                                         </span>
                                         <span className={`font-bold ${isPenalty ? "text-red-600 dark:text-red-500" : "text-green-600 dark:text-green-500"}`}>
@@ -292,11 +292,11 @@ function FamilyNameSettings({ initialName }: { initialName: string }) {
                             name="familyName"
                             type="text"
                             placeholder="Keluarga Berkah"
-                            className="flex-1 p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="flex-1 p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
-                        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                        <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors">
                             {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan</>}
                         </button>
                     </div>
@@ -347,18 +347,18 @@ function ProSettings({ initialToken }: { initialToken: string }) {
                 } finally {
                     setIsSaving(false);
                 }
-            }} className="bg-linear-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/50 dark:to-blue-950/50 p-6 rounded-xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
-                <p className="text-sm text-indigo-800 dark:text-indigo-200">
+            }} className="bg-linear-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-900/20 p-6 rounded-xl border border-emerald-100 dark:border-emerald-900/50 space-y-4">
+                <p className="text-sm text-emerald-800 dark:text-emerald-200">
                     Masukkan Lisensi JannahFlow Pro (JWT Token) untuk mengaktifkan fitur Financial Family. 
                     Token akan divalidasi berdasarkan domain aplikasi Anda.
                 </p>
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase">License Token</label>
+                    <label className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase">License Token</label>
                     <textarea 
                         name="token"
                         rows={3}
                         placeholder="eyJhbG..."
-                        className="w-full p-3 border border-indigo-200 dark:border-indigo-800 rounded-lg text-sm bg-white dark:bg-slate-900 font-mono text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full p-3 border border-emerald-200 dark:border-emerald-800 rounded-lg text-sm bg-white dark:bg-slate-900 font-mono text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
                         value={token}
                         onChange={(e) => setToken(e.target.value)}
                     />
@@ -369,7 +369,7 @@ function ProSettings({ initialToken }: { initialToken: string }) {
                         href="https://wa.me/6285220696117?text=Mau%20Fitur%20Pro%20JannahFlow" 
                         target="_blank" 
                         rel="noreferrer"
-                        className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-medium"
+                        className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline font-medium"
                     >
                         Klik di sini untuk aktivasi via WhatsApp
                     </a>
@@ -385,7 +385,7 @@ function ProSettings({ initialToken }: { initialToken: string }) {
                                 {isRevoking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Hapus Lisensi
                             </button>
                         )}
-                        <button disabled={isSaving || isRevoking} type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed flex-1 sm:flex-none">
+                        <button disabled={isSaving || isRevoking} type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed flex-1 sm:flex-none">
                             {isSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Sedang Mengaktivasi</> : <><Check className="w-4 h-4" /> Aktivasi</>}
                         </button>
                     </div>

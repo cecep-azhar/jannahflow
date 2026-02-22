@@ -26,10 +26,10 @@ export type JournalEntry = {
 }
 
 const AVATAR_COLORS = [
-    "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300",
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300",
     "bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300",
     "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300",
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300",
+    "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300",
     "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300",
     "bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300",
 ]
@@ -149,10 +149,11 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-slate-900 dark:text-slate-100">
             {/* Header Area */}
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 px-6 pt-8 pb-12 rounded-b-[2rem] shadow-lg mb-6 relative overflow-hidden">
+            {/* Header Area */}
+            <div className="bg-linear-to-br from-emerald-500 to-teal-600 px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
                 <h1 className="text-3xl font-bold text-white mb-2">{t.journalTitle}</h1>
-                <p className="text-indigo-100 text-sm">{t.journalSubtitle}</p>
+                <p className="text-emerald-100 text-sm">{t.journalSubtitle}</p>
             </div>
 
             <div className="max-w-2xl mx-auto px-4 -mt-10 relative z-10">
@@ -180,13 +181,13 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                         <div className="flex gap-2">
                             <div className="relative group">
-                                <button type="button" className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title={t.pickMood}>
+                                <button type="button" className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title={t.pickMood}>
                                     <SmilePlus className="w-5 h-5" />
                                 </button>
                                 <div className="absolute left-0 bottom-full mb-2 hidden group-hover:flex flex-wrap bg-white dark:bg-slate-800 shadow-xl rounded-xl p-2 gap-1 border border-slate-100 dark:border-slate-700 z-20 max-w-[260px]">
                                     {moodOptions.map(m => (
                                         <button key={m} type="button" onClick={() => setMood(m)}
-                                            className={`px-3 py-1.5 text-sm rounded-lg whitespace-nowrap ${mood === m ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
+                                            className={`px-3 py-1.5 text-sm rounded-lg whitespace-nowrap ${mood === m ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' : 'hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
                                             {m}
                                         </button>
                                     ))}
@@ -195,7 +196,7 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
 
                             <input type="file" accept="image/*" title="Upload gambar" aria-label="Upload gambar" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
                             <button type="button" onClick={() => fileInputRef.current?.click()}
-                                className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title={t.attachMedia}>
+                                className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title={t.attachMedia}>
                                 <ImagePlus className="w-5 h-5" />
                             </button>
                         </div>
@@ -203,7 +204,7 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
                         <div className="flex items-center gap-3">
                             {mood && <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{mood}</span>}
                             <button type="submit" disabled={!content.trim() || isSubmitting}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full font-medium flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg">
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full font-medium flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg">
                                 <Send className="w-4 h-4" />
                                 {isSubmitting ? t.sending : t.posting}
                             </button>
@@ -213,7 +214,7 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
 
                 {/* ── Date Filter ── */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 px-4 py-3 mb-6 flex flex-wrap items-center gap-3">
-                    <CalendarDays className="w-4 h-4 text-indigo-500 shrink-0" />
+                    <CalendarDays className="w-4 h-4 text-emerald-500 shrink-0" />
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-400 shrink-0">{t.filterDate}:</span>
                     <input
                         type="date"
@@ -221,10 +222,10 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
                         onChange={(e) => handleDateChange(e.target.value)}
                         title="Filter tanggal"
                         aria-label="Filter tanggal"
-                        className="text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        className="text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     />
                     <button type="button" onClick={setToday}
-                        className="text-sm px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-medium transition-colors">
+                        className="text-sm px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 font-medium transition-colors">
                         {t.today}
                     </button>
                     {filterDate && (

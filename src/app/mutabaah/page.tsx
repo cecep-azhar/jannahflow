@@ -61,9 +61,9 @@ export default async function MutabaahPage() {
 
   return (
     <div className="p-4 max-w-5xl mx-auto space-y-6">
-      <div className="bg-indigo-600 dark:bg-indigo-800 text-white p-6 rounded-2xl shadow-lg">
+      <div className="bg-emerald-600 dark:bg-emerald-800 text-white p-6 rounded-2xl shadow-lg">
         <h1 className="text-2xl font-bold mb-1">Pengisian Mutabaah</h1>
-        <p className="text-indigo-100">{format(new Date(), "EEEE, dd MMMM yyyy")}</p>
+        <p className="text-emerald-100">{format(new Date(), "EEEE, dd MMMM yyyy")}</p>
         
         <div className="mt-4 inline-block bg-white/20 px-3 py-1.5 rounded-lg text-sm font-medium">
           Capaian Hari Ini: {totalPoints} / {maxPoints} Poin

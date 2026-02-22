@@ -27,7 +27,7 @@ export default function SetupPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-slate-900">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
-        <div className="bg-indigo-600 p-6 text-white text-center">
+        <div className="bg-emerald-600 p-6 text-white text-center">
           <h1 className="text-2xl font-bold">Selamat Datang!</h1>
           <p className="opacity-90 mt-2">Mari siapkan aplikasi Mutabaah Keluarga Anda.</p>
         </div>
@@ -36,7 +36,7 @@ export default function SetupPage() {
           {/* Parents Section */}
           <div className="space-y-4">
             <h2 className="font-semibold text-slate-700 flex items-center gap-2">
-              <User className="w-5 h-5 text-indigo-600" /> Data Orang Tua
+              <User className="w-5 h-5 text-emerald-600" /> Data Orang Tua
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -45,7 +45,7 @@ export default function SetupPage() {
                   name="fatherName" 
                   required 
                   placeholder="Contoh: Abi Budi" 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900"
                 />
               </div>
               <div>
@@ -54,20 +54,20 @@ export default function SetupPage() {
                   name="motherName" 
                   required 
                   placeholder="Contoh: Umi Siti" 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm text-slate-600 mb-1 flex items-center gap-1">
-                <Lock className="w-4 h-4" /> PIN Orang Tua
+              <label className="block text-sm text-slate-600 mb-1">
+                <Lock className="inline w-4 h-4 mr-1" /> PIN Orang Tua
               </label>
               <input 
                 name="pin" 
                 required 
                 placeholder="123456" 
-                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-mono tracking-widest text-center text-slate-900"
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none font-mono tracking-widest text-center text-slate-900"
               />
               <p className="text-xs text-slate-500 mt-1">PIN ini digunakan Ayah & Bunda untuk login dan settings.</p>
             </div>
@@ -84,7 +84,7 @@ export default function SetupPage() {
               <button 
                 type="button" 
                 onClick={addChild}
-                className="text-sm text-indigo-600 font-medium flex items-center gap-1 hover:text-indigo-800"
+                className="text-sm text-emerald-600 font-medium flex items-center gap-1 hover:text-emerald-800"
               >
                 <Plus className="w-4 h-4" /> Tambah Anak
               </button>
@@ -99,7 +99,7 @@ export default function SetupPage() {
                     onChange={(e) => updateChild(index, e.target.value)}
                     placeholder={`Nama Anak ke-${index + 1}`}
                     required
-                    className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900"
+                    className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900"
                   />
                   {children.length > 1 && (
                     <button 
@@ -124,7 +124,7 @@ export default function SetupPage() {
                 name="useTemplate" 
                 defaultChecked 
                 id="useTemplate"
-                className="mt-1 w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500" 
+                className="mt-1 w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500" 
               />
               <label htmlFor="useTemplate" className="text-sm text-slate-700 cursor-pointer select-none">
                 <span className="font-semibold block text-slate-900">Gunakan Template Ibadah Standar</span>
@@ -135,7 +135,7 @@ export default function SetupPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <span>Memproses...</span>

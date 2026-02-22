@@ -41,7 +41,7 @@ export function FAQ() {
             >
               <span className="font-medium text-base text-slate-800 dark:text-slate-200">{faq.question}</span>
               {openIndex === index ? (
-                <ChevronUp className="w-6 h-6 text-indigo-500 dark:text-indigo-400 shrink-0 ml-4" />
+                <ChevronUp className="w-6 h-6 text-emerald-500 dark:text-emerald-400 shrink-0 ml-4" />
               ) : (
                 <ChevronDown className="w-6 h-6 text-slate-400 dark:text-slate-500 shrink-0 ml-4" />
               )}

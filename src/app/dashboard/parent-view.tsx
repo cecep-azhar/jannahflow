@@ -52,17 +52,6 @@ export function ParentView({ familyData }: { familyData: FamilyMember[] }) {
         ))}
       </div>
 
-      <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl p-6 shadow-sm">
-        <h3 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2 flex items-center gap-2 text-lg">
-            <Trophy className="w-6 h-6" /> Notifikasi & Insight
-        </h3>
-        <p className="text-indigo-700 dark:text-indigo-400 text-base leading-relaxed">
-            Total capaian keluarga hari ini adalah <span className="font-bold">{
-                Math.round(familyData.reduce((acc, curr) => acc + curr.percentage, 0) / (familyData.length || 1))
-            }%</span>. 
-            {familyData.some(m => m.percentage < 50) ? " Ayo semangati yang belum mencapai target!" : " Alhamdulillah, pertahankan!"}
-        </p>
-      </div>
     </div>
   );
 }
