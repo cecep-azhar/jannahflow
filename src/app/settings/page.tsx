@@ -36,7 +36,19 @@ export default async function Page() {
       where: eq(systemStats.key, "family_name")
     });
 
-    return <SettingsPage users={allUsers} worships={allWorships} initialProToken={tokenStat?.value || ""} initialFamilyName={nameStat?.value || "Keluarga"} />;
+    const inspirasiStat = await db.query.systemStats.findFirst({
+        where: eq(systemStats.key, "show_inspirasi")
+    });
+    // Default to true if not set
+    const showInspirasi = inspirasiStat ? inspirasiStat.value === "1" : true;
+
+    return <SettingsPage 
+      users={allUsers} 
+      worships={allWorships} 
+      initialProToken={tokenStat?.value || ""} 
+      initialFamilyName={nameStat?.value || "Keluarga"} 
+      showInspirasi={showInspirasi}
+    />;
   } catch (e) {
     console.error("Settings page DB error:", e);
     redirect("/setup");

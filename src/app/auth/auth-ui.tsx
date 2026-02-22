@@ -99,7 +99,7 @@ function UserGrid({ users, familyName }: { users: UserType[], familyName: string
         }
         // If success, redirect happens in server action
     } catch {
-        setError("Terjadi kesalahan");
+        setError("Alhamdulillah");
         setLoading(false);
     }
   }

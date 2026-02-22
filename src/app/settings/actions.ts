@@ -144,3 +144,18 @@ export async function revokeProToken() {
   revalidatePath("/dashboard");
   return { success: true, message: "Lisensi Pro berhasil dihapus." };
 }
+
+export async function saveInspirasiSetting(formData: FormData) {
+  const enabled = formData.get("show_inspirasi") === "true";
+  const strValue = enabled ? "1" : "0";
+
+  await db.insert(systemStats)
+    .values({ key: "show_inspirasi", value: strValue })
+    .onConflictDoUpdate({
+      target: systemStats.key,
+      set: { value: strValue, lastUpdated: new Date().toISOString() }
+    });
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+}

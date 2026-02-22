@@ -5,13 +5,17 @@ import { FAQ } from "@/components/faq";
 import { Footer } from "@/components/footer";
 import { HeaderClock } from "@/components/header-clock";
 import Link from "next/link";
-import { quotes, users, mutabaahLogs, worships } from "@/db/schema";
+import { users, mutabaahLogs, worships } from "@/db/schema";
 import { db } from "@/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq, and, sql } from "drizzle-orm";
-import { format } from "date-fns";
-import { seedQuotes } from "@/db/seed-quotes";
+import { format, getDayOfYear } from "date-fns";
+import { systemStats } from "@/db/schema";
+
+import { eq, and, sql } from "drizzle-orm";
+import { format, getDayOfYear } from "date-fns";
+import { systemStats, quotes as quotesSchema } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -82,21 +86,24 @@ export default async function DashboardPage() {
       // Fetch Quotes with auto-seed fallback
       let allQuotes: { id: number; text: string; source: string; category: string }[] = [];
       try {
-          allQuotes = await db.select().from(quotes);
+          allQuotes = await db.select().from(quotesSchema);
       } catch {
           console.warn("Quotes table missing, auto-creating...");
           await db.run(sql`CREATE TABLE IF NOT EXISTS \`quotes\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`text\` text NOT NULL, \`source\` text NOT NULL, \`category\` text NOT NULL)`);
-          
-          for (let i = 0; i < seedQuotes.length; i += 50) {
-              const chunk = seedQuotes.slice(i, i + 50);
-              await db.insert(quotes).values(chunk);
-          }
-          allQuotes = await db.select().from(quotes);
       }
+      
+      allQuotes = await db.select().from(quotesSchema);
+
+      const inspirasiStat = await db.query.systemStats.findFirst({
+        where: eq(systemStats.key, "show_inspirasi")
+      });
+      const showInspirasi = inspirasiStat ? inspirasiStat.value === "1" : true;
 
       let randomQuote = null;
       if (allQuotes.length > 0) {
-          const seed = Array.from(today + userId).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          const dayOfYear = getDayOfYear(new Date());
+          const year = new Date().getFullYear();
+          const seed = dayOfYear + year;
           randomQuote = allQuotes[seed % allQuotes.length];
       }
 
@@ -121,22 +128,24 @@ export default async function DashboardPage() {
           </header>
 
           <main className="p-4 space-y-8">
-              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-6 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
-                      <span className="text-8xl font-serif">&quot;</span>
-                  </div>
-                  <h3 className="font-bold text-slate-500 dark:text-slate-400 text-sm mb-2 uppercase tracking-wide flex items-center gap-2">
-                      <span>💡</span> Inspirasi Harian
-                  </h3>
-                  {randomQuote ? (
-                      <blockquote className="space-y-2 relative z-10 mt-2">
-                          <p className="text-base md:text-lg text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">&quot;{randomQuote.text}&quot;</p>
-                          <footer className="text-sm font-bold text-emerald-600 dark:text-emerald-400">— {randomQuote.source}</footer>
-                      </blockquote>
-                  ) : (
-                      <p className="text-sm text-slate-500 italic z-10 relative">&quot;Keluarga adalah anugerah terindah. Jaga dan rawatlah dengan iman.&quot;</p>
-                  )}
-              </div>
+              {showInspirasi && (
+                <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-6 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
+                        <span className="text-8xl font-serif">&quot;</span>
+                    </div>
+                    <h3 className="font-bold text-slate-500 dark:text-slate-400 text-sm mb-2 uppercase tracking-wide flex items-center gap-2">
+                        <span>💡</span> Inspirasi Harian
+                    </h3>
+                    {randomQuote ? (
+                        <blockquote className="space-y-2 relative z-10 mt-2">
+                            <p className="text-base md:text-lg text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">&quot;{randomQuote.text}&quot;</p>
+                            <footer className="text-sm font-bold text-emerald-600 dark:text-emerald-400">— {randomQuote.source}</footer>
+                        </blockquote>
+                    ) : (
+                        <p className="text-sm text-slate-500 italic z-10 relative">&quot;Keluarga adalah anugerah terindah. Jaga dan rawatlah dengan iman.&quot;</p>
+                    )}
+                </div>
+              )}
 
               <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-6 shadow-sm">
                 <h3 className="font-bold text-emerald-800 dark:text-emerald-300 mb-2 flex items-center gap-2 text-lg">
@@ -219,17 +228,24 @@ export default async function DashboardPage() {
   // Fetch Quotes with auto-seed fallback
   let allQuotes: { id: number; text: string; source: string; category: string }[] = [];
   try {
-      allQuotes = await db.select().from(quotes);
+      allQuotes = await db.select().from(quotesSchema);
   } catch {
       // Table already created by parent view if hit first, but handle concurrency just in case
       try {
           await db.run(sql`CREATE TABLE IF NOT EXISTS \`quotes\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`text\` text NOT NULL, \`source\` text NOT NULL, \`category\` text NOT NULL)`);
       } catch {}
   }
+
+  const inspirasiStat = await db.query.systemStats.findFirst({
+    where: eq(systemStats.key, "show_inspirasi")
+  });
+  const showInspirasi = inspirasiStat ? inspirasiStat.value === "1" : true;
   
   let randomQuote = null;
   if (allQuotes.length > 0) {
-      const seed = Array.from(today + userId).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const dayOfYear = getDayOfYear(new Date());
+      const year = new Date().getFullYear();
+      const seed = dayOfYear + year;
       randomQuote = allQuotes[seed % allQuotes.length];
   }
 
@@ -270,22 +286,24 @@ export default async function DashboardPage() {
 
       {/* Content */}
       <main className="p-4">
-        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-6 shadow-sm mb-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
-                <span className="text-8xl font-serif">&quot;</span>
-            </div>
-            <h3 className="font-bold text-slate-500 dark:text-slate-400 text-sm mb-2 uppercase tracking-wide flex items-center gap-2">
-                <span>💡</span> Inspirasi Harian
-            </h3>
-            {randomQuote ? (
-                <blockquote className="space-y-2 relative z-10 mt-2">
-                    <p className="text-base md:text-lg text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">&quot;{randomQuote.text}&quot;</p>
-                    <footer className="text-sm font-bold text-emerald-600 dark:text-emerald-400">— {randomQuote.source}</footer>
-                </blockquote>
-            ) : (
-                <p className="text-sm text-slate-500 italic z-10 relative">&quot;Keluarga adalah anugerah terindah. Jaga dan rawatlah dengan iman.&quot;</p>
-            )}
-        </div>
+        {showInspirasi && (
+          <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-6 shadow-sm mb-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
+                  <span className="text-8xl font-serif">&quot;</span>
+              </div>
+              <h3 className="font-bold text-slate-500 dark:text-slate-400 text-sm mb-2 uppercase tracking-wide flex items-center gap-2">
+                  <span>💡</span> Inspirasi Harian
+              </h3>
+              {randomQuote ? (
+                  <blockquote className="space-y-2 relative z-10 mt-2">
+                      <p className="text-base md:text-lg text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">&quot;{randomQuote.text}&quot;</p>
+                      <footer className="text-sm font-bold text-emerald-600 dark:text-emerald-400">— {randomQuote.source}</footer>
+                  </blockquote>
+              ) : (
+                  <p className="text-sm text-slate-500 italic z-10 relative">&quot;Keluarga adalah anugerah terindah. Jaga dan rawatlah dengan iman.&quot;</p>
+              )}
+          </div>
+        )}
 
         <h2 className="text-slate-800 font-semibold mb-4 flex items-center gap-2">
           <span>📅</span> {format(new Date(), "dd MMMM yyyy")}

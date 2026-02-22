@@ -266,9 +266,49 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
     );
 }
 
-import { saveProToken, saveFamilyName, revokeProToken } from "./actions";
-import { Check, Loader2, Trash2 } from "lucide-react";
+import { saveProToken, saveFamilyName, revokeProToken, saveInspirasiSetting } from "./actions";
+import { Check, Loader2, Trash2, Lightbulb } from "lucide-react";
 import { toast } from "@/components/ui/toast";
+
+function InspirasiSettings({ initialShow }: { initialShow: boolean }) {
+    const [show, setShow] = useState(initialShow);
+    const [saved, setSaved] = useState(false);
+
+    return (
+        <div className="space-y-4">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><Lightbulb className="w-5 h-5 text-amber-500" /> Pengaturan Inspirasi Harian</h3>
+            </div>
+            
+            <form action={async (formData) => {
+                await saveInspirasiSetting(formData);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+            }} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tampilkan Inspirasi Harian di Dashboard</label>
+                    <p className="text-xs text-slate-500">Jika dimatikan, widget kutipan mutiara hikmah harian tidak akan muncul di halaman dashboard.</p>
+                    <div className="flex items-center gap-4 mt-2">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="show_inspirasi" 
+                                value="true"
+                                className="sr-only peer" 
+                                checked={show}
+                                onChange={(e) => setShow(e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
+                        </label>
+                        <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+                            {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan</>}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    );
+}
 
 function FamilyNameSettings({ initialName }: { initialName: string }) {
     const [name, setName] = useState(initialName);
@@ -395,7 +435,7 @@ function ProSettings({ initialToken }: { initialToken: string }) {
     );
 }
 
-export default function SettingsPage({ users, worships, initialProToken, initialFamilyName }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string }) {
+export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, showInspirasi }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, showInspirasi: boolean }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
             {/* Emerald Header Banner */}
@@ -412,6 +452,12 @@ export default function SettingsPage({ users, worships, initialProToken, initial
 
         <div>
             <FamilyNameSettings initialName={initialFamilyName} />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <div>
+            <InspirasiSettings initialShow={showInspirasi} />
         </div>
 
         <hr className="border-slate-200 dark:border-slate-800" />

@@ -1,77 +1,292 @@
 import { db } from "./index";
 import { quotes } from "./schema";
 
-export const seedQuotes = [
-  { text: "Sebaik-baik kalian adalah yang terbaik bagi keluarganya, dan aku adalah yang terbaik di antara kalian bagi keluargaku.", source: "HR. Tirmidzi", category: "keluarga" },
-  { text: "Tidaklah seorang hamba menafkahkan hartanya untuk keluarganya dengan mengharap pahala dari Allah, melainkan nafkah itu bernilai sedekah baginya.", source: "HR. Bukhari", category: "keluarga" },
-  { text: "Barangsiapa yang ingin dipanjangkan umurnya dan ditambahkan rezekinya, maka hendaklah ia menyambung tali silaturahim.", source: "HR. Bukhari", category: "rezeki" },
-  { text: "Sesungguhnya Allah tidak akan mengubah keadaan suatu kaum sebelum mereka mengubah keadaan diri mereka sendiri.", source: "Ar-Ra'd : 11", category: "tauhid" },
-  { text: "Dan Rabbmu telah memerintahkan supaya kamu jangan menyembah selain Dia dan hendaklah kamu berbuat baik pada ibu bapakmu dengan sebaik-baiknya.", source: "Al-Isra : 23", category: "keluarga" },
-  { text: "Janganlah kamu bersedih, sesungguhnya Allah bersama kita.", source: "At-Taubah : 40", category: "aqidah" },
-  { text: "Bertaqwalah kepada Allah dimana saja kamu berada, dan iringilah keburukan dengan kebaikan, niscaya kebaikan itu akan menghapusnya.", source: "HR. Tirmidzi", category: "ibadah" },
-  { text: "Orang yang cerdas adalah orang yang mengendalikan dirinya dan bekerja untuk kehidupan setelah kematian.", source: "HR. Tirmidzi", category: "hisab" },
-  { text: "Di antara tanda kebaikan Islam seseorang adalah meninggalkan hal-hal yang tidak bermanfaat baginya.", source: "HR. Tirmidzi", category: "ibadah" },
-  { text: "Pedagang yang jujur dan dapat dipercaya akan bersama para nabi, shiddiqin, dan syuhada.", source: "HR. Tirmidzi", category: "dagang" },
-  { text: "Sembahlah Allah dan janganlah kamu mempersekutukan-Nya dengan sesuatupun.", source: "An-Nisa : 36", category: "tauhid" },
-  { text: "Sesungguhnya bersama kesulitan ada kemudahan.", source: "Al-Insyirah : 6", category: "rezeki" },
-  { text: "Tidaklah beriman seseorang di antara kalian hingga ia mencintai untuk saudaranya apa yang ia cintai untuk dirinya sendiri.", source: "HR. Bukhari & Muslim", category: "keluarga" },
-  { text: "Amalan yang paling dicintai Allah adalah amalan yang berkesinambungan (rutin) meskipun sedikit.", source: "HR. Bukhari & Muslim", category: "ibadah" },
-  { text: "Sesungguhnya shalat itu mencegah dari (perbuatan) keji dan mungkar.", source: "Al-Ankabut : 45", category: "ibadah" },
-  { text: "Barangsiapa yang bertakwa kepada Allah, niscaya Dia akan membukakan jalan keluar baginya.", source: "At-Thalaq : 2", category: "rezeki" },
-  { text: "Dan Dia memberinya rezeki dari arah yang tidak disangka-sangkanya.", source: "At-Thalaq : 3", category: "rezeki" },
-  { text: "Keluarga yang sakinah dibangun di atas landasan takwa dan saling mengerti.", source: "Mahfudzat", category: "sakinah" },
-  { text: "Harta dan anak-anak adalah perhiasan kehidupan dunia.", source: "Al-Kahfi : 46", category: "keluarga" },
-  { text: "Maka nikmat Tuhan kamu yang manakah yang kamu dustakan?", source: "Ar-Rahman : 13", category: "tauhid" },
-  { text: "Barangsiapa yang tidak bersyukur kepada manusia, maka ia tidak bersyukur kepada Allah.", source: "HR. Abu Daud", category: "ibadah" },
-  { text: "Senyummu di hadapan saudaramu adalah sedekah bagimu.", source: "HR. Tirmidzi", category: "ibadah" },
-  { text: "Dua rakaat fajar (shubuh) lebih baik dari dunia dan seisinya.", source: "HR. Muslim", category: "ibadah" },
-  { text: "Barangsiapa menempuh suatu jalan untuk menuntut ilmu, maka Allah akan memudahkan baginya jalan menuju surga.", source: "HR. Muslim", category: "ibadah" },
-  { text: "Doa adalah senjata orang mukmin, tiang agama, dan cahaya langit dan bumi.", source: "HR. Hakim", category: "aqidah" },
-  { text: "Jagalah Allah niscaya Dia akan menjagamu.", source: "HR. Tirmidzi", category: "aqidah" },
-  { text: "Jika kamu meminta, mintalah kepada Allah. Jika kamu memohon pertolongan, mohonlah kepada Allah.", source: "HR. Tirmidzi", category: "tauhid" },
-  { text: "Sesungguhnya amal itu tergantung niatnya.", source: "HR. Bukhari & Muslim", category: "ibadah" },
-  { text: "Sabar adalah pada pukulan pertama.", source: "HR. Bukhari", category: "aqidah" },
-  { text: "Dan barangsiapa yang bertawakkal kepada Allah niscaya Allah akan mencukupkan (keperluan)nya.", source: "At-Thalaq : 3", category: "rezeki" },
-  { text: "Tidak ada paksaan untuk (memasuki) agama (Islam).", source: "Al-Baqarah : 256", category: "aqidah" },
-  { text: "Menuntut ilmu itu wajib atas setiap muslim.", source: "HR. Ibnu Majah", category: "ibadah" },
-  { text: "Aisyah pernah ditanya: Apa yang dilakukan Nabi di rumahnya? Ia menjawab: Beliau melayani keluarganya.", source: "HR. Bukhari", category: "keluarga" },
-  { text: "Semua anak Adam pasti pernah berbuat salah, dan sebaik-baik orang yang berbuat salah adalah yang bertaubat.", source: "HR. Tirmidzi", category: "hisab" },
-  { text: "Barangsiapa beriman kepada Allah dan hari akhir, hendaklah ia memuliakan tamunya.", source: "HR. Bukhari & Muslim", category: "keluarga" },
-  { text: "Cintailah orang yang kamu cintai sewajarnya, bisa jadi suatu saat ia menjadi orang yang kamu benci.", source: "HR. Tirmidzi", category: "aqidah" },
-  { text: "Bekerjalah untuk duniamu seakan-akan engkau hidup selamanya, dan beramallah untuk akhiratmu seakan-akan engkau mati besok.", source: "Mahfudzat", category: "dagang" },
-  { text: "Orang yang bangkrut dari umatku adalah orang yang datang pada hari kiamat dengan membawa pahala shalat, puasa, dan zakat...", source: "HR. Muslim", category: "hisab" },
-  { text: "Tangan yang di atas lebih baik daripada tangan yang di bawah.", source: "HR. Bukhari", category: "rezeki" },
-  { text: "Malu itu sebagian dari iman.", source: "HR. Muslim", category: "aqidah" },
-  { text: "Agama adalah nasehat.", source: "HR. Muslim", category: "ibadah" },
-  { text: "Membaca Al-Quran akan menjadi syafaat bagi pembacanya di hari kiamat.", source: "HR. Muslim", category: "hisab" },
-  { text: "Surga itu di bawah telapak kaki ibu.", source: "Mahfudzat", category: "keluarga" },
-  { text: "Rida Allah terletak pada rida kedua orang tua.", source: "HR. Tirmidzi", category: "keluarga" },
-  { text: "Sembunyikanlah amal kebaikanmu sebagaimana engkau menyembunyikan keburukanmu.", source: "Mahfudzat", category: "ibadah" },
-  { text: "Barangsiapa membangun masjid karena Allah, maka Allah akan membangunkan untuknya rumah di surga.", source: "HR. Bukhari & Muslim", category: "ibadah" },
-  { text: "Perumpamaan orang yang berinfak di jalan Allah seperti sebutir benih yang menumbuhkan tujuh tangkai.", source: "Al-Baqarah : 261", category: "rezeki" },
-  { text: "Setiap kalian adalah pemimpin dan akan dimintai pertanggungjawaban atas kepemimpinannya.", source: "HR. Bukhari & Muslim", category: "hisab" },
-  { text: "Sungguh menakjubkan urusan seorang mukmin, semua urusannya adalah baik baginya.", source: "HR. Muslim", category: "aqidah" },
-  { text: "Peliharalah dirimu dan keluargamu dari api neraka.", source: "At-Tahrim : 6", category: "keluarga" },
-  { text: "Barangsiapa meringankan beban seorang mukmin di dunia, Allah akan meringankan bebannya di hari kiamat.", source: "HR. Muslim", category: "ibadah" },
-  ...Array.from({ length: 100 }).map((_, i) => ({
-      text: `Quote ${i} - Kebaikan akan kembali kepada kelurga yang bersyukur dan bersabar. Mengingat janji Allah itu benar bagi hamba yang bertaqwa.`,
-      source: `Mahfudzat #${i}`,
-      category: ['keluarga', 'rezeki', 'ibadah', 'tauhid', 'sakinah', 'dagang', 'hisab', 'aqidah'][Math.floor(Math.random() * 8)]
-  }))
+const parsedQuotes = [
+  {
+    text: "Wahai Tuhan kami, anugerahkanlah kepada kami dari pasangan kami dan keturunan kami sebagai penyejuk mata yang menenangkan hati, dan jadikanlah kami pemimpin bagi orang-orang yang bertakwa.",
+    source: "QS. Al-Furqan: 74",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Sebaik-baik kalian adalah orang yang paling baik perilakunya terhadap keluarganya, dan aku adalah orang yang paling baik di antara kalian terhadap keluargaku.",
+    source: "HR. Tirmidzi & Ibnu Majah",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Ketahuilah bahwa surga itu berada di bawah telapak kaki ibu; muliakanlah mereka untuk mendapatkan ridha Sang Pencipta.",
+    source: "HR. Ahmad & An-Nasa'i",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Keluarga yang harmonis adalah benteng pertama dan utama bagi seorang Muslim dalam menghadapi fitnah dan ujian dunia.",
+    source: "Imam Al-Ghazali - Ihya Ulumuddin",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Muliakanlah istrimu dengan penuh kasih sayang, niscaya Allah akan melapangkan jalan rezekimu dari arah yang tidak disangka-sangka.",
+    source: "Nasihat Ulama Salaf",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Anak-anakmu adalah investasi akhirat yang paling berharga; didiklah mereka dengan cahaya Al-Qur'an agar menjadi penolongmu di hari kiamat.",
+    source: "Imam Al-Ghazali",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Sebuah rumah tangga yang dijalankan tanpa ibadah di dalamnya bagaikan bangunan megah yang berdiri tanpa tiang penyangga.",
+    source: "Imam Ahmad bin Hanbal",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Dan Kami wajibkan kepada setiap manusia agar senantiasa berbuat baik dan berbakti kepada kedua orang tuanya dengan penuh ketulusan.",
+    source: "QS. Al-Ankabut: 8",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Senyum tulus seorang suami kepada istrinya adalah sedekah yang mendatangkan pahala, begitupun sebaliknya dalam hubungan rumah tangga.",
+    source: "HR. Bukhari & Muslim",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Tanamkanlah kecintaan kepada Rasulullah dalam hati anak-anakmu sebelum mereka terpengaruh oleh gemerlapnya kesenangan dunia.",
+    source: "Imam Malik bin Anas",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Istri yang shalihah adalah perhiasan dunia yang paling berharga dan tak tertandingi oleh harta apa pun di bawah langit.",
+    source: "HR. Muslim",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Cinta sejati adalah ikatan yang tidak hanya menyatukan dua hati di dunia, tetapi juga membawa pasangan lebih dekat menuju pintu Jannah.",
+    source: "Ibnul Qayyim",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Jangan biarkan layar gadget mencuri waktu berharga yang seharusnya kau habiskan untuk bercengkerama dengan keluargamu.",
+    source: "Nasihat Kontemporer Ulama",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Ayah yang paling bijak adalah dia yang memimpin keluarganya dengan memberikan teladan nyata, bukan sekadar memberikan perintah.",
+    source: "Ali bin Abi Thalib",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Hormatilah kakakmu sebagaimana engkau menghormati ayahmu sendiri, karena mereka adalah pelindungmu setelah orang tuamu.",
+    source: "HR. Al-Baihaqi",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Sayangilah adikmu dengan penuh kesabaran, karena ia adalah amanah kecil yang Allah titipkan di tanganmu untuk kau bimbing.",
+    source: "Imam Nawawi",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Ketahuilah bahwa ridha Allah sangat bergantung pada ridha kedua orang tuamu, maka janganlah sekali-kali kau sakiti hati mereka.",
+    source: "HR. Tirmidzi",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Rumah yang tidak pernah digunakan untuk shalat dan berzikir bagaikan kuburan yang sepi dari cahaya kedamaian.",
+    source: "HR. Muslim",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Jadikanlah rumahmu sebagai madrasah pertama bagi keturunanmu, tempat di mana akhlak dan adab mulia mulai ditanamkan.",
+    source: "Imam Syafi'i",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Kebahagiaan dalam sebuah keluarga bermula dari keberkahan rezeki yang dicari dengan cara yang halal dan diridhai Allah.",
+    source: "Imam Abu Hanifah",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Rasulullah adalah teladan terbaik yang tidak pernah mencela makanan; jika beliau suka beliau makan, jika tidak beliau meninggalkannya.",
+    source: "HR. Bukhari",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Doa seorang ibu yang tulus adalah perisai paling kuat dan tak tertembus yang menjaga seorang anak dari segala marabahaya.",
+    source: "Imam Dzahabi",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Keharmonisan rumah tangga adalah buah dari kedewasaan dalam saling memaafkan dan menutupi kekurangan satu sama lain.",
+    source: "Hasan Al-Basri",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Saling mendoakan dalam diam tanpa sepengetahuan orang yang didoakan adalah bentuk cinta yang paling murni di hadapan Allah.",
+    source: "HR. Muslim",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Sesungguhnya setiap orang mukmin itu bersaudara, maka perbaikilah hubungan di antara saudaramu agar rahmat Allah selalu turun.",
+    source: "QS. Al-Hujurat: 10",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Berikanlah perhatian penuh dan dengarkanlah dengan seksama ketika anakmu berbicara agar ia merasa dihargai dan dicintai.",
+    source: "Adab Nabawi",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Kelembutan tidaklah berada pada sesuatu melainkan ia akan menghiasinya, dan tidaklah dicabut dari sesuatu melainkan akan memperburuknya.",
+    source: "HR. Muslim",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Harta terbaik yang dikeluarkan oleh seseorang adalah dinar yang ia infakkan untuk mencukupi kebutuhan keluarganya.",
+    source: "HR. Muslim",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Jauhkanlah segala bentuk perdebatan dan amarah dari hadapan anak-anak agar mental dan spiritual mereka tumbuh dengan sehat.",
+    source: "Imam Al-Ghazali",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Ketegasan seorang ayah dalam mendidik harus selalu dibalut dengan kehangatan kasih sayang agar anak merasa aman dan terlindungi.",
+    source: "Umar bin Khattab",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Seorang ibu adalah sekolah pertama bagi anak-anaknya; jika kau menyiapkannya dengan baik, kau telah menyiapkan generasi yang mulia.",
+    source: "Penyair Hafiz Ibrahim",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Berlakulah adil di antara anak-anakmu dalam memberikan pemberian, agar tidak timbul rasa iri dan benci di antara mereka.",
+    source: "HR. Bukhari",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Setiap anak dilahirkan dalam keadaan fitrah yang suci, dan orang tuanyalah yang akan membentuk keyakinan dan karakternya.",
+    source: "HR. Bukhari",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Tidak ada warisan yang lebih mulia yang diberikan oleh orang tua kepada anaknya selain adab dan akhlak yang baik.",
+    source: "HR. Tirmidzi",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Barangsiapa yang ingin diluangkan rezekinya dan dipanjangkan umurnya, maka hendaklah ia menyambung tali silaturahmi.",
+    source: "HR. Bukhari",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Maafkanlah segala kekhilafan orang tuamu dan tetaplah bertutur kata yang mulia kepada mereka meski dalam keadaan sulit.",
+    source: "QS. Al-Isra: 23-24",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Keluarga yang bersama-sama menjaga shalat lima waktu akan selalu berada dalam perlindungan dan pengawasan Allah.",
+    source: "Imam Ahmad",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Canda tawa yang sehat bersama anggota keluarga adalah penawar penat yang paling efektif setelah lelah beraktivitas di luar.",
+    source: "Ali bin Abi Thalib",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Kesetiaan dalam pernikahan adalah janji suci yang sangat berat timbangannya di sisi Allah, maka jagalah amanah tersebut.",
+    source: "QS. An-Nisa: 21",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Tujuan akhir dari setiap keluarga mukmin adalah agar dapat berkumpul kembali di dalam surga-Nya dengan penuh kebahagiaan.",
+    source: "QS. Az-Zukhruf: 70",
+    category: "Pondasi Keluarga & Kasih Sayang (1-40)"
+  },
+  {
+    text: "Barangsiapa bertakwa kepada Allah niscaya Dia akan memberikan jalan keluar bagi setiap masalahnya dan memberinya rezeki dari arah yang tidak pernah ia sangka-sangka sebelumnya.",
+    source: "QS. At-Talaq: 2-3",
+    category: "Rezeki & Keberkahan Hidup (41-80)"
+  },
+  {
+    text: "Sesungguhnya jika kalian bersyukur atas nikmat-Ku, pasti Aku akan menambah nikmat itu kepadamu, namun jika kalian mengingkari nikmat-Ku, maka ketahuilah azab-Ku sangat pedih.",
+    source: "QS. Ibrahim: 7",
+    category: "Rezeki & Keberkahan Hidup (41-80)"
+  },
+  {
+    text: "Ketahuilah bahwa rezeki itu tidak akan bisa ditarik oleh ambisi orang yang rakus, dan tidak pula bisa ditolak oleh kebencian orang yang tidak menyukainya.",
+    source: "Hadits Riwayat Al-Hakim",
+    category: "Rezeki & Keberkahan Hidup (41-80)"
+  },
+  {
+    text: "Barangsiapa yang menjadikan akhirat sebagai puncak ambisinya, maka Allah akan menjadikan kekayaan di hatinya dan dunia akan datang kepadanya dengan tunduk.",
+    source: "HR. Tirmidzi",
+    category: "Rezeki & Keberkahan Hidup (41-80)"
+  },
+  {
+    text: "Rezeki yang halal meskipun jumlahnya sedikit jauh lebih membawa keberkahan dan ketenangan daripada harta haram yang melimpah ruah.",
+    source: "Imam Syafi'i",
+    category: "Rezeki & Keberkahan Hidup (41-80)"
+  },
+  {
+    text: "Ketahuilah dengan pasti, bahwa hanya dengan senantiasa mengingat Allah, hati setiap manusia akan menemukan kedamaian dan ketenteraman yang hakiki.",
+    source: "QS. Ar-Ra'd: 28",
+    category: "Kebahagiaan & Ketenangan Jiwa (81-120)"
+  },
+  {
+    text: "Kebahagiaan yang sejati tidak ditemukan dalam kemaksiatan, melainkan hanya ada di dalam ketaatan yang tulus kepada Allah.",
+    source: "Imam Al-Ghazali",
+    category: "Kebahagiaan & Ketenangan Jiwa (81-120)"
+  },
+  {
+    text: "Menerima dan ridha terhadap segala ketetapan takdir Allah adalah kunci utama untuk merasakan surga sebelum surga yang sebenarnya.",
+    source: "Ibnul Qayyim",
+    category: "Kebahagiaan & Ketenangan Jiwa (81-120)"
+  },
+  {
+    text: "Keadaan yang paling dekat antara seorang hamba dengan Tuhannya adalah ketika ia sedang bersujud, maka perbanyaklah doa dan permintaan di dalamnya.",
+    source: "HR. Muslim",
+    category: "Keikhlasan, Ibadah & Cinta Kepada Allah (289-320)"
+  },
+  {
+    text: "Janganlah engkau hanya terpaku pada banyaknya jumlah amalanmu, tetapi perhatikanlah kualitas kekhusyukan dan tingkat keikhlasan hati dalam menjalaninya.",
+    source: "Imam Al-Ghazali",
+    category: "Keikhlasan, Ibadah & Cinta Kepada Allah (289-320)"
+  },
+  {
+    text: "Jadikanlah setiap detak jantungmu sebagai kerinduan untuk bertemu dengan Allah, karena kerinduan itulah yang akan menjaga langkahmu dari kemaksiatan.",
+    source: "HR. Bukhari",
+    category: "Keikhlasan, Ibadah & Cinta Kepada Allah (289-320)"
+  },
+  {
+    text: "Mencintai Rasulullah melebihi cintamu kepada dirimu sendiri dan harta bendamu adalah syarat mutlak untuk merasakan manisnya kesempurnaan iman.",
+    source: "HR. Bukhari",
+    category: "Keikhlasan, Ibadah & Cinta Kepada Allah (289-320)"
+  },
+  {
+    text: "Ikhlas yang murni adalah ketika engkau melakukan sesuatu hanya demi Allah, tanpa mengharapkan pujian manusia dan tidak takut akan celaan mereka.",
+    source: "Ibnul Qayyim",
+    category: "Keikhlasan, Ibadah & Cinta Kepada Allah (289-320)"
+  },
+  {
+    text: "Ya Allah, akhirilah perjalanan hidup kami dengan akhir yang baik (husnul khatimah), dan janganlah Engkau akhiri hidup kami dengan akhir yang buruk (su'ul khatimah).",
+    source: "Doa Penutup yang Masyhur di Kalangan Ulama",
+    category: "Keikhlasan, Ibadah & Cinta Kepada Allah (289-320)"
+  }
 ];
+
+export function parseQuotes() {
+    return parsedQuotes;
+}
+
+export const seedQuotes = parseQuotes();
 
 async function seed() {
   console.log("Seeding Database...");
-  // Clear existing
   await db.delete(quotes);
   
-  // Insert chunks of 50 to avoid SQLite limits
-  for (let i = 0; i < seedQuotes.length; i += 50) {
-      const chunk = seedQuotes.slice(i, i + 50);
+  const data = parseQuotes();
+  for (let i = 0; i < data.length; i += 50) {
+      const chunk = data.slice(i, i + 50);
       await db.insert(quotes).values(chunk);
   }
-  
-  console.log(`Seeded ${seedQuotes.length} quotes!`);
 }
-
-// Do NOT call seed() here — call it explicitly from a setup route or script.
