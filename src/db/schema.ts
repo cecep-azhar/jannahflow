@@ -74,6 +74,15 @@ export const assets = sqliteTable("assets", {
   assetType: text("asset_type", { enum: ["PROPERTY", "GOLD", "VEHICLE", "STOCK"] }).notNull(),
 });
 
+export const savingGoals = sqliteTable("saving_goals", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  targetAmount: integer("target_amount").notNull(),
+  currentAmount: integer("current_amount").notNull().default(0),
+  deadline: text("deadline"), // e.g., "Dzulhijjah 1446" or null
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const quotes = sqliteTable("quotes", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   text: text("text").notNull(),

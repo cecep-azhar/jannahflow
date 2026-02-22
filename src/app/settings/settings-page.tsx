@@ -397,29 +397,44 @@ function ProSettings({ initialToken }: { initialToken: string }) {
 
 export default function SettingsPage({ users, worships, initialProToken, initialFamilyName }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string }) {
     return (
-        <div className="p-4 max-w-5xl mx-auto space-y-8 pb-20">
-            <div>
-                <FamilyNameSettings initialName={initialFamilyName} />
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
+            {/* Emerald Header Banner */}
+            <div className="bg-linear-to-br from-emerald-500 to-teal-600 px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div className="relative z-10">
+                    <h1 className="text-3xl font-bold text-white mb-1">Pengaturan</h1>
+                    <p className="text-emerald-100 text-sm">Kelola anggota keluarga, ibadah, lisensi Pro, dan preferensi aplikasi.</p>
+                </div>
             </div>
 
-            <hr className="border-slate-200 dark:border-slate-800" />
+            <div className="max-w-5xl mx-auto px-4 -mt-8 relative z-10">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-6 space-y-8">
 
-            <div>
-                <ProSettings initialToken={initialProToken} />
+        <div>
+            <FamilyNameSettings initialName={initialFamilyName} />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <div>
+            <ProSettings initialToken={initialProToken} />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <div>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Keluarga</h2>
+            <FamilySettings users={users} />
+        </div>
+        
+        <hr className="border-slate-200 dark:border-slate-800" />
+        
+        <div>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Ibadah</h2>
+            <WorshipSettings worships={worships} />
+        </div>
+
             </div>
-
-            <hr className="border-slate-200 dark:border-slate-800" />
-
-            <div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Keluarga</h2>
-                <FamilySettings users={users} />
-            </div>
-            
-            <hr className="border-slate-200 dark:border-slate-800" />
-            
-            <div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Ibadah</h2>
-                <WorshipSettings worships={worships} />
             </div>
         </div>
     );

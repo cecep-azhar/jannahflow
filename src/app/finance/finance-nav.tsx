@@ -8,16 +8,16 @@ export function FinanceNav() {
     const pathname = usePathname();
 
     const tabs = [
-        { name: "Ringkasan", href: "/finance", icon: <BadgeDollarSign className="w-5 h-5 shrink-0" /> },
-        { name: "Dompet", href: "/finance/accounts", icon: <Wallet className="w-5 h-5 shrink-0" /> },
-        { name: "Transaksi", href: "/finance/transactions", icon: <ArrowRightLeft className="w-5 h-5 shrink-0" /> },
-        { name: "Anggaran", href: "/finance/budgets", icon: <CreditCard className="w-5 h-5 shrink-0" /> },
-        { name: "Target Tabungan", href: "/finance/saving-goals", icon: <Target className="w-5 h-5 shrink-0" /> },
-        { name: "Aset & Zakat", href: "/finance/assets", icon: <ShieldAlert className="w-5 h-5 shrink-0" /> },
+        { name: "Ringkasan", href: "/finance", icon: <BadgeDollarSign className="w-4 h-4 shrink-0" /> },
+        { name: "Dompet", href: "/finance/accounts", icon: <Wallet className="w-4 h-4 shrink-0" /> },
+        { name: "Transaksi", href: "/finance/transactions", icon: <ArrowRightLeft className="w-4 h-4 shrink-0" /> },
+        { name: "Anggaran", href: "/finance/budgets", icon: <CreditCard className="w-4 h-4 shrink-0" /> },
+        { name: "Tabungan", href: "/finance/saving-goals", icon: <Target className="w-4 h-4 shrink-0" /> },
+        { name: "Aset & Zakat", href: "/finance/assets", icon: <ShieldAlert className="w-4 h-4 shrink-0" /> },
     ];
 
     return (
-        <div className="flex overflow-x-auto pb-4 gap-3 hide-scrollbar snap-x relative items-center">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             {tabs.map((tab) => {
                 const isActive = pathname === tab.href;
                 return (
@@ -25,14 +25,15 @@ export function FinanceNav() {
                         key={tab.name}
                         href={tab.href}
                         className={`
-                            flex items-center gap-2 px-5 py-3 rounded-full text-base font-semibold transition-all whitespace-nowrap shadow-sm snap-start select-none
-                            ${isActive 
-                                ? "bg-indigo-600 text-white border border-indigo-700 shadow-indigo-500/30" 
-                                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30"
+                            flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-xs font-semibold transition-all select-none text-center
+                            ${isActive
+                                ? "bg-emerald-600 text-white shadow-md shadow-emerald-500/20"
+                                : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
                             }
                         `}
                     >
-                        {tab.icon} {tab.name}
+                        {tab.icon}
+                        <span className="leading-tight">{tab.name}</span>
                     </Link>
                 );
             })}

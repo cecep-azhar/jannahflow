@@ -93,61 +93,69 @@ export default function ReportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 text-slate-900 pb-24">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-24">
 
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h1 className="text-2xl font-bold text-slate-800">Laporan & Analitik Terpadu</h1>
+      {/* Emerald Header Banner */}
+      <div className="bg-linear-to-br from-emerald-500 to-teal-600 px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold text-white mb-1">Laporan & Analitik</h1>
+          <p className="text-emerald-100 text-sm">Ringkasan mutabaah, keuangan, dan jurnal keluarga dalam satu tempat.</p>
         </div>
+      </div>
 
-        <div className="flex border-b border-slate-200 mb-6 gap-6">
+      <div className="max-w-6xl mx-auto px-4 -mt-8 relative z-10">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+
+        <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 px-6">
             <button 
                 onClick={() => { setActiveTab("mutabaah"); setData(null); }}
-                className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'mutabaah' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'mutabaah' ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
                 Laporan Mutabaah
             </button>
             <button 
                 onClick={() => { setActiveTab("finance"); setFinanceData(null); }}
-                className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'finance' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'finance' ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
                 Laporan Keuangan
             </button>
             <button 
                 onClick={() => { setActiveTab("jurnal"); setFinanceData(null); setData(null); }}
-                className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'jurnal' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'jurnal' ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
                 Laporan Jurnal
             </button>
         </div>
         
-        <div className="flex flex-wrap gap-4 mb-6 items-end bg-slate-50 p-4 rounded-lg">
+        <div className="p-6">
+        <div className="flex flex-wrap gap-4 mb-6 items-end bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Dari Tanggal</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Dari Tanggal</label>
             <input 
               type="date" 
               value={startDate} 
               onChange={(e) => setStartDate(e.target.value)}
               title="Dari Tanggal"
               aria-label="Dari Tanggal"
-              className="p-2 border rounded-lg text-slate-900 bg-white"
+              className="p-2 border dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Sampai Tanggal</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sampai Tanggal</label>
             <input 
               type="date" 
               value={endDate} 
               onChange={(e) => setEndDate(e.target.value)}
               title="Sampai Tanggal"
               aria-label="Sampai Tanggal"
-              className="p-2 border rounded-lg text-slate-900 bg-white"
+              className="p-2 border dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900"
             />
           </div>
           <button 
             onClick={handleFetch}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 shrink-0"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 shrink-0"
           >
             {loading ? "Memuat..." : "Tampilkan Laporan"}
           </button>
@@ -337,7 +345,9 @@ export default function ReportPage() {
                 </div>
              </div>
         )}
-      </div>
+      </div> {/* end p-6 */}
+      </div> {/* end card */}
+      </div> {/* end max-w-6xl */}
       <BottomNav />
     </div>
   );

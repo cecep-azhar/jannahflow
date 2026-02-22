@@ -101,22 +101,21 @@ export default async function DashboardPage() {
       }
 
       return (
-        <div className="min-h-screen bg-slate-50 pb-20 text-slate-900">
-           <header className="bg-emerald-600 text-white p-6 rounded-b-3xl shadow-lg mb-6">
-            <div className="flex justify-between items-center">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20 text-slate-900 dark:text-slate-100">
+           <header className="bg-linear-to-br from-emerald-500 to-teal-600 text-white px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+            <div className="flex justify-between items-center relative z-10">
               <div>
-                <h1 className="text-2xl font-bold">Hi, {user.name}</h1>
+                <h1 className="text-3xl font-bold">Hi, {user.name}</h1>
                 <p className="text-emerald-100">Dashboard</p>
               </div>
               <div className="flex items-center gap-4">
                 <HeaderClock />
-                <div className="flex gap-2">
-                  <form action={logout}>
-                     <button className="p-2 bg-emerald-500 rounded-full hover:bg-emerald-400 transition-colors text-white" title="Keluar">
-                     <LogOut className="w-5 h-5" />
-                     </button>
-                  </form>
-                </div>
+                <form action={logout}>
+                   <button className="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors" title="Keluar">
+                   <LogOut className="w-5 h-5" />
+                   </button>
+                </form>
               </div>
             </div>
           </header>
@@ -165,7 +164,7 @@ export default async function DashboardPage() {
                   </a>
               </div>
 
-              <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-900/20 border border-rose-100 dark:border-rose-900/50 rounded-xl p-6 text-center shadow-sm relative overflow-hidden">
+              <div className="bg-linear-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-900/20 border border-rose-100 dark:border-rose-900/50 rounded-xl p-6 text-center shadow-sm relative overflow-hidden">
                   <div className="absolute -right-4 -top-4 opacity-10">
                       <HeartHandshake className="w-32 h-32 text-rose-500" />
                   </div>
@@ -237,18 +236,19 @@ export default async function DashboardPage() {
   const percentage = Math.min(100, Math.round((totalPoints / maxPoints) * 100));
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 text-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20 text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <header className="bg-emerald-600 text-white p-6 rounded-b-3xl shadow-lg">
-        <div className="flex justify-between items-center mb-6">
+      <header className="bg-linear-to-br from-emerald-500 to-teal-600 text-white px-6 pt-8 pb-14 rounded-b-4xl shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+        <div className="flex justify-between items-center mb-6 relative z-10">
           <div>
-            <h1 className="text-2xl font-bold">Assalamu&apos;alaikum,</h1>
+            <h1 className="text-3xl font-bold">Assalamu&apos;alaikum,</h1>
             <p className="text-emerald-100 text-lg">{user.name}</p>
           </div>
           <div className="flex items-center gap-4">
             <HeaderClock />
             <form action={logout}>
-              <button className="p-2 bg-emerald-500 rounded-full hover:bg-emerald-400 transition-colors">
+              <button className="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors">
                 <LogOut className="w-5 h-5" />
               </button>
             </form>
@@ -256,13 +256,13 @@ export default async function DashboardPage() {
         </div>
 
         {/* Progress Card */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center justify-between">
+        <div className="bg-white/15 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center justify-between relative z-10">
           <div>
             <p className="text-emerald-100 text-sm mb-1">Capaian Hari Ini</p>
             <div className="text-3xl font-bold">{totalPoints} <span className="text-base font-normal text-emerald-200">/ {maxPoints} Poin</span></div>
           </div>
           <div className="relative w-16 h-16 flex items-center justify-center">
-             <div className="absolute inset-0 rounded-full border-4 border-emerald-400/30"></div>
+             <div className="absolute inset-0 rounded-full border-4 border-white/30"></div>
              <div className="text-sm font-bold">{percentage}%</div>
           </div>
         </div>

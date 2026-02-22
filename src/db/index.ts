@@ -5,8 +5,12 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
 
-const url = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "file:local.db";
-const authToken = process.env.TURSO_AUTH_TOKEN;
+// Priority: Turso online DB → local SQLite fallback
+const tursoUrl = process.env.TURSO_DATABASE_URL;
+const tursoToken = process.env.TURSO_AUTH_TOKEN;
+
+const url = tursoUrl || "file:database/jannahflow.db";
+const authToken = tursoUrl ? tursoToken : undefined;
 
 if (!url) {
   throw new Error("Database URL is not set");

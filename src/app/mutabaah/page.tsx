@@ -60,26 +60,31 @@ export default async function MutabaahPage() {
   const maxPoints = allWorships.reduce((acc, curr) => acc + (curr.points > 0 ? curr.points : 0), 0);
 
   return (
-    <div className="p-4 max-w-5xl mx-auto space-y-6">
-      <div className="bg-emerald-600 dark:bg-emerald-800 text-white p-6 rounded-2xl shadow-lg">
-        <h1 className="text-2xl font-bold mb-1">Pengisian Mutabaah</h1>
-        <p className="text-emerald-100">{format(new Date(), "EEEE, dd MMMM yyyy")}</p>
-        
-        <div className="mt-4 inline-block bg-white/20 px-3 py-1.5 rounded-lg text-sm font-medium">
-          Capaian Hari Ini: {totalPoints} / {maxPoints} Poin
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-slate-900 dark:text-slate-100">
+      {/* Emerald Header — matches Jurnal style */}
+      <div className="bg-linear-to-br from-emerald-500 to-teal-600 text-white px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold mb-1">Pengisian Mutabaah</h1>
+          <p className="text-emerald-100">{format(new Date(), "EEEE, dd MMMM yyyy")}</p>
+          <div className="mt-4 inline-block bg-white/20 px-4 py-1.5 rounded-full text-sm font-semibold">
+            Capaian Hari Ini: {totalPoints} / {maxPoints} Poin
+          </div>
         </div>
       </div>
 
-      <section className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-        <h2 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-            <span>📝</span> Daftar Ibadah
-        </h2>
-        <LogList 
-          items={myData} 
-          userId={userId} 
-          date={today} 
-        />
-      </section>
+      <div className="max-w-2xl mx-auto px-4 -mt-4 relative z-10">
+        <section className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+          <h2 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+              <span>📝</span> Daftar Ibadah
+          </h2>
+          <LogList 
+            items={myData} 
+            userId={userId} 
+            date={today} 
+          />
+        </section>
+      </div>
     </div>
   );
 }

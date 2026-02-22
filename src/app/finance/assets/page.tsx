@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { assets } from "@/db/schema";
-import { ShieldAlert, TrendingUp, Info } from "lucide-react";
+import { ShieldAlert, TrendingUp, Info, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { deleteAsset } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +57,9 @@ export default async function AssetsZakatPage() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-indigo-500" /> Daftar Aset Terkini</h3>
+                        <Link href="/finance/assets/new" className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center gap-1 transition-colors">
+                            <Plus className="w-4 h-4" /> Tambah
+                        </Link>
                     </div>
                     
                     {allAssets.length === 0 ? (
@@ -69,9 +74,17 @@ export default async function AssetsZakatPage() {
                                         <div className="font-semibold text-slate-700 dark:text-slate-300">{asset.name}</div>
                                         <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">{asset.assetType}</div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="font-bold text-indigo-600 dark:text-indigo-400">{formatRupiah(asset.currentValuation)}</div>
-                                        <div className="text-xs font-medium text-green-600 dark:text-green-500">Terpantau Live</div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-right">
+                                            <div className="font-bold text-indigo-600 dark:text-indigo-400">{formatRupiah(asset.currentValuation)}</div>
+                                            <div className="text-xs font-medium text-green-600 dark:text-green-500">Terpantau Live</div>
+                                        </div>
+                                        <form action={deleteAsset}>
+                                            <input type="hidden" name="id" value={asset.id} />
+                                            <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Aset">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             ))}

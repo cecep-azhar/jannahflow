@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic } from "react";
+import { useOptimistic, startTransition } from "react";
 import { toggleLog, updateCounter } from "./actions";
 import { Check, BookOpen, Sun, Moon, Sunrise, Sunset, MoonStar, HeartHandshake, Coins } from "lucide-react";
 import { cn } from "@/lib/utils"; // Need to create utils
@@ -28,15 +28,17 @@ export function LogList({ items, userId, date }: { items: Item[]; userId: number
   const [optimisticItems, addOptimisticItem] = useOptimistic(
     items,
     (state, updatedItem: { id: number; value: number }) => {
-        return state.map((item) =>
-            item.id === updatedItem.id ? { ...item, logValue: updatedItem.value } : item
-        );
+      return state.map((item) =>
+        item.id === updatedItem.id ? { ...item, logValue: updatedItem.value } : item
+      );
     }
   );
 
   async function handleToggle(item: Item) {
     const newValue = item.logValue ? 0 : 1;
-    addOptimisticItem({ id: item.id, value: newValue });
+    startTransition(() => {
+      addOptimisticItem({ id: item.id, value: newValue });
+    });
     await toggleLog(userId, item.id, date, item.logValue);
   }
 
@@ -79,9 +81,9 @@ export function LogList({ items, userId, date }: { items: Item[]; userId: number
                            <button 
                              onClick={() => {
                                const newValue = Math.max(0, (item.logValue || 0) - 1);
-                               // Optimistic update
-                               addOptimisticItem({ id: item.id, value: newValue });
-                               // Server action
+                               startTransition(() => {
+                                 addOptimisticItem({ id: item.id, value: newValue });
+                               });
                                updateCounter(userId, item.id, date, newValue);
                              }}
                              className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -90,7 +92,9 @@ export function LogList({ items, userId, date }: { items: Item[]; userId: number
                            <button 
                              onClick={() => {
                                const newValue = (item.logValue || 0) + 1;
-                               addOptimisticItem({ id: item.id, value: newValue });
+                               startTransition(() => {
+                                 addOptimisticItem({ id: item.id, value: newValue });
+                               });
                                updateCounter(userId, item.id, date, newValue);
                              }}
                              className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"

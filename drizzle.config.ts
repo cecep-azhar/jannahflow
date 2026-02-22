@@ -3,12 +3,14 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
 
+const tursoUrl = process.env.TURSO_DATABASE_URL;
+const tursoToken = process.env.TURSO_AUTH_TOKEN;
+
 export default defineConfig({
-  schema: "./database/schema.ts",
+  schema: "./src/db/schema.ts",
   out: "./drizzle",
   dialect: "turso",
-  dbCredentials: {
-    url: process.env.TURSO_DATABASE_URL!,
-    authToken: process.env.TURSO_AUTH_TOKEN!,
-  },
+  dbCredentials: tursoUrl
+    ? { url: tursoUrl, authToken: tursoToken! }
+    : { url: "file:database/jannahflow.db" },
 });

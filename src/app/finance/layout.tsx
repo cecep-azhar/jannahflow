@@ -18,7 +18,11 @@ export default async function FinanceLayout({ children }: { children: React.Reac
         await db.run(sql`CREATE TABLE IF NOT EXISTS \`transactions\` (\`id\` text PRIMARY KEY NOT NULL, \`account_id\` text NOT NULL REFERENCES accounts(id) ON DELETE cascade, \`type\` text NOT NULL, \`amount\` integer NOT NULL, \`category\` text NOT NULL, \`description\` text, \`date_masehi\` text NOT NULL, \`date_hijri\` text NOT NULL, \`is_halal_certified\` integer DEFAULT 0)`);
         await db.run(sql`CREATE TABLE IF NOT EXISTS \`budgets\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`category\` text NOT NULL, \`monthly_limit\` integer NOT NULL, \`period_type\` text DEFAULT 'MASEHI' NOT NULL)`);
         await db.run(sql`CREATE TABLE IF NOT EXISTS \`assets\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`purchase_price\` integer NOT NULL, \`current_valuation\` integer NOT NULL, \`asset_type\` text NOT NULL)`);
+        await db.run(sql`CREATE TABLE IF NOT EXISTS \`saving_goals\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`target_amount\` integer NOT NULL, \`current_amount\` integer DEFAULT 0 NOT NULL, \`deadline\` text, \`created_at\` text DEFAULT CURRENT_TIMESTAMP)`);
     }
+
+    // Ensure saving_goals table exists for older installations
+    await db.run(sql`CREATE TABLE IF NOT EXISTS \`saving_goals\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`target_amount\` integer NOT NULL, \`current_amount\` integer DEFAULT 0 NOT NULL, \`deadline\` text, \`created_at\` text DEFAULT CURRENT_TIMESTAMP)`);
 
     let isPro = false;
     try {
@@ -58,10 +62,13 @@ export default async function FinanceLayout({ children }: { children: React.Reac
     return (
         <>
             <div className="p-4 max-w-5xl w-full min-w-0 mx-auto space-y-6 pb-20">
-                <div className="bg-linear-to-br from-indigo-600 to-indigo-800 dark:from-indigo-800 dark:to-slate-900 text-white p-6 md:p-8 rounded-3xl shadow-lg border border-indigo-500/20">
-                <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight mb-2">Financial Family <span className="text-amber-300 text-lg align-top ml-1">PRO</span></h1>
-                <p className="text-indigo-100 text-sm md:text-base opacity-90">Kelola keuangan keluarga dengan berkah, pantau zakat, dan capai impian bersama secara transparan.</p>
-            </div>
+                <div className="bg-linear-to-br from-emerald-500 to-teal-600 text-white px-6 pt-8 pb-12 rounded-b-4xl shadow-lg relative overflow-hidden -mx-4 -mt-4 mb-2">
+                    <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                    <div className="relative z-10">
+                        <h1 className="text-3xl font-bold text-white mb-1">Financial Family <span className="text-amber-300 text-base align-top ml-1 font-extrabold">PRO</span></h1>
+                        <p className="text-emerald-100 text-sm">Kelola keuangan keluarga dengan berkah, pantau zakat, dan capai impian bersama secara transparan.</p>
+                    </div>
+                </div>
 
             <FinanceNav />
 

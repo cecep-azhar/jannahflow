@@ -52,13 +52,14 @@ export default function BondingPageClient({ activities }: { activities: Activity
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="bg-gradient-to-br from-rose-500 to-pink-600 px-6 pt-8 pb-12 rounded-b-[2rem] shadow-lg mb-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-20">
+            <div className="bg-linear-to-br from-emerald-500 to-teal-600 px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div className="absolute top-0 right-0 p-4 opacity-10">
                     <HeartHandshake className="w-40 h-40 text-white" />
                 </div>
                 <div className="relative z-10">
                     <h1 className="text-3xl font-bold text-white mb-2">Harmoni Pasutri</h1>
-                    <p className="text-rose-100 text-sm mb-6 max-w-sm">
+                    <p className="text-emerald-100 text-sm mb-6 max-w-sm">
                         Selesaikan 100 tantangan ini bersama pasangan untuk memperkuat ikatan cinta keluarga.
                     </p>
                     
@@ -68,10 +69,10 @@ export default function BondingPageClient({ activities }: { activities: Activity
                              <span className="text-sm font-medium text-white">Harmony Level</span>
                              <span className="text-2xl font-bold text-white">{progress}%</span>
                         </div>
-                        <div className="w-full bg-rose-900/30 rounded-full h-3">
+                        <div className="w-full bg-emerald-900/30 rounded-full h-3">
                             <div className="bg-white h-3 rounded-full transition-all duration-1000 ease-out" style={{ width: `${progress}%` }}></div>
                         </div>
-                        <div className="mt-2 text-xs text-rose-100 text-right">
+                        <div className="mt-2 text-xs text-emerald-100 text-right">
                            {completed} dari {total} tantangan selesai
                         </div>
                     </div>
