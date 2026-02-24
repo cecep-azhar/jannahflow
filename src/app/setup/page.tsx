@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { setupFamily } from "./actions";
-import { Plus, Trash, Check, User, Heart, Lock } from "lucide-react";
+import { Plus, Trash, Check, User, Heart, Lock, Sparkles } from "lucide-react";
 
 export default function SetupPage() {
   const [children, setChildren] = useState<string[]>([""]);
@@ -146,6 +146,33 @@ export default function SetupPage() {
             )}
           </button>
         </form>
+      </div>
+
+      {/* Demo Mode Button */}
+      <div className="mt-8">
+        <button 
+            onClick={async () => {
+                if (!confirm("Demo Mode: Fitur ini akan menghapus semua database lalu mengisinya dengan data dummy selama 1 bulan terakhir. Lanjutkan?")) return;
+                try {
+                    const toast = (await import("@/components/ui/toast")).toast;
+                    const res = await fetch('/api/seed');
+                    const data = await res.json();
+                    if (data.success) {
+                        toast(data.message || "Data dummy berhasil dimuat.", "success");
+                        setTimeout(() => window.location.href = '/dashboard', 1500);
+                    } else {
+                        toast("Gagal memuat data dummy.", "error");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Terjadi kesalahan.");
+                }
+            }}
+            className="text-slate-500 hover:text-emerald-600 bg-white/50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm border border-slate-200"
+        >
+            <Sparkles className="w-4 h-4 text-emerald-500" />
+            Isi dengan Data Demo Pertama Kali
+        </button> 
       </div>
     </div>
   );

@@ -4,11 +4,15 @@ import { Plus, Target, CheckCircle2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { deleteBudget } from "../actions";
 import { like } from "drizzle-orm";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
 export default async function BudgetsPage() {
     const allBudgets = await db.select().from(budgets);
+    const cookieStore = await cookies();
+    const roleCookie = cookieStore.get("mutabaah-user-role")?.value;
+    const isChild = roleCookie === "child";
 
     // Calculate real monthly spending per category (Masehi)
     const today = new Date();
@@ -39,9 +43,11 @@ export default async function BudgetsPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">Perencanaan Anggaran (Budgeting)</h2>
-                <Link href="/finance/budgets/new" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center gap-2 transition-colors">
-                    <Plus className="w-4 h-4" /> Buat Anggaran
-                </Link>
+                {!isChild && (
+                    <Link href="/finance/budgets/new" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center gap-2 transition-colors">
+                        <Plus className="w-4 h-4" /> Buat Anggaran
+                    </Link>
+                )}
             </div>
 
             {warningBudgets.length > 0 && (
@@ -80,12 +86,14 @@ export default async function BudgetsPage() {
                                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${b.periodType === 'HIJRI' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400'}`}>
                                             Bulanan {b.periodType}
                                         </span>
-                                        <form action={deleteBudget}>
-                                            <input type="hidden" name="id" value={b.id} />
-                                            <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Anggaran">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </form>
+                                        {!isChild && (
+                                            <form action={deleteBudget}>
+                                                <input type="hidden" name="id" value={b.id} />
+                                                <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Anggaran">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </form>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="text-indigo-600 dark:text-indigo-400 font-semibold mb-3">{formatRupiah(b.monthlyLimit)}</div>

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/lib/language-context";
 import { Header } from "@/components/header";
 import { ToastProvider } from "@/components/ui/toast";
+import { LoadingProvider } from "@/components/loading-provider";
 import { db } from "@/db";
 import { systemStats } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -56,6 +57,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          if (!document.cookie.includes('device-tz=')) {
+            document.cookie = "device-tz=" + Intl.DateTimeFormat().resolvedOptions().timeZone + "; path=/; max-age=31536000";
+          }
+        `}} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-200 dark:bg-slate-900/80 transition-colors flex justify-center`}
       >
@@ -66,14 +74,16 @@ export default async function RootLayout({
             disableTransitionOnChange
         >
           <LanguageProvider>
-            <div className="w-full max-w-3xl bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen relative shadow-2xl flex flex-col overflow-x-hidden">
-                <SplashScreen />
-                <Header familyName={familyName} isPro={isPro} />
-                <main className="flex-1 flex flex-col w-full min-w-0">
-                    {children}
-                </main>
-                <ToastProvider />
-            </div>
+            <LoadingProvider>
+              <div className="w-full max-w-3xl bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen relative shadow-2xl flex flex-col overflow-x-hidden">
+                  <SplashScreen />
+                  <Header familyName={familyName} isPro={isPro} />
+                  <main className="flex-1 flex flex-col w-full min-w-0">
+                      {children}
+                  </main>
+                  <ToastProvider />
+              </div>
+            </LoadingProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

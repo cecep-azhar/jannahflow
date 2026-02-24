@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { getReportData, getFinanceReportData, getJournalReportData } from "./actions"; 
 import { BottomNav } from "@/components/bottom-nav";
 import * as XLSX from "xlsx";
@@ -52,35 +52,44 @@ export default function ReportPage() {
         ? data.report 
         : data.report.filter((u) => u.id === Number(selectedUserId));
 
-    // Detail Sheet
+    // Detail Sheet Pivot Layout
     const detailRows: Record<string, string | number>[] = [];
     const interval = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) });
 
     filteredReport.forEach((user) => {
-        interval.forEach(date => {
-            const dateStr = format(date, "yyyy-MM-dd");
-             data.allWorships.forEach((w) => {
-                 const log = user.logs.find((l) => l.date === dateStr && l.worshipId === w.id);
-                 if (log && log.value !== 0) { // Export logged items
-                     detailRows.push({
-                         Tanggal: dateStr,
-                         Nama: user.name,
-                         "Ibadah / Kesalahan": w.name,
-                         Status: "✅",
-                         Poin: (log.value > 0 ? w.points : w.points), // Negative points for penalties
-                         Keterangan: log.note || "-"
-                     });
-                 }
-             });
+        data.allWorships.forEach((w) => {
+            const row: Record<string, string | number> = {
+                "Nama Anggota": user.name,
+                "Ibadah / Kesalahan": w.name,
+            };
+            
+            let totalPoin = 0;
+            interval.forEach(date => {
+                const dateStr = format(date, "yyyy-MM-dd");
+                const colHeader = format(date, "dd/MM");
+                const log = user.logs.find((l) => l.date === dateStr && l.worshipId === w.id);
+                
+                if (log && log.value !== 0) {
+                    const pts = log.value > 0 ? w.points : 0;
+                    totalPoin += pts;
+                    row[colHeader] = w.points < 0 ? `⚠️ ${pts}` : `✅ ${pts}`;
+                } else {
+                    row[colHeader] = "-";
+                }
+            });
+            row["Total Poin"] = totalPoin;
+            detailRows.push(row);
         });
     });
 
     const wsDetail = XLSX.utils.json_to_sheet(detailRows);
-    XLSX.utils.book_append_sheet(wb, wsDetail, "Laporan Detail");
+    XLSX.utils.book_append_sheet(wb, wsDetail, "Laporan Pivot");
 
     const fileNameFragment = selectedUserId === "all" ? "Semua" : filteredReport[0]?.name.replace(/\s+/g, "_");
     XLSX.writeFile(wb, `Laporan_Mutabaah_${fileNameFragment}_${startDate}_${endDate}.xlsx`);
   }
+
+  const interval = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) });
 
   const filteredData = data ? (
       selectedUserId === "all" 
@@ -190,51 +199,65 @@ export default function ReportPage() {
 
         {data && (
             <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm text-slate-900">
+                <table className="w-full text-left border-collapse text-sm text-slate-900 border-spacing-0">
                     <thead>
                         <tr className="bg-slate-100 border-b-2 border-slate-200">
-                            <th className="p-3 text-slate-600 border">Tanggal</th>
-                            <th className="p-3 text-slate-600 border">Nama</th>
-                            <th className="p-3 text-slate-600 border">Ibadah / Kesalahan</th>
-                            <th className="p-3 text-center text-slate-600 border">Status</th>
-                            <th className="p-3 text-right text-slate-600 border">Poin</th>
-                            <th className="p-3 text-slate-600 border">Keterangan</th>
+                            <th className="p-3 text-slate-600 border whitespace-nowrap sticky left-0 bg-slate-100 z-10 w-48 min-w-[200px]">Ibadah / Kesalahan</th>
+                            {interval.map((date, idx) => (
+                                <th key={idx} className="p-3 text-center text-slate-600 border whitespace-nowrap min-w-[60px]">
+                                    {format(date, "dd/MM")}
+                                </th>
+                            ))}
+                            <th className="p-3 text-right text-slate-600 border whitespace-nowrap sticky right-0 bg-slate-100 z-10">Total Poin</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredData.flatMap((user) => {
-                           // Flatten logs for table
-                           return user.logs.map((log) => {
-                               const worship = data.allWorships.find((w) => w.id === log.worshipId);
-                               if (!worship || log.value === 0) return null;
-                               
-                               const isPenalty = worship.points < 0;
-                               
-                               return (
-                                   <tr key={log.id} className={`border-b border-slate-50 hover:bg-slate-50 ${isPenalty ? 'bg-red-50' : ''}`}>
-                                       <td className="p-2 border">{format(parseISO(log.date), "dd MMM yyyy", { locale: id })}</td>
-                                       <td className="p-2 border font-medium text-slate-900">{user.name}</td>
-                                       <td className="p-2 border">
-                                            <span className={isPenalty ? "text-red-600 font-medium" : "text-slate-700"}>
-                                                {worship.name}
-                                            </span>
-                                       </td>
-                                       <td className="p-2 border text-center">
-                                            {isPenalty ? "⚠️" : "✅"}
-                                       </td>
-                                       <td className={`p-2 border text-right font-medium ${isPenalty ? "text-red-600" : "text-green-600"}`}>
-                                            {worship.points}
-                                       </td>
-                                       <td className="p-2 border text-slate-500 italic">
-                                           {log.note || "-"}
-                                       </td>
-                                   </tr>
-                               );
-                           }).filter(Boolean);
+                        {filteredData.map((user) => {
+                           return (
+                               <Fragment key={user.id}>
+                                   {data.allWorships.map((worship) => {
+                                       const isPenalty = worship.points < 0;
+                                       let userWorshipTotalPoints = 0;
+                                       
+                                       const cols = interval.map(date => {
+                                           const dateStr = format(date, "yyyy-MM-dd");
+                                           const log = user.logs.find(l => l.date === dateStr && l.worshipId === worship.id);
+                                           if (log && log.value !== 0) {
+                                              const pts = log.value > 0 ? worship.points : 0;
+                                              userWorshipTotalPoints += pts;
+                                              return { hasLog: true, points: pts, isPenalty };
+                                           }
+                                           return { hasLog: false, points: 0, isPenalty: false };
+                                       });
+
+                                       return (
+                                           <tr key={`${user.id}-${worship.id}`} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                                               <td className="p-2 border font-medium text-slate-900 sticky left-0 bg-white group-hover:bg-slate-50 z-0 w-48 min-w-[200px]">
+                                                   {worship.name} {selectedUserId === 'all' ? <span className="text-xs text-slate-500 block">{user.name}</span> : ''}
+                                               </td>
+                                               {cols.map((col, idx) => (
+                                                   <td key={idx} className="p-2 border text-center text-xs whitespace-nowrap">
+                                                       {col.hasLog ? (
+                                                           <span className={col.isPenalty ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>
+                                                               {col.isPenalty ? '⚠️' : '✅'} {col.points}
+                                                           </span>
+                                                       ) : (
+                                                           <span className="text-slate-200">-</span>
+                                                       )}
+                                                   </td>
+                                               ))}
+                                               <td className={`p-2 border text-right font-bold sticky right-0 bg-white group-hover:bg-slate-50 z-0 ${isPenalty ? "text-red-600" : "text-green-600"}`}>
+                                                   {userWorshipTotalPoints !== 0 ? userWorshipTotalPoints : "-"}
+                                               </td>
+                                           </tr>
+                                       );
+                                   })}
+                               </Fragment>
+                           );
                         })}
-                        {filteredData.every((u) => u.logs.length === 0) && (
+                        {filteredData.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="p-8 text-center text-slate-400">
+                                <td colSpan={interval.length + 2} className="p-8 text-center text-slate-400">
                                     Belum ada data pada periode ini {selectedUserId !== "all" && "untuk pengguna ini"}
                                 </td>
                             </tr>
@@ -243,9 +266,8 @@ export default function ReportPage() {
                      <tfoot className="bg-slate-100 font-bold text-slate-900">
                         {filteredData.map((user) => (
                              <tr key={`total-${user.id}`}>
-                                <td colSpan={4} className="p-2 border text-right">Total Poin {user.name}:</td>
-                                <td className="p-2 border text-right text-blue-700">{user.totalPoints}</td>
-                                <td className="p-2 border"></td>
+                                <td colSpan={interval.length + 1} className="p-2 border text-right sticky left-0 bg-slate-100 z-10 shadow-sm">Total Poin {selectedUserId === 'all' ? user.name : ''}:</td>
+                                <td className="p-2 border text-right text-blue-700 sticky right-0 bg-slate-100 z-10 shadow-sm">{user.totalPoints}</td>
                              </tr>
                         ))}
                     </tfoot>

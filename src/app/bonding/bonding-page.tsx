@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { toggleBondingActivity } from "./actions"
 import { BottomNav } from "@/components/bottom-nav"
-import { CheckCircle2, Circle, HeartHandshake, Sparkles, MessageCircleHeart, HelpingHand, PartyPopper } from "lucide-react"
+import { CheckCircle2, Circle, HeartHandshake, Sparkles, MessageCircleHeart, HelpingHand, PartyPopper, LucideIcon } from "lucide-react"
 
 type Activity = {
     id: string
@@ -14,7 +14,7 @@ type Activity = {
     completedAt: string | null
 }
 
-const CATEGORY_MAP: Record<string, { label: string, icon: any, color: string }> = {
+const CATEGORY_MAP: Record<string, { label: string, icon: LucideIcon, color: string }> = {
     SPIRITUAL: { label: "Spiritual", icon: Sparkles, color: "text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400" },
     DEEP_TALK: { label: "Deep Talk", icon: MessageCircleHeart, color: "text-rose-500 bg-rose-50 dark:bg-rose-900/30 dark:text-rose-400" },
     SERVICE: { label: "Service", icon: HelpingHand, color: "text-teal-500 bg-teal-50 dark:bg-teal-900/30 dark:text-teal-400" },
@@ -58,7 +58,7 @@ export default function BondingPageClient({ activities }: { activities: Activity
                     <HeartHandshake className="w-40 h-40 text-white" />
                 </div>
                 <div className="relative z-10">
-                    <h1 className="text-3xl font-bold text-white mb-2">Harmoni Pasutri</h1>
+                    <h1 className="text-3xl font-bold text-white mb-2">Bounding Card</h1>
                     <p className="text-emerald-100 text-sm mb-6 max-w-sm">
                         Selesaikan 100 tantangan ini bersama pasangan untuk memperkuat ikatan cinta keluarga.
                     </p>

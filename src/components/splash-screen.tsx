@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import logoWhite from "@/app/logo/logo-jannahflow-white.png";
+import logoTextWhite from "@/app/logo/logo-jannahflow-logo-text-white.png";
 
 // Let's use Intl for Hijri as planned.
 
@@ -21,16 +24,8 @@ export function SplashScreen() {
   });
 
   useEffect(() => {
-    // Check if splash has been shown in this session
-    const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
-    if (hasSeenSplash) {
-        setTimeout(() => setShow(false), 0);
-        return; // Skip animation and timer
-    }
-
     const timer = setTimeout(() => {
       setShow(false);
-      sessionStorage.setItem("hasSeenSplash", "true");
     }, 3000); // 3 seconds
 
     return () => clearTimeout(timer);
@@ -42,13 +37,11 @@ export function SplashScreen() {
     <div className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-linear-to-br from-emerald-600 via-emerald-800 to-emerald-950 text-white animate-out fade-out duration-1000 fill-mode-forwards"
         style={{ animationDelay: "2.5s" }}
     >
-      <div className="text-center space-y-4 animate-in zoom-in duration-500">
-        <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/20">
-            <span className="text-4xl">🕌</span>
+      <div className="text-center space-y-4 animate-in zoom-in duration-500 flex flex-col items-center">
+        <div className="w-24 h-24 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/20 p-4 shadow-xl">
+            <Image src={logoWhite} alt="Icon" className="w-full h-full object-contain drop-shadow-lg" />
         </div>
-        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-emerald-200 to-emerald-100">
-          JannahFlow
-        </h1>
+        <Image src={logoTextWhite} alt="JannahFlow" height={40} className="w-auto mx-auto mb-2" />
         <div className="text-xl md:text-2xl font-light text-emerald-200">
           Family Management
         </div>

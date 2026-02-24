@@ -36,6 +36,18 @@ export default async function Page() {
       where: eq(systemStats.key, "family_name")
     });
 
+    const targetStat = await db.query.systemStats.findFirst({
+      where: eq(systemStats.key, "family_target")
+    });
+
+    const visiStat = await db.query.systemStats.findFirst({
+      where: eq(systemStats.key, "family_vision")
+    });
+
+    const misiStat = await db.query.systemStats.findFirst({
+      where: eq(systemStats.key, "family_mission")
+    });
+
     const inspirasiStat = await db.query.systemStats.findFirst({
         where: eq(systemStats.key, "show_inspirasi")
     });
@@ -48,6 +60,9 @@ export default async function Page() {
       initialProToken={tokenStat?.value || ""} 
       initialFamilyName={nameStat?.value || "Keluarga"} 
       showInspirasi={showInspirasi}
+      initialTarget={targetStat?.value || ""}
+      initialVisi={visiStat?.value || ""}
+      initialMisi={misiStat?.value || ""}
     />;
   } catch (e) {
     console.error("Settings page DB error:", e);

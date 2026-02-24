@@ -3,11 +3,15 @@ import { savingGoals } from "@/db/schema";
 import { Target, Plus, Trash2, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { deleteSavingGoal, addDeposit } from "../actions";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
 export default async function SavingGoalsPage() {
     const goals = await db.select().from(savingGoals);
+    const cookieStore = await cookies();
+    const roleCookie = cookieStore.get("mutabaah-user-role")?.value;
+    const isChild = roleCookie === "child";
 
     const formatRupiah = (val: number) => {
         return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(val);
@@ -17,9 +21,11 @@ export default async function SavingGoalsPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">Target Tabungan & Impian</h2>
-                <Link href="/finance/saving-goals/new" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center gap-2 transition-colors">
-                    <Plus className="w-4 h-4" /> Buat Impian
-                </Link>
+                {!isChild && (
+                    <Link href="/finance/saving-goals/new" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center gap-2 transition-colors">
+                        <Plus className="w-4 h-4" /> Buat Impian
+                    </Link>
+                )}
             </div>
 
             {goals.length === 0 ? (
@@ -27,9 +33,11 @@ export default async function SavingGoalsPage() {
                     <Target className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                     <h3 className="text-slate-600 dark:text-slate-400 font-medium">Belum ada target tabungan</h3>
                     <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">Tetapkan impian keluarga Anda — Qurban, Haji, Aqiqah, dan lainnya.</p>
-                    <Link href="/finance/saving-goals/new" className="inline-block mt-4 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                        Buat Target Pertama
-                    </Link>
+                    {!isChild && (
+                        <Link href="/finance/saving-goals/new" className="inline-block mt-4 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                            Buat Target Pertama
+                        </Link>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -54,12 +62,14 @@ export default async function SavingGoalsPage() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             {isCompleted && <span className="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded-full font-bold">Tercapai 🎉</span>}
-                                            <form action={deleteSavingGoal}>
-                                                <input type="hidden" name="id" value={goal.id} />
-                                                <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Target">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </form>
+                                            {!isChild && (
+                                                <form action={deleteSavingGoal}>
+                                                    <input type="hidden" name="id" value={goal.id} />
+                                                    <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Target">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </form>
+                                            )}
                                         </div>
                                     </div>
 
@@ -83,7 +93,7 @@ export default async function SavingGoalsPage() {
                                         </div>
                                     </div>
 
-                                    {!isCompleted && (
+                                     {!isCompleted && !isChild && (
                                         <form action={addDeposit} className="flex gap-2 mt-2">
                                             <input type="hidden" name="id" value={goal.id} />
                                             <input 

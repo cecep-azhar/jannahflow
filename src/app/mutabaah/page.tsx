@@ -3,8 +3,8 @@ import { mutabaahLogs, users, worships } from "@/db/schema";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
-import { format } from "date-fns";
 import { LogList } from "@/app/dashboard/log-list"; 
+import { getLocalTodayStr, getLocalFormattedToday } from "@/lib/date-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export default async function MutabaahPage() {
     redirect("/auth");
   }
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = await getLocalTodayStr();
   const allWorships = await db.select().from(worships);
   
   const myLogs = await db.select().from(mutabaahLogs).where(
@@ -66,7 +66,7 @@ export default async function MutabaahPage() {
         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
         <div className="relative z-10">
           <h1 className="text-3xl font-bold mb-1">Pengisian Mutabaah</h1>
-          <p className="text-emerald-100">{format(new Date(), "EEEE, dd MMMM yyyy")}</p>
+          <p className="text-emerald-100">{await getLocalFormattedToday("EEEE, dd MMMM yyyy")}</p>
           <div className="mt-4 inline-block bg-white/20 px-4 py-1.5 rounded-full text-sm font-semibold">
             Capaian Hari Ini: {totalPoints} / {maxPoints} Poin
           </div>

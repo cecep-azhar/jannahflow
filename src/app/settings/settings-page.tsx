@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { addFamilyMember, deleteFamilyMember, addWorshipItem, deleteWorshipItem, updateFamilyMember, updateWorshipItem } from "./actions";
 import { Trash, Plus, AlertCircle, CheckCircle, Save, Pencil, User, Shield, Heart, Star, Smile, LucideIcon } from "lucide-react";
 
@@ -14,7 +14,7 @@ const IconMap: Record<string, LucideIcon> = {
   "user": User, // Added for fallback
 };
 
-type UserData = { id: number; name: string; role: string; avatarUrl: string | null; pin: string | null };
+type UserData = { id: number; name: string; role: string; avatarUrl: string | null; pin: string | null; gender: string | null; birthDate: string | null; };
 type WorshipData = { id: number; name: string; category: string; points: number };
 
 function FamilySettings({ users }: { users: UserData[] }) {
@@ -65,6 +65,22 @@ function FamilySettings({ users }: { users: UserData[] }) {
                             <option value="child">Anak</option>
                             <option value="parent">Orang Tua</option>
                         </select>
+                        <select
+                            name="gender"
+                            className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950"
+                            defaultValue={editingItem?.gender || ""}
+                        >
+                            <option value="">Pilih Jenis Kelamin</option>
+                            <option value="M">Laki-laki</option>
+                            <option value="F">Perempuan</option>
+                        </select>
+                        <input 
+                            name="birthDate" 
+                            type="date"
+                            placeholder="Tanggal Lahir" 
+                            defaultValue={editingItem?.birthDate || ""}
+                            className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950" 
+                        />
                         <input 
                             name="pin" 
                             placeholder="PIN (Khusus Orang Tua)" 
@@ -266,9 +282,44 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
     );
 }
 
-import { saveProToken, saveFamilyName, revokeProToken, saveInspirasiSetting } from "./actions";
-import { Check, Loader2, Trash2, Lightbulb } from "lucide-react";
+import { saveProToken, saveFamilyName, revokeProToken, saveInspirasiSetting, saveFamilyVision } from "./actions";
+import { Check, Loader2, Trash2, Lightbulb, Languages as LanguagesIcon } from "lucide-react";
 import { toast } from "@/components/ui/toast";
+import { useLanguage } from "@/lib/language-context";
+
+function LanguageSettings() {
+    const { lang, t, toggleLanguage } = useLanguage();
+
+    const handleToggleLanguage = () => {
+        toggleLanguage();
+        const nextLang = lang === "id" ? "English" : "Indonesia";
+        toast(t.langSwitched(nextLang), "success");
+    };
+
+    return (
+        <div className="space-y-4">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><LanguagesIcon className="w-5 h-5 text-blue-500" /> {t.changeLanguage}</h3>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Bahasa Aplikasi</label>
+                    <p className="text-xs text-slate-500">Pilih bahasa yang akan digunakan pada antarmuka aplikasi.</p>
+                    <div className="flex items-center gap-4 mt-2">
+                        <button 
+                            onClick={handleToggleLanguage}
+                            className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors border border-slate-200 dark:border-slate-700"
+                        >
+                            <LanguagesIcon className="w-4 h-4" />
+                            {lang === "id" ? "Ubah ke English" : "Switch to Indonesia"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 function InspirasiSettings({ initialShow }: { initialShow: boolean }) {
     const [show, setShow] = useState(initialShow);
@@ -337,6 +388,68 @@ function FamilyNameSettings({ initialName }: { initialName: string }) {
                             onChange={(e) => setName(e.target.value)}
                         />
                         <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                            {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan</>}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+function FamilyVisionSettings({ initialTarget, initialVisi, initialMisi }: { initialTarget: string, initialVisi: string, initialMisi: string }) {
+    const [target, setTarget] = useState(initialTarget);
+    const [visi, setVisi] = useState(initialVisi);
+    const [misi, setMisi] = useState(initialMisi);
+    const [saved, setSaved] = useState(false);
+
+    return (
+        <div className="space-y-4">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300">Target & Visi Misi Keluarga</h3>
+            </div>
+            
+            <form action={async (formData) => {
+                await saveFamilyVision(formData);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+            }} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Target Keluarga (Tahun Ini)</label>
+                        <input 
+                            name="familyTarget"
+                            type="text"
+                            placeholder="Contoh: Hafal Juz 30 Bersama, Lunas KPR"
+                            className="w-full p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                            value={target}
+                            onChange={(e) => setTarget(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Visi Keluarga</label>
+                        <textarea 
+                            name="familyVisi"
+                            rows={2}
+                            placeholder="Contoh: Menjadi keluarga yang sakinah, mawaddah, warahmah dan berkumpul di Surga Firdaus."
+                            className="w-full p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                            value={visi}
+                            onChange={(e) => setVisi(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Misi Keluarga</label>
+                        <textarea 
+                            name="familyMisi"
+                            rows={3}
+                            placeholder="Contoh: 1. Shalat berjamaah 5 waktu. 2. Tilawah 1 juz per hari."
+                            className="w-full p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                            value={misi}
+                            onChange={(e) => setMisi(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex justify-end pt-2">
+                        <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
                             {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan</>}
                         </button>
                     </div>
@@ -435,20 +548,28 @@ function ProSettings({ initialToken }: { initialToken: string }) {
     );
 }
 
-export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, showInspirasi }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, showInspirasi: boolean }) {
+export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, showInspirasi, initialTarget, initialVisi, initialMisi }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, showInspirasi: boolean, initialTarget: string, initialVisi: string, initialMisi: string }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
             {/* Emerald Header Banner */}
             <div className="bg-linear-to-br from-emerald-500 to-teal-600 px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
-                <div className="relative z-10">
-                    <h1 className="text-3xl font-bold text-white mb-1">Pengaturan</h1>
-                    <p className="text-emerald-100 text-sm">Kelola anggota keluarga, ibadah, lisensi Pro, dan preferensi aplikasi.</p>
+                <div className="relative z-10 font-sans flex justify-between items-center sm:flex-row flex-col gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white mb-1">Pengaturan</h1>
+                        <p className="text-emerald-100 text-sm">Kelola anggota keluarga, ibadah, lisensi Pro, dan preferensi aplikasi.</p>
+                    </div>
                 </div>
             </div>
 
             <div className="max-w-5xl mx-auto px-4 -mt-8 relative z-10">
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-6 space-y-8">
+
+        <div>
+            <FamilyVisionSettings initialTarget={initialTarget} initialVisi={initialVisi} initialMisi={initialMisi} />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
 
         <div>
             <FamilyNameSettings initialName={initialFamilyName} />
@@ -468,6 +589,14 @@ export default function SettingsPage({ users, worships, initialProToken, initial
 
         <hr className="border-slate-200 dark:border-slate-800" />
 
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <div>
+            <LanguageSettings />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
         <div>
             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Keluarga</h2>
             <FamilySettings users={users} />
@@ -476,11 +605,89 @@ export default function SettingsPage({ users, worships, initialProToken, initial
         <hr className="border-slate-200 dark:border-slate-800" />
         
         <div>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Sistem</h2>
+            <DatabaseSettings />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+        
+        <div>
             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Ibadah</h2>
             <WorshipSettings worships={worships} />
         </div>
 
             </div>
+            </div>
+        </div>
+    );
+}
+
+function DatabaseSettings() {
+    const [isRestoring, setIsRestoring] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    async function handleRestore(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!confirm("Peringatan: Proses ini akan memasukkan data dari file backup ke tabel yang MASIH KOSONG. Data yang sudah ada tidak akan tertimpa. Lanjutkan?")) {
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            return;
+        }
+
+        setIsRestoring(true);
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await fetch("/api/restore", {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                toast(data.message || "Restore berhasil.", "success");
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                toast(data.error || "Gagal melakukan restore.", "error");
+            }
+        } catch {
+            toast("Terjadi kesalahan jaringan.", "error");
+        } finally {
+            setIsRestoring(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    }
+
+    return (
+        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-4">
+            <h3 className="font-bold text-slate-700 dark:text-slate-300">Backup & Restore Database</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Amankan data keluarga Anda dengan mengekspor (Backup) seluruh database ke file .db. Anda dapat memulihkannya (Restore) di kemudian hari. Restore hanya mengisi tabel yang kosong.</p>
+            
+            <div className="flex flex-wrap gap-4">
+                <a 
+                    href="/api/backup"
+                    target="_blank"
+                    className="inline-flex items-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 dark:bg-emerald-900/50 dark:hover:bg-emerald-900/80 dark:text-emerald-300 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
+                >
+                    <span className="text-xl">📥</span> Backup Database
+                </a>
+
+                <input 
+                    type="file" 
+                    accept=".db" 
+                    className="hidden" 
+                    ref={fileInputRef} 
+                    onChange={handleRestore} 
+                    disabled={isRestoring}
+                />
+                <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isRestoring}
+                    className="inline-flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-700 dark:bg-amber-900/50 dark:hover:bg-amber-900/80 dark:text-amber-300 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50"
+                >
+                    <span className="text-xl">📤</span> {isRestoring ? "Memproses..." : "Restore Database"}
+                </button>
             </div>
         </div>
     );

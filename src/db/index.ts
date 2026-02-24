@@ -16,7 +16,7 @@ if (!url) {
   throw new Error("Database URL is not set");
 }
 
-const client = createClient({
+export const client = createClient({
   url,
   authToken,
 });

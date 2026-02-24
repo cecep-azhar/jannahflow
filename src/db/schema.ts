@@ -6,6 +6,8 @@ export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   role: text("role", { enum: ["parent", "child"] }).notNull().default("child"),
+  gender: text("gender", { enum: ["M", "F", ""] }).default(""),
+  birthDate: text("birth_date"),
   pin: text("pin"), // Encrypted or simple check for parents
   telegramId: text("telegram_id"),
   avatarUrl: text("avatar_url"),

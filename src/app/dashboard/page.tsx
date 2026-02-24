@@ -5,17 +5,15 @@ import { FAQ } from "@/components/faq";
 import { Footer } from "@/components/footer";
 import { HeaderClock } from "@/components/header-clock";
 import Link from "next/link";
-import { users, mutabaahLogs, worships } from "@/db/schema";
+import { users, mutabaahLogs, worships, systemStats, quotes as quotesSchema } from "@/db/schema";
 import { db } from "@/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq, and, sql } from "drizzle-orm";
 import { format, getDayOfYear } from "date-fns";
-import { systemStats } from "@/db/schema";
-
-import { eq, and, sql } from "drizzle-orm";
-import { format, getDayOfYear } from "date-fns";
-import { systemStats, quotes as quotesSchema } from "@/db/schema";
+import { parseQuotes } from "@/db/seed-quotes";
+const quotesData = parseQuotes();
+import { getLocalTodayStr, getLocalFormattedToday, getLocalDateObj } from "@/lib/date-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +39,7 @@ export default async function DashboardPage() {
     redirect("/auth");
   }
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = await getLocalTodayStr();
 
   // Common data fetching
   const allWorships = await db.select().from(worships);
@@ -84,25 +82,46 @@ export default async function DashboardPage() {
       }));
 
       // Fetch Quotes with auto-seed fallback
-      let allQuotes: { id: number; text: string; source: string; category: string }[] = [];
+      let allQuotes: { id?: number; text: string; source: string; category: string }[] = [];
       try {
           allQuotes = await db.select().from(quotesSchema);
+          if (allQuotes.length === 0) {
+              allQuotes = quotesData;
+          }
       } catch {
-          console.warn("Quotes table missing, auto-creating...");
-          await db.run(sql`CREATE TABLE IF NOT EXISTS \`quotes\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`text\` text NOT NULL, \`source\` text NOT NULL, \`category\` text NOT NULL)`);
+          console.warn("Quotes table missing or empty, using local JSON.");
+          allQuotes = quotesData;
+          try {
+              await db.run(sql`CREATE TABLE IF NOT EXISTS \`quotes\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`text\` text NOT NULL, \`source\` text NOT NULL, \`category\` text NOT NULL)`);
+          } catch(e) {}
       }
-      
-      allQuotes = await db.select().from(quotesSchema);
 
       const inspirasiStat = await db.query.systemStats.findFirst({
         where: eq(systemStats.key, "show_inspirasi")
       });
       const showInspirasi = inspirasiStat ? inspirasiStat.value === "1" : true;
 
+      const familyName = await db.query.systemStats.findFirst({
+        where: eq(systemStats.key, "family_name")
+      });
+
+      const familyTarget = await db.query.systemStats.findFirst({
+        where: eq(systemStats.key, "family_target")
+      });
+
+      const familyVision = await db.query.systemStats.findFirst({
+        where: eq(systemStats.key, "family_vision")
+      });
+
+      const familyMission = await db.query.systemStats.findFirst({
+        where: eq(systemStats.key, "family_mission")
+      });
+
       let randomQuote = null;
       if (allQuotes.length > 0) {
-          const dayOfYear = getDayOfYear(new Date());
-          const year = new Date().getFullYear();
+          const localDeviceDate = await getLocalDateObj();
+          const dayOfYear = getDayOfYear(localDeviceDate);
+          const year = localDeviceDate.getFullYear();
           const seed = dayOfYear + year;
           randomQuote = allQuotes[seed % allQuotes.length];
       }
@@ -147,6 +166,35 @@ export default async function DashboardPage() {
                 </div>
               )}
 
+              {(familyTarget?.value || familyVision?.value || familyMission?.value) && (
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm space-y-4">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-200 text-lg border-b border-slate-100 dark:border-slate-800 pb-2">
+                    Keluarga {familyName?.value || ""}
+                  </h3>
+                  
+                  {familyTarget?.value && (
+                    <div>
+                      <h4 className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">🎯 Target Tahun Ini</h4>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{familyTarget.value}</p>
+                    </div>
+                  )}
+
+                  {familyVision?.value && (
+                    <div>
+                      <h4 className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">👁️ Visi</h4>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm mt-1 italic">&quot;{familyVision.value}&quot;</p>
+                    </div>
+                  )}
+
+                  {familyMission?.value && (
+                    <div>
+                      <h4 className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">🚀 Misi</h4>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm mt-1 whitespace-pre-wrap">{familyMission.value}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-6 shadow-sm">
                 <h3 className="font-bold text-emerald-800 dark:text-emerald-300 mb-2 flex items-center gap-2 text-lg">
                     <Trophy className="w-6 h-6" /> Notifikasi & Insight
@@ -181,12 +229,12 @@ export default async function DashboardPage() {
                       <div className="bg-white dark:bg-slate-900 p-3 rounded-full shadow-sm text-rose-500 mb-4 inline-block">
                           <HeartHandshake className="w-8 h-8" />
                       </div>
-                      <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2 text-lg">Harmoni Pasutri <span className="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-500 px-2 py-0.5 rounded-full font-bold ml-1 align-middle">PRO</span></h3>
+                      <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2 text-lg">Bounding Card <span className="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-500 px-2 py-0.5 rounded-full font-bold ml-1 align-middle">PRO</span></h3>
                       <p className="text-slate-600 dark:text-slate-400 text-sm mb-5 leading-relaxed">
-                          Ruang eksklusif untuk Ayah & Ibu. Selesaikan 100 tantangan keharmonisan dan perkuat ikatan cinta keluarga.
+                          Ruang khusus untuk membangun kedekatan. Selesaikan tantangan keharmonisan dan perkuat ikatan cinta keluarga.
                       </p>
                       <Link href="/bonding" className="inline-block bg-rose-500 text-white font-medium px-6 py-2.5 rounded-full hover:bg-rose-600 transition shadow-md hover:shadow-lg w-full sm:w-auto">
-                         Buka Ruang Pasutri
+                         Buka Bounding Card
                       </Link>
                   </div>
               </div>
@@ -226,10 +274,14 @@ export default async function DashboardPage() {
   const maxPoints = allWorships.reduce((acc, curr) => acc + (curr.points > 0 ? curr.points : 0), 0);
 
   // Fetch Quotes with auto-seed fallback
-  let allQuotes: { id: number; text: string; source: string; category: string }[] = [];
+  let allQuotes: { id?: number; text: string; source: string; category: string }[] = [];
   try {
       allQuotes = await db.select().from(quotesSchema);
+      if (allQuotes.length === 0) {
+          allQuotes = quotesData;
+      }
   } catch {
+      allQuotes = quotesData;
       // Table already created by parent view if hit first, but handle concurrency just in case
       try {
           await db.run(sql`CREATE TABLE IF NOT EXISTS \`quotes\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`text\` text NOT NULL, \`source\` text NOT NULL, \`category\` text NOT NULL)`);
@@ -243,8 +295,9 @@ export default async function DashboardPage() {
   
   let randomQuote = null;
   if (allQuotes.length > 0) {
-      const dayOfYear = getDayOfYear(new Date());
-      const year = new Date().getFullYear();
+      const localDeviceDate = await getLocalDateObj();
+      const dayOfYear = getDayOfYear(localDeviceDate);
+      const year = localDeviceDate.getFullYear();
       const seed = dayOfYear + year;
       randomQuote = allQuotes[seed % allQuotes.length];
   }
@@ -306,7 +359,7 @@ export default async function DashboardPage() {
         )}
 
         <h2 className="text-slate-800 font-semibold mb-4 flex items-center gap-2">
-          <span>📅</span> {format(new Date(), "dd MMMM yyyy")}
+          <span>📅</span> {await getLocalFormattedToday("dd MMMM yyyy")}
         </h2>
         
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center shadow-sm">

@@ -15,12 +15,16 @@ export async function addFamilyMember(formData: FormData) {
   const role = formData.get("role") as "parent" | "child";
   const pin = formData.get("pin") as string;
   const avatarUrl = formData.get("avatarUrl") as string;
+  const gender = formData.get("gender") as "M" | "F" | "";
+  const birthDate = formData.get("birthDate") as string;
 
   await db.insert(users).values({
     name,
     role,
     pin: role === "parent" ? pin : undefined,
     avatarUrl,
+    gender,
+    birthDate: birthDate || undefined,
   });
 
   revalidatePath("/settings");
@@ -38,12 +42,16 @@ export async function updateFamilyMember(id: number, formData: FormData) {
     const role = formData.get("role") as "parent" | "child";
     const pin = formData.get("pin") as string;
     const avatarUrl = formData.get("avatarUrl") as string;
+    const gender = formData.get("gender") as "M" | "F" | "";
+    const birthDate = formData.get("birthDate") as string;
     
     await db.update(users).set({ 
         name,
         role,
         pin: pin || undefined,
-        avatarUrl
+        avatarUrl,
+        gender,
+        birthDate: birthDate || undefined,
     }).where(eq(users.id, id));
 
     revalidatePath("/settings");
@@ -132,6 +140,34 @@ export async function saveFamilyName(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/auth");
   revalidatePath("/settings");
+}
+
+export async function saveFamilyVision(formData: FormData) {
+  const target = formData.get("familyTarget") as string;
+  const visi = formData.get("familyVisi") as string;
+  const misi = formData.get("familyMisi") as string;
+  
+  const updates = [
+    { key: "family_target", value: target },
+    { key: "family_vision", value: visi },
+    { key: "family_mission", value: misi }
+  ];
+
+  for (const update of updates) {
+      if (update.value && update.value.trim().length > 0) {
+          await db.insert(systemStats)
+            .values({ key: update.key, value: update.value.trim() })
+            .onConflictDoUpdate({
+              target: systemStats.key,
+              set: { value: update.value.trim(), lastUpdated: new Date().toISOString() }
+            });
+      }
+  }
+
+  revalidatePath("/");
+  revalidatePath("/auth");
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
 }
 
 export async function revokeProToken() {

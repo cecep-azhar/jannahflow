@@ -5,10 +5,20 @@ import { accounts, transactions, budgets, assets, savingGoals } from "@/db/schem
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
+import { cookies } from "next/headers";
+
+async function verifyNotChild() {
+    const cookieStore = await cookies();
+    const roleCookie = cookieStore.get("mutabaah-user-role")?.value;
+    if (roleCookie === "child") {
+        throw new Error("Akses ditolak: Akun anak tidak dapat memodifikasi data keuangan.");
+    }
+}
 
 // ==================== ACCOUNTS ====================
 
 export async function addAccount(formData: FormData) {
+  await verifyNotChild();
   const name = formData.get("name") as string;
   const type = formData.get("type") as "CASH" | "BANK" | "GOLD" | "INVESTMENT";
   const balanceStr = formData.get("balance") as string;
@@ -28,6 +38,7 @@ export async function addAccount(formData: FormData) {
 }
 
 export async function deleteAccount(formData: FormData) {
+  await verifyNotChild();
   const id = formData.get("id") as string;
   await db.delete(accounts).where(eq(accounts.id, id));
   revalidatePath("/finance/accounts");
@@ -37,6 +48,7 @@ export async function deleteAccount(formData: FormData) {
 // ==================== TRANSACTIONS ====================
 
 export async function addTransaction(formData: FormData) {
+  await verifyNotChild();
   const accountId = formData.get("accountId") as string;
   const type = formData.get("type") as "INCOME" | "EXPENSE" | "TRANSFER";
   const amountStr = formData.get("amount") as string;
@@ -89,6 +101,7 @@ export async function addTransaction(formData: FormData) {
 }
 
 export async function deleteTransaction(formData: FormData) {
+  await verifyNotChild();
   const id = formData.get("id") as string;
   const accountId = formData.get("accountId") as string;
   const amountStr = formData.get("amount") as string;
@@ -117,6 +130,7 @@ export async function deleteTransaction(formData: FormData) {
 // ==================== BUDGETS ====================
 
 export async function addBudget(formData: FormData) {
+  await verifyNotChild();
   const category = formData.get("category") as string;
   const limitStr = formData.get("monthlyLimit") as string;
   const periodType = formData.get("periodType") as "MASEHI" | "HIJRI";
@@ -136,6 +150,7 @@ export async function addBudget(formData: FormData) {
 }
 
 export async function deleteBudget(formData: FormData) {
+  await verifyNotChild();
   const id = formData.get("id") as string;
   await db.delete(budgets).where(eq(budgets.id, parseInt(id)));
   revalidatePath("/finance/budgets");
@@ -144,6 +159,7 @@ export async function deleteBudget(formData: FormData) {
 // ==================== ASSETS ====================
 
 export async function addAsset(formData: FormData) {
+  await verifyNotChild();
   const name = formData.get("name") as string;
   const purchasePriceStr = formData.get("purchasePrice") as string;
   const currentValuationStr = formData.get("currentValuation") as string;
@@ -166,6 +182,7 @@ export async function addAsset(formData: FormData) {
 }
 
 export async function deleteAsset(formData: FormData) {
+  await verifyNotChild();
   const id = formData.get("id") as string;
   await db.delete(assets).where(eq(assets.id, parseInt(id)));
   revalidatePath("/finance/assets");
@@ -174,6 +191,7 @@ export async function deleteAsset(formData: FormData) {
 // ==================== SAVING GOALS ====================
 
 export async function addSavingGoal(formData: FormData) {
+  await verifyNotChild();
   const name = formData.get("name") as string;
   const targetAmountStr = formData.get("targetAmount") as string;
   const currentAmountStr = formData.get("currentAmount") as string;
@@ -196,6 +214,7 @@ export async function addSavingGoal(formData: FormData) {
 }
 
 export async function addDeposit(formData: FormData) {
+  await verifyNotChild();
   const id = formData.get("id") as string;
   const amountStr = formData.get("amount") as string;
   const amount = parseInt(amountStr.replace(/\D/g, "")) || 0;
@@ -212,6 +231,7 @@ export async function addDeposit(formData: FormData) {
 }
 
 export async function deleteSavingGoal(formData: FormData) {
+  await verifyNotChild();
   const id = formData.get("id") as string;
   await db.delete(savingGoals).where(eq(savingGoals.id, parseInt(id)));
   revalidatePath("/finance/saving-goals");
