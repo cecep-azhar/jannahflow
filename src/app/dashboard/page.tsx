@@ -1,4 +1,5 @@
 import { ParentView } from "./parent-view";
+import { InspirationCard } from "./inspiration-card";
 import { LogOut, HeartHandshake, Trophy } from "lucide-react";
 import { logout } from "../actions";
 import { FAQ } from "@/components/faq";
@@ -147,23 +148,8 @@ export default async function DashboardPage() {
           </header>
 
           <main className="p-4 space-y-8">
-              {showInspirasi && (
-                <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-6 shadow-sm relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
-                        <span className="text-8xl font-serif">&quot;</span>
-                    </div>
-                    <h3 className="font-bold text-slate-500 dark:text-slate-400 text-sm mb-2 uppercase tracking-wide flex items-center gap-2">
-                        <span>💡</span> Inspirasi Harian
-                    </h3>
-                    {randomQuote ? (
-                        <blockquote className="space-y-2 relative z-10 mt-2">
-                            <p className="text-base md:text-lg text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">&quot;{randomQuote.text}&quot;</p>
-                            <footer className="text-sm font-bold text-emerald-600 dark:text-emerald-400">— {randomQuote.source}</footer>
-                        </blockquote>
-                    ) : (
-                        <p className="text-sm text-slate-500 italic z-10 relative">&quot;Keluarga adalah anugerah terindah. Jaga dan rawatlah dengan iman.&quot;</p>
-                    )}
-                </div>
+              {showInspirasi && randomQuote && (
+                <InspirationCard initialQuote={randomQuote} />
               )}
 
               {(familyTarget?.value || familyVision?.value || familyMission?.value) && (
@@ -339,22 +325,9 @@ export default async function DashboardPage() {
 
       {/* Content */}
       <main className="p-4">
-        {showInspirasi && (
-          <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-6 shadow-sm mb-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
-                  <span className="text-8xl font-serif">&quot;</span>
-              </div>
-              <h3 className="font-bold text-slate-500 dark:text-slate-400 text-sm mb-2 uppercase tracking-wide flex items-center gap-2">
-                  <span>💡</span> Inspirasi Harian
-              </h3>
-              {randomQuote ? (
-                  <blockquote className="space-y-2 relative z-10 mt-2">
-                      <p className="text-base md:text-lg text-slate-800 dark:text-slate-200 font-medium leading-relaxed italic">&quot;{randomQuote.text}&quot;</p>
-                      <footer className="text-sm font-bold text-emerald-600 dark:text-emerald-400">— {randomQuote.source}</footer>
-                  </blockquote>
-              ) : (
-                  <p className="text-sm text-slate-500 italic z-10 relative">&quot;Keluarga adalah anugerah terindah. Jaga dan rawatlah dengan iman.&quot;</p>
-              )}
+        {showInspirasi && randomQuote && (
+          <div className="mb-6">
+             <InspirationCard initialQuote={randomQuote} />
           </div>
         )}
 

@@ -25,9 +25,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "JannahFlow",
   title: "JannahFlow - Family Management",
   description: "Powered by CACUBE 2026",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "JannahFlow",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: "/android-chrome-192x192.png",
+    shortcut: "/android-chrome-192x192.png",
+    apple: "/android-chrome-192x192.png",
+  },
 };
+
 
 export default async function RootLayout({
   children,
