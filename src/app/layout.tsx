@@ -37,11 +37,6 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  icons: {
-    icon: "/android-chrome-192x192.png",
-    shortcut: "/android-chrome-192x192.png",
-    apple: "/android-chrome-192x192.png",
-  },
 };
 
 

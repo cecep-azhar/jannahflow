@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { accounts, transactions } from "@/db/schema";
-import { formatMasehiDate, convertToHijri, formatHijriReadable } from "@/lib/hijri-utils";
+import { formatMasehiDateTime, convertToHijri, formatHijriReadable } from "@/lib/hijri-utils";
 import { Calendar, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { redirect } from "next/navigation";
 import { like, or } from "drizzle-orm";
@@ -57,7 +57,7 @@ export default async function FinanceDashboard() {
     }
 
     const totalBalance = allAccounts.reduce((sum, acc) => sum + acc.balance, 0);
-    const masehiToday = formatMasehiDate();
+    const masehiToday = formatMasehiDateTime();
     const hijriToday = convertToHijri();
     const hijriReadable = formatHijriReadable(hijriToday);
 
@@ -134,7 +134,7 @@ export default async function FinanceDashboard() {
                         </div>
                         <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{formatRupiah(pemasukan)}</div>
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 leading-relaxed italic">Berdasarkan data {masehiToday.split(" ").slice(1).join(" ")}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 leading-relaxed italic">Berdasarkan data {masehiToday.split(" ").slice(1, 4).join(" ")}</p>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm min-h-[150px] flex flex-col justify-between">
@@ -145,7 +145,7 @@ export default async function FinanceDashboard() {
                         </div>
                         <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{formatRupiah(pengeluaran)}</div>
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 leading-relaxed italic">Berdasarkan data {masehiToday.split(" ").slice(1).join(" ")}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 leading-relaxed italic">Berdasarkan data {masehiToday.split(" ").slice(1, 4).join(" ")}</p>
                 </div>
             </div>
 

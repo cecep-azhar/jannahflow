@@ -108,6 +108,8 @@ export const bondingActivities = sqliteTable("bonding_activities", {
   category: text("category", { enum: ["SPIRITUAL", "FUN", "SERVICE", "DEEP_TALK"] }).notNull(),
   isCompleted: integer("is_completed", { mode: "boolean" }).default(false),
   completedAt: text("completed_at"),
+  insight: text("insight"), // Catatan/refleksi setelah selesai
+  photoUrl: text("photo_url"), // Foto kegiatan (base64 or URL)
 });
 
 export const journalsRelations = relations(journals, ({ one }) => ({

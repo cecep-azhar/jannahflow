@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import logoWhite from "@/app/logo/logo-jannahflow-white.png";
-import logoTextWhite from "@/app/logo/logo-jannahflow-logo-text-white.png";
 
 // Let's use Intl for Hijri as planned.
 
@@ -41,7 +40,7 @@ export function SplashScreen() {
         <div className="w-24 h-24 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/20 p-4 shadow-xl">
             <Image src={logoWhite} alt="Icon" className="w-full h-full object-contain drop-shadow-lg" />
         </div>
-        <Image src={logoTextWhite} alt="JannahFlow" height={40} className="w-auto mx-auto mb-2" />
+        <div className="text-2xl font-bold text-white tracking-wide">JannahFlow</div>
         <div className="text-xl md:text-2xl font-light text-emerald-200">
           Family Management
         </div>

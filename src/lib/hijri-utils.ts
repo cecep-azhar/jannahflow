@@ -13,6 +13,21 @@ export function formatMasehiDate(date: Date = new Date()): string {
 }
 
 /**
+ * Format date to full format: Hari, Tanggal Bulan Tahun Jam:Menit
+ */
+export function formatMasehiDateTime(date: Date = new Date()): string {
+  const formatter = new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  return formatter.format(date).replace("pukul ", "").replace(/\./g, ":");
+}
+
+/**
  * Converts Masehi Date to Hijri Date (YYYY-MM-DD string) 
  * using Intl.DateTimeFormat.
  */
