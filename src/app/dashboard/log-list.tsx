@@ -6,7 +6,6 @@ import { Check, BookOpen, Sun, Moon, Sunrise, Sunset, MoonStar, HeartHandshake, 
 import { cn } from "@/lib/utils"; // Need to create utils
 
 import { type LucideIcon } from "lucide-react";
-import { UserAvatar } from "@/components/user-avatar";
 import { useState } from "react";
 
 // Map icon names to components
@@ -84,65 +83,39 @@ export function LogList({ items, userId, date }: { items: Item[]; userId: number
                         </div>
                      </div>
 
-                     {item.type === 'counter' ? (
-                        <div className="flex items-center gap-3 shrink-0">
-                           <button 
-                             onClick={() => {
-                               const newValue = Math.max(0, (item.logValue || 0) - 1);
-                               startTransition(() => {
-                                 addOptimisticItem({ id: item.id, value: newValue });
-                               });
-                               updateCounter(userId, item.id, date, newValue);
-                             }}
-                             className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                           >-</button>
-                           <span className="text-base font-semibold text-slate-700 dark:text-slate-200 w-8 text-center">{item.logValue || 0}</span>
-                           <button 
-                             onClick={() => {
-                               const newValue = (item.logValue || 0) + 1;
-                               startTransition(() => {
-                                 addOptimisticItem({ id: item.id, value: newValue });
-                               });
-                               updateCounter(userId, item.id, date, newValue);
-                             }}
-                             className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                           >+</button>
-                        </div>
-                     ) : (
-                        <div className="flex items-center gap-2">
-                            {hasLevels && item.logValue > 0 && (
-                                <button 
-                                    onClick={() => handleSelectLevel(item, 0)}
-                                    className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-tighter"
-                                >Reset</button>
+                     <div className="flex items-center gap-2">
+                         {hasLevels && item.logValue > 0 && (
+                             <button 
+                                 onClick={() => handleSelectLevel(item, 0)}
+                                 className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-tighter"
+                             >Reset</button>
+                         )}
+                         <button 
+                           onClick={() => handleToggle(item)}
+                           className={cn(
+                             "transition-all duration-200 flex items-center justify-center",
+                             hasLevels 
+                               ? (item.logValue > 0 
+                                   ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 px-4 py-1.5 rounded-full text-xs font-bold border border-emerald-200 dark:border-emerald-800" 
+                                   : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700")
+                               : "w-14 h-8 rounded-full relative shadow-md"
+                           )}
+                         >
+                            {hasLevels ? (
+                                item.logValue > 0 ? "Ubah" : "Pilih"
+                            ) : (
+                                <div className={cn(
+                                    "w-6 h-6 bg-white rounded-full shadow-sm absolute top-1 transition-all", 
+                                    item.logValue > 0 ? "left-7" : "left-1"
+                                )}></div>
                             )}
-                            <button 
-                              onClick={() => handleToggle(item)}
-                              className={cn(
-                                "transition-all duration-200 flex items-center justify-center",
-                                hasLevels 
-                                  ? (item.logValue > 0 
-                                      ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 px-4 py-1.5 rounded-full text-xs font-bold border border-emerald-200 dark:border-emerald-800" 
-                                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700")
-                                  : "w-14 h-8 rounded-full relative"
-                              )}
-                            >
-                               {hasLevels ? (
-                                   item.logValue > 0 ? "Ubah" : "Pilih"
-                               ) : (
-                                   <div className={cn(
-                                       "w-6 h-6 bg-white rounded-full shadow-md absolute top-1 transition-all", 
-                                       item.logValue > 0 ? "left-7" : "left-1"
-                                   )}></div>
-                               )}
-                               {!hasLevels && (
-                                   <div className={cn("w-full h-full rounded-full transition-colors", 
-                                       item.logValue > 0 ? (category === 'kesalahan' ? "bg-red-500" : "bg-emerald-500") : "bg-slate-200 dark:bg-slate-700"
-                                   )}></div>
-                               )}
-                            </button>
-                        </div>
-                     )}
+                            {!hasLevels && (
+                                <div className={cn("w-full h-full rounded-full transition-colors", 
+                                    item.logValue > 0 ? (category === 'kesalahan' ? "bg-red-500" : "bg-emerald-500") : "bg-slate-200 dark:bg-slate-700"
+                                )}></div>
+                            )}
+                         </button>
+                     </div>
                   </div>
                 );
               })}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, Wallet, PieChart, BookHeart, HeartHandshake } from "lucide-react";
+import { Home, ClipboardList, Wallet, PieChart, BookHeart, HeartHandshake, Star } from "lucide-react";
 import { useLoading } from "@/components/loading-provider";
 
 export function BottomNav() {
@@ -13,7 +13,7 @@ export function BottomNav() {
     { name: "Beranda", href: "/dashboard", icon: <Home className="w-6 h-6" /> },
     { name: "Mutabaah", href: "/mutabaah", icon: <ClipboardList className="w-6 h-6" /> },
     { name: "Jurnal", href: "/journal", icon: <BookHeart className="w-6 h-6" /> },
-    { name: "Bounding", href: "/bonding", icon: <HeartHandshake className="w-6 h-6" /> },
+    { name: "Bounding", href: "/bonding", icon: <HeartHandshake className="w-6 h-6" />, pro: true },
     { name: "Keuangan", href: "/finance", icon: <Wallet className="w-6 h-6" />, pro: true },
     { name: "Laporan", href: "/report", icon: <PieChart className="w-6 h-6" /> },
   ];
@@ -40,7 +40,9 @@ export function BottomNav() {
               }`}
             >
               {item.pro && (
-                <span className="absolute top-1 mt-0.5 right-4 w-2.5 h-2.5 bg-amber-400 rounded-full border border-white dark:border-slate-900 shadow-sm z-10 animate-pulse"></span>
+                <div className="absolute top-1 right-2 z-10">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400 drop-shadow-[0_0_2px_rgba(251,191,36,0.5)]" />
+                </div>
               )}
               {item.icon}
               <span className="text-[10px] font-medium">{item.name}</span>

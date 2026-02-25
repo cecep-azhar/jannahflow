@@ -34,15 +34,15 @@ export function isAnak(user: AuthUser | null) {
 }
 
 export function canAccessSettings(user: AuthUser | null) {
-  return isAyah(user);
+  return user?.role === "parent";
 }
 
 export function canEditRecord(user: AuthUser | null) {
-  return isAyah(user) || isIbu(user);
+  return user?.role === "parent";
 }
 
 export function canDeleteRecord(user: AuthUser | null) {
-  return isAyah(user);
+  return user?.role === "parent";
 }
 
 export function canViewBounding(user: AuthUser | null) {

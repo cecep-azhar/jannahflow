@@ -252,3 +252,20 @@ export async function saveInspirasiSetting(formData: FormData) {
   revalidatePath("/settings");
   revalidatePath("/dashboard");
 }
+
+export async function updateSystemStat(key: string, value: string) {
+  const authUser = await getCurrentUser();
+  if (!canEditRecord(authUser)) return { error: "Unauthorized" };
+
+  await db.insert(systemStats)
+    .values({ key, value })
+    .onConflictDoUpdate({
+      target: systemStats.key,
+      set: { value, lastUpdated: new Date().toISOString() }
+    });
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/");
+  return { success: true };
+}

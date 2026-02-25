@@ -1,9 +1,29 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { addFamilyMember, deleteFamilyMember, addWorshipItem, deleteWorshipItem, updateFamilyMember, updateWorshipItem } from "./actions";
-import { Trash, Plus, AlertCircle, CheckCircle, Save, Pencil, User, Shield, Heart, Star, Smile, LucideIcon } from "lucide-react";
+import { 
+    addFamilyMember, 
+    deleteFamilyMember, 
+    addWorshipItem, 
+    deleteWorshipItem, 
+    updateFamilyMember, 
+    updateWorshipItem,
+    saveProToken, 
+    saveFamilyName, 
+    revokeProToken, 
+    saveInspirasiSetting, 
+    saveFamilyVision,
+    updateSystemStat
+} from "./actions";
+import { 
+    Trash, Plus, AlertCircle, CheckCircle, Save, 
+    Pencil, User, Shield, Heart, Star, Smile, 
+    LucideIcon, Check, Loader2, Trash2, Lightbulb, 
+    Languages as LanguagesIcon 
+} from "lucide-react";
 import Link from "next/link";
+import { toast } from "@/components/ui/toast";
+import { useLanguage } from "@/lib/language-context";
 
 import { UserAvatar } from "@/components/user-avatar";
 import { calculateAge, getIslamicLevel, LEVEL_LABELS, IslamicLevel } from "@/lib/level-utils";
@@ -400,11 +420,6 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
     );
 }
 
-import { saveProToken, saveFamilyName, revokeProToken, saveInspirasiSetting, saveFamilyVision } from "./actions";
-import { Check, Loader2, Trash2, Lightbulb, Languages as LanguagesIcon } from "lucide-react";
-import { toast } from "@/components/ui/toast";
-import { useLanguage } from "@/lib/language-context";
-
 function LanguageSettings() {
     const { lang, t, toggleLanguage } = useLanguage();
 
@@ -746,8 +761,6 @@ export default function SettingsPage({ users, worships, initialProToken, initial
         <div>
             <ProSettings initialToken={initialProToken} />
         </div>
-
-        <hr className="border-slate-200 dark:border-slate-800" />
 
         <hr className="border-slate-200 dark:border-slate-800" />
 
