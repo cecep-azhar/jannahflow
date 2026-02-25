@@ -46,5 +46,5 @@ export function canDeleteRecord(user: AuthUser | null) {
 }
 
 export function canViewBounding(user: AuthUser | null) {
-  return isAyah(user) || isIbu(user);
+  return user?.role === "parent";
 }

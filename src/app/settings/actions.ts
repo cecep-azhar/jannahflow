@@ -269,3 +269,111 @@ export async function updateSystemStat(key: string, value: string) {
   revalidatePath("/");
   return { success: true };
 }
+
+import { mutabaahLogs, accounts, transactions, budgets, bondingActivities } from "@/db/schema";
+
+export async function generateDemoData() {
+    const authUser = await getCurrentUser();
+    if (!canEditRecord(authUser)) return { error: "Unauthorized" };
+
+    const allUsers = await db.select().from(users);
+    const allWorships = await db.select().from(worships);
+    
+    const today = new Date();
+    
+    console.log("Generating Mutabaah Logs...");
+    // 1. Mutabaah Logs (Last 30 days)
+    for (const user of allUsers) {
+        for (let i = 0; i < 30; i++) {
+            const date = new Date();
+            date.setDate(today.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            
+            // Randomly select 3-5 worships to log
+            const randomWorships = allWorships.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 3);
+            
+            for (const w of randomWorships) {
+                // Skip if log already exists
+                const existing = await db.select().from(mutabaahLogs).where(
+                    and(eq(mutabaahLogs.userId, user.id), eq(mutabaahLogs.worshipId, w.id), eq(mutabaahLogs.date, dateStr))
+                ).get();
+                
+                if (!existing) {
+                    await db.insert(mutabaahLogs).values({
+                        userId: user.id,
+                        worshipId: w.id,
+                        date: dateStr,
+                        value: w.levels ? Math.floor(Math.random() * 3) + 1 : 1, // Random level or boolean
+                        timestamp: date.toISOString()
+                    });
+                }
+            }
+        }
+    }
+
+    console.log("Generating Finance Data...");
+    // 2. Finance Data
+    let myAccounts = await db.select().from(accounts);
+    if (myAccounts.length === 0) {
+        await db.insert(accounts).values([
+            { id: crypto.randomUUID(), name: "Dompet Tunai", type: "CASH", balance: 1500000 },
+            { id: crypto.randomUUID(), name: "Bank Syariah", type: "BANK", balance: 25000000 },
+        ]);
+        myAccounts = await db.select().from(accounts);
+    }
+
+    const categories = ["Makanan", "Transportasi", "Pendidikan", "Kesehatan", "Hiburan", "Zakat/Infaq"];
+    
+    for (const acc of myAccounts) {
+        for (let i = 0; i < 15; i++) {
+            const date = new Date();
+            date.setDate(today.getDate() - Math.floor(Math.random() * 25));
+            const dateStr = date.toISOString().split('T')[0];
+            
+            const isIncome = Math.random() > 0.8;
+            const amount = isIncome ? (Math.floor(Math.random() * 5) + 1) * 1000000 : (Math.floor(Math.random() * 20) + 1) * 10000;
+            
+            await db.insert(transactions).values({
+                id: crypto.randomUUID(),
+                accountId: acc.id,
+                type: isIncome ? "INCOME" : "EXPENSE",
+                amount,
+                category: isIncome ? "Gaji/Bonus" : categories[Math.floor(Math.random() * categories.length)],
+                description: isIncome ? "Penghasilan Bulanan" : "Belanja Kebutuhan",
+                dateMasehi: dateStr,
+                dateHijri: dateStr, // Simplified for seed
+                isHalalCertified: true
+            });
+        }
+    }
+
+    // 3. Budgets
+    const existingBudgets = await db.select().from(budgets);
+    if (existingBudgets.length === 0) {
+        await db.insert(budgets).values([
+            { category: "Makanan", monthlyLimit: 3000000, periodType: "MASEHI" },
+            { category: "Transportasi", monthlyLimit: 1000000, periodType: "MASEHI" },
+            { category: "Zakat/Infaq", monthlyLimit: 500000, periodType: "MASEHI" },
+        ]);
+    }
+
+    console.log("Generating Bounding Data...");
+    // 4. Bounding
+    const allActivities = await db.select().from(bondingActivities);
+    if (allActivities.length > 0) {
+        const randomActivities = allActivities.sort(() => 0.5 - Math.random()).slice(0, 5);
+        for (const act of randomActivities) {
+            await db.update(bondingActivities)
+                .set({ isCompleted: true, completedAt: today.toISOString() })
+                .where(eq(bondingActivities.id, act.id));
+        }
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/finance");
+    revalidatePath("/mutabaah");
+    revalidatePath("/bonding");
+    revalidatePath("/settings");
+    
+    return { success: true, message: "Data dummy berhasil dibuat untuk bulan ini." };
+}

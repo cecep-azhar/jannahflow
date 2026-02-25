@@ -237,6 +237,16 @@ export async function addSavingProgress(id: number, additionalAmount: number) {
   revalidatePath("/finance/saving-goals");
 }
 
+export async function addSavingProgressAction(formData: FormData) {
+    const id = parseInt(formData.get("id") as string);
+    const amountStr = formData.get("amount") as string;
+    const amount = parseInt(amountStr.replace(/\D/g, "")) || 0;
+    
+    if (id && amount > 0) {
+        await addSavingProgress(id, amount);
+    }
+}
+
 export async function deleteSavingGoal(id: number) {
   const authUser = await getCurrentUser();
   if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");

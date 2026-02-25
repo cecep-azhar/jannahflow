@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { savingGoals } from "@/db/schema";
 import { Target, Plus, Trash2, PlusCircle } from "lucide-react";
 import Link from "next/link";
-import { deleteSavingGoal, addDeposit } from "../actions";
+import { deleteSavingGoal, addSavingProgressAction } from "../actions";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -94,7 +94,7 @@ export default async function SavingGoalsPage() {
                                     </div>
 
                                      {!isCompleted && !isChild && (
-                                        <form action={addDeposit} className="flex gap-2 mt-2">
+                                        <form action={addSavingProgressAction} className="flex gap-2 mt-2">
                                             <input type="hidden" name="id" value={goal.id} />
                                             <input 
                                                 type="text" 

@@ -13,7 +13,8 @@ import {
     revokeProToken, 
     saveInspirasiSetting, 
     saveFamilyVision,
-    updateSystemStat
+    updateSystemStat,
+    generateDemoData
 } from "./actions";
 import { 
     Trash, Plus, AlertCircle, CheckCircle, Save, 
@@ -886,6 +887,30 @@ function DatabaseSettings() {
                     className="inline-flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-700 dark:bg-amber-900/50 dark:hover:bg-amber-900/80 dark:text-amber-300 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50"
                 >
                     <span className="text-xl">📤</span> {isRestoring ? "Memproses..." : "Restore Database"}
+                </button>
+
+                <button 
+                    onClick={async () => {
+                        if (!confirm("Hasilkan data dummy untuk bulan ini? Ini akan menambah banyak log Mutabaah, Transaksi, dan Budget sampel.")) return;
+                        setIsRestoring(true);
+                        try {
+                            const res = await generateDemoData();
+                            if (res.success) {
+                                toast(res.message, "success");
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                toast(res.error || "Gagal menghasilkan data.", "error");
+                            }
+                        } catch {
+                            toast("Terjadi kesalahan.", "error");
+                        } finally {
+                            setIsRestoring(false);
+                        }
+                    }}
+                    disabled={isRestoring}
+                    className="inline-flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:hover:bg-indigo-900/80 dark:text-indigo-300 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50"
+                >
+                    <Star className="w-5 h-5 text-amber-500" /> {isRestoring ? "Memproses..." : "Hasilkan Data Sampel (Dummy)"}
                 </button>
             </div>
         </div>
