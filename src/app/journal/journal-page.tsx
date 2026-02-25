@@ -3,9 +3,9 @@
 import { useState, useRef } from "react"
 import { format, parseISO } from "date-fns"
 import { id as localeID, enUS } from "date-fns/locale"
-import { createJournalEntry, deleteJournalEntry } from "./actions"
+import { addJournal as createJournalEntry, deleteJournal as deleteJournalEntry } from "./actions"
 import { BottomNav } from "@/components/bottom-nav"
-import { ImagePlus, Send, SmilePlus, Trash2, Heart, ChevronLeft, ChevronRight, CalendarDays, X } from "lucide-react"
+import { ImagePlus, Send, SmilePlus, Trash2, Heart, ChevronLeft, ChevronRight, CalendarDays, X, MessageCircle } from "lucide-react"
 import { toast } from "@/components/ui/toast"
 import { useLanguage } from "@/lib/language-context"
 
@@ -23,15 +23,147 @@ export type JournalEntry = {
     mood: string | null
     createdAt: string | null
     user: JournalUser
+    likes: { id: number, userId: number }[]
+    comments: { id: number, userId: number, content: string, user: JournalUser, createdAt: string | null }[]
 }
 
 import { UserAvatar } from "@/components/user-avatar"
+import { toggleLike, addComment } from "./actions"
 
 const ITEMS_PER_PAGE = 5
 
 function todayString() {
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+}
+
+function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { entry: JournalEntry, currentUserId: number, onDelete: (id: string) => void, locale: any, lang: string, t: any }) {
+    const hasLiked = entry.likes?.some(l => l.userId === currentUserId)
+    const [likeCount, setLikeCount] = useState(entry.likes?.length || 0)
+    const [isLiked, setIsLiked] = useState(hasLiked)
+    const [showComments, setShowComments] = useState(false)
+    const [commentText, setCommentText] = useState("")
+    const [comments, setComments] = useState(entry.comments || [])
+    const [isLiking, setIsLiking] = useState(false)
+    const [isCommenting, setIsCommenting] = useState(false)
+
+    const handleLike = async () => {
+        if (isLiking) return
+        setIsLiking(true)
+        setIsLiked(!isLiked)
+        setLikeCount(prev => isLiked ? prev - 1 : prev + 1)
+        await toggleLike(entry.id)
+        setIsLiking(false)
+    }
+
+    const handleComment = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!commentText.trim() || isCommenting) return
+        setIsCommenting(true)
+        const res = await addComment(entry.id, commentText)
+        if (res.success) {
+            setComments([...comments, {
+                id: Date.now(),
+                userId: currentUserId,
+                content: commentText.trim(),
+                user: { name: t.you || "Anda", role: "parent", avatarUrl: null },
+                createdAt: new Date().toISOString()
+            }])
+            setCommentText("")
+        }
+        setIsCommenting(false)
+    }
+
+    return (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex gap-3 items-center">
+                    <UserAvatar name={entry.user.name} avatarUrl={entry.user.avatarUrl} />
+                    <div>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100">{entry.user.name}</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {entry.createdAt ? format(parseISO(entry.createdAt), "dd MMM yyyy • HH:mm", { locale }) : (lang === "id" ? "Baru saja" : "Just now")}
+                            {entry.mood && <span className="ml-2 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{entry.mood}</span>}
+                        </p>
+                    </div>
+                </div>
+                {entry.userId === currentUserId && (
+                    <button onClick={() => onDelete(entry.id)} title="Hapus jurnal" aria-label="Hapus jurnal" className="text-slate-300 hover:text-red-500 transition-colors p-1">
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
+
+            <p className="text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap ml-[52px]">
+                {entry.content}
+            </p>
+
+            {entry.mediaUrls && (() => {
+                try {
+                    const urls = JSON.parse(entry.mediaUrls)
+                    return urls.map((url: string, idx: number) => (
+                        <div key={idx} className="mt-4 ml-[52px] rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                            <img src={url} alt="Journal Attachment" className="w-full max-h-[300px] object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                        </div>
+                    ))
+                } catch { return null }
+            })()}
+
+            <div className="ml-[52px] mt-4 pt-4 border-t border-slate-50 dark:border-slate-800 flex gap-4">
+                <button 
+                    onClick={handleLike} 
+                    disabled={isLiking}
+                    className={`flex items-center gap-1.5 text-sm transition-colors ${isLiked ? 'text-rose-500 font-medium' : 'text-slate-500 hover:text-rose-500'}`}
+                >
+                    <Heart className={`w-5 h-5 ${isLiked ? 'fill-rose-500' : ''}`} /> 
+                    <span>{likeCount > 0 ? likeCount : t.like}</span>
+                </button>
+                <button 
+                    onClick={() => setShowComments(!showComments)}
+                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-emerald-600 transition-colors"
+                >
+                    <MessageCircle className="w-5 h-5" /> 
+                    <span>{comments.length > 0 ? comments.length : 'Komentar'}</span>
+                </button>
+            </div>
+
+            {showComments && (
+                <div className="ml-[52px] mt-4 pt-4 border-t border-slate-50 dark:border-slate-800 space-y-4">
+                    {comments.map((c) => (
+                        <div key={c.id} className="flex gap-3 text-sm">
+                             <UserAvatar name={c.user.name} avatarUrl={c.user.avatarUrl} className="w-8 h-8 flex-shrink-0" />
+                             <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none w-full">
+                                 <h4 className="font-bold text-slate-800 dark:text-slate-200">{c.user.name}</h4>
+                                 <p className="text-slate-600 dark:text-slate-300 mt-1">{c.content}</p>
+                                 <span className="text-xs text-slate-400 mt-2 block">
+                                     {c.createdAt ? format(parseISO(c.createdAt), "dd MMM yyyy • HH:mm", { locale }) : "Baru saja"}
+                                 </span>
+                             </div>
+                        </div>
+                    ))}
+
+                    <form onSubmit={handleComment} className="flex gap-2 items-end mt-2">
+                        <div className="relative w-full">
+                           <textarea
+                               value={commentText}
+                               onChange={e => setCommentText(e.target.value)}
+                               placeholder="Tulis komentar..."
+                               className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-2xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none h-[44px] min-h-[44px]"
+                               rows={1}
+                           />
+                        </div>
+                        <button 
+                            type="submit" 
+                            disabled={!commentText.trim() || isCommenting}
+                            className="bg-emerald-600 text-white p-2.5 rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shrink-0"
+                        >
+                            <Send className="w-5 h-5" />
+                        </button>
+                    </form>
+                </div>
+            )}
+        </div>
+    )
 }
 
 export default function JournalPage({ initialJournals, currentUserId }: { initialJournals: JournalEntry[], currentUserId: number }) {
@@ -99,7 +231,6 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
             setMediaUrl("")
             setFilterDate(todayString())
             setCurrentPage(1)
-            window.location.reload()
         } else {
             toast(t.journalFailed, "error")
         }
@@ -230,50 +361,17 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
                             <p className="whitespace-pre-line">{filterDate ? t.noJournalFiltered : t.noJournal}</p>
                         </div>
                     ) : (
-                        pagedJournals.map((entry) => {
-                            return (
-                                <div key={entry.id} className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex gap-3 items-center">
-                                            <UserAvatar name={entry.user.name} avatarUrl={entry.user.avatarUrl} />
-                                            <div>
-                                                <h3 className="font-bold text-slate-800 dark:text-slate-100">{entry.user.name}</h3>
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                                    {entry.createdAt ? format(parseISO(entry.createdAt), "dd MMM yyyy • HH:mm", { locale }) : (lang === "id" ? "Baru saja" : "Just now")}
-                                                    {entry.mood && <span className="ml-2 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{entry.mood}</span>}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {entry.userId === currentUserId && (
-                                            <button onClick={() => handleDelete(entry.id)} title="Hapus jurnal" aria-label="Hapus jurnal" className="text-slate-300 hover:text-red-500 transition-colors p-1">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    <p className="text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap ml-[52px]">
-                                        {entry.content}
-                                    </p>
-
-                                    {entry.mediaUrls && (() => {
-                                        try {
-                                            const urls = JSON.parse(entry.mediaUrls)
-                                            return urls.map((url: string, idx: number) => (
-                                                <div key={idx} className="mt-4 ml-[52px] rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                                                    <img src={url} alt="Journal Attachment" className="w-full max-h-[300px] object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                                                </div>
-                                            ))
-                                        } catch { return null }
-                                    })()}
-
-                                    <div className="ml-[52px] mt-4 pt-4 border-t border-slate-50 dark:border-slate-800 flex gap-4">
-                                        <button className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-rose-500 transition-colors">
-                                            <Heart className="w-4 h-4" /> <span>{t.like}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )
-                        })
+                        pagedJournals.map((entry) => (
+                            <JournalPostItem 
+                                key={entry.id} 
+                                entry={entry} 
+                                currentUserId={currentUserId} 
+                                onDelete={handleDelete}
+                                locale={locale}
+                                lang={lang}
+                                t={t}
+                            />
+                        ))
                     )}
                 </div>
 

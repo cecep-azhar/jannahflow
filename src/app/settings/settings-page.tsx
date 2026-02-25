@@ -666,7 +666,49 @@ function ProSettings({ initialToken }: { initialToken: string }) {
     );
 }
 
-export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, showInspirasi, initialTarget, initialVisi, initialMisi }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, showInspirasi: boolean, initialTarget: string, initialVisi: string, initialMisi: string }) {
+function TimezoneSettings({ initialTimezone }: { initialTimezone: string }) {
+    const [tz, setTz] = useState(initialTimezone || "Asia/Jakarta");
+    const [isSaving, setIsSaving] = useState(false);
+    
+    return (
+        <form action={async () => {
+            setIsSaving(true);
+            const res = await updateSystemStat("timezone", tz);
+            setIsSaving(false);
+            if (res.error) alert(res.error);
+            else alert("Zona Waktu berhasil disimpan");
+            window.location.reload();
+        }} className="space-y-4">
+            <div>
+               <h3 className="font-bold text-slate-800 dark:text-slate-200">Zona Waktu (Timezone)</h3>
+               <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Secara default, aplikasi mendeteksi waktu dari perangkat lokal Anda.
+                  Pilih paksa jika Anda ingin memvalidasi dan mencatat menggunakan standar Waktu Indonesia lainnya (Barat/Tengah/Timur).
+               </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+                <select 
+                    value={tz}
+                    onChange={(e) => setTz(e.target.value)}
+                    className="flex-1 p-3 border border-emerald-200 dark:border-emerald-800 rounded-lg text-sm bg-white dark:bg-slate-900 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                >
+                    <option value="Asia/Jakarta">Waktu Indonesia Barat (WIB - Jakarta)</option>
+                    <option value="Asia/Makassar">Waktu Indonesia Tengah (WITA - Makassar)</option>
+                    <option value="Asia/Jayapura">Waktu Indonesia Timur (WIT - Jayapura)</option>
+                </select>
+                <button 
+                   type="submit" 
+                   disabled={isSaving}
+                   className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+                >
+                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan
+                </button>
+            </div>
+        </form>
+    );
+}
+
+export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, showInspirasi, initialTarget, initialVisi, initialMisi, initialTimezone }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, showInspirasi: boolean, initialTarget: string, initialVisi: string, initialMisi: string, initialTimezone: string }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
             {/* Emerald Header Banner */}
@@ -709,9 +751,14 @@ export default function SettingsPage({ users, worships, initialProToken, initial
 
         <hr className="border-slate-200 dark:border-slate-800" />
 
-
         <div>
             <LanguageSettings />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <div>
+            <TimezoneSettings initialTimezone={initialTimezone} />
         </div>
 
         <hr className="border-slate-200 dark:border-slate-800" />

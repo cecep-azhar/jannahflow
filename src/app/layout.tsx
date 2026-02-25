@@ -7,12 +7,14 @@ import { LanguageProvider } from "@/lib/language-context";
 import { Header } from "@/components/header";
 import { ToastProvider } from "@/components/ui/toast";
 import { LoadingProvider } from "@/components/loading-provider";
+import { TimeValidator } from "@/components/time-validator";
 import { db } from "@/db";
 import { systemStats, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyProToken } from "@/lib/pro-utils";
 import { headers } from "next/headers";
 import { ensureDb } from "@/lib/ensure-db";
+import { cookies } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,7 +90,7 @@ export default async function RootLayout({
         `}} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-200 dark:bg-slate-900/80 transition-colors flex justify-center`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-200 dark:bg-slate-900 transition-colors flex justify-center`}
       >
         <ThemeProvider
             attribute="class"
@@ -102,6 +104,7 @@ export default async function RootLayout({
                   <SplashScreen />
                   <Header familyName={familyName} isPro={isPro} user={currentUser} />
                   <main className="flex-1 flex flex-col w-full min-w-0">
+                      <TimeValidator serverTime={Date.now()} />
                       {children}
                   </main>
                   <ToastProvider />

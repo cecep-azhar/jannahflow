@@ -1,7 +1,7 @@
 import { db } from "@/db";
-import { users, bondingActivities } from "@/db/schema";
+import { bondingActivities } from "@/db/schema";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import BondingPageClient from "./bonding-page";
 import { bondingSeedData } from "@/lib/bonding-seed";
 import { getCurrentUser, canViewBounding } from "@/lib/auth-utils";
@@ -30,7 +30,7 @@ export default async function BondingPageLoader() {
            // if drizzle kit wasn't pushed manually by user.
            
            // A safe check if table exists: doing a raw query fallback
-           await db.run(require('drizzle-orm').sql`CREATE TABLE IF NOT EXISTS \`bonding_activities\` (\`id\` text PRIMARY KEY NOT NULL, \`title\` text NOT NULL, \`description\` text, \`category\` text NOT NULL, \`is_completed\` integer DEFAULT false, \`completed_at\` text)`);
+           await db.run(sql`CREATE TABLE IF NOT EXISTS \`bonding_activities\` (\`id\` text PRIMARY KEY NOT NULL, \`title\` text NOT NULL, \`description\` text, \`category\` text NOT NULL, \`is_completed\` integer DEFAULT false, \`completed_at\` text)`);
 
             for (let i = 0; i < bondingSeedData.length; i += 50) {
                 const chunk = bondingSeedData.slice(i, i + 50).map(item => ({

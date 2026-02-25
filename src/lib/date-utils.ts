@@ -1,8 +1,19 @@
 import { cookies } from "next/headers";
 import { format as dateFnsFormat } from "date-fns";
 
+import { db } from "@/db";
+import { systemStats } from "@/db/schema";
+import { eq } from "drizzle-orm";
+
 export async function getServerTimezone() {
   try {
+     const forcedTz = await db.query.systemStats.findFirst({
+         where: eq(systemStats.key, "timezone")
+     });
+     if (forcedTz && forcedTz.value) {
+         return forcedTz.value;
+     }
+
      const cookieStore = await cookies();
      return cookieStore.get("device-tz")?.value || "Asia/Jakarta";
   } catch {

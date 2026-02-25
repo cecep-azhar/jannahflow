@@ -50,15 +50,20 @@ export default async function SettingsPageLoader() {
     // Default to true if not set
     const showInspirasi = inspirasiStat ? inspirasiStat.value === "1" : true;
 
+    const timezoneStat = await db.query.systemStats.findFirst({
+      where: eq(systemStats.key, "timezone")
+    });
+    
     return <SettingsPage 
       users={allUsers} 
       worships={allWorships} 
       initialProToken={tokenStat?.value || ""} 
-      initialFamilyName={nameStat?.value || "Keluarga"} 
-      showInspirasi={showInspirasi}
+      initialFamilyName={nameStat?.value || ""}
       initialTarget={targetStat?.value || ""}
       initialVisi={visiStat?.value || ""}
       initialMisi={misiStat?.value || ""}
+      initialTimezone={timezoneStat?.value || ""}
+      showInspirasi={inspirasiStat ? inspirasiStat.value === "1" : true}
     />;
   } catch (e) {
     console.error("Settings page DB error:", e);

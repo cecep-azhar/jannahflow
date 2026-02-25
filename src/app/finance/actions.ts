@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { getCurrentUser, canDeleteRecord, canEditRecord } from "@/lib/auth-utils";
 
 async function verifyNotChild() {
     const cookieStore = await cookies();
@@ -37,9 +38,10 @@ export async function addAccount(formData: FormData) {
   redirect("/finance/accounts");
 }
 
-export async function deleteAccount(formData: FormData) {
+export async function deleteAccount(id: string) {
+  const authUser = await getCurrentUser();
+  if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
-  const id = formData.get("id") as string;
   await db.delete(accounts).where(eq(accounts.id, id));
   revalidatePath("/finance/accounts");
   revalidatePath("/finance");
@@ -48,6 +50,8 @@ export async function deleteAccount(formData: FormData) {
 // ==================== TRANSACTIONS ====================
 
 export async function addTransaction(formData: FormData) {
+  const authUser = await getCurrentUser();
+  if (!canEditRecord(authUser)) return { error: "Unauthorized" };
   await verifyNotChild();
   const accountId = formData.get("accountId") as string;
   const type = formData.get("type") as "INCOME" | "EXPENSE" | "TRANSFER";
@@ -100,14 +104,10 @@ export async function addTransaction(formData: FormData) {
   redirect("/finance/transactions");
 }
 
-export async function deleteTransaction(formData: FormData) {
+export async function deleteTransaction(id: string, accountId: string, amount: number, type: "INCOME" | "EXPENSE") {
+  const authUser = await getCurrentUser();
+  if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
-  const id = formData.get("id") as string;
-  const accountId = formData.get("accountId") as string;
-  const amountStr = formData.get("amount") as string;
-  const type = formData.get("type") as string;
-
-  const amount = parseInt(amountStr) || 0;
 
   // Revert balance
   if (accountId && amount > 0) {
@@ -130,6 +130,8 @@ export async function deleteTransaction(formData: FormData) {
 // ==================== BUDGETS ====================
 
 export async function addBudget(formData: FormData) {
+  const authUser = await getCurrentUser();
+  if (!canEditRecord(authUser)) return { error: "Unauthorized" };
   await verifyNotChild();
   const category = formData.get("category") as string;
   const limitStr = formData.get("monthlyLimit") as string;
@@ -149,16 +151,19 @@ export async function addBudget(formData: FormData) {
   redirect("/finance/budgets");
 }
 
-export async function deleteBudget(formData: FormData) {
+export async function deleteBudget(id: number) {
+  const authUser = await getCurrentUser();
+  if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
-  const id = formData.get("id") as string;
-  await db.delete(budgets).where(eq(budgets.id, parseInt(id)));
+  await db.delete(budgets).where(eq(budgets.id, id));
   revalidatePath("/finance/budgets");
 }
 
 // ==================== ASSETS ====================
 
 export async function addAsset(formData: FormData) {
+  const authUser = await getCurrentUser();
+  if (!canEditRecord(authUser)) return { error: "Unauthorized" };
   await verifyNotChild();
   const name = formData.get("name") as string;
   const purchasePriceStr = formData.get("purchasePrice") as string;
@@ -181,16 +186,19 @@ export async function addAsset(formData: FormData) {
   redirect("/finance/assets");
 }
 
-export async function deleteAsset(formData: FormData) {
+export async function deleteAsset(id: number) {
+  const authUser = await getCurrentUser();
+  if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
-  const id = formData.get("id") as string;
-  await db.delete(assets).where(eq(assets.id, parseInt(id)));
+  await db.delete(assets).where(eq(assets.id, id));
   revalidatePath("/finance/assets");
 }
 
 // ==================== SAVING GOALS ====================
 
 export async function addSavingGoal(formData: FormData) {
+  const authUser = await getCurrentUser();
+  if (!canEditRecord(authUser)) return { error: "Unauthorized" };
   await verifyNotChild();
   const name = formData.get("name") as string;
   const targetAmountStr = formData.get("targetAmount") as string;
@@ -213,26 +221,26 @@ export async function addSavingGoal(formData: FormData) {
   redirect("/finance/saving-goals");
 }
 
-export async function addDeposit(formData: FormData) {
+export async function addSavingProgress(id: number, additionalAmount: number) {
+  const authUser = await getCurrentUser();
+  if (!canEditRecord(authUser)) return { error: "Unauthorized" };
   await verifyNotChild();
-  const id = formData.get("id") as string;
-  const amountStr = formData.get("amount") as string;
-  const amount = parseInt(amountStr.replace(/\D/g, "")) || 0;
 
-  if (!id || amount <= 0) return;
+  if (!id || additionalAmount <= 0) return;
 
-  const goal = await db.query.savingGoals.findFirst({ where: eq(savingGoals.id, parseInt(id)) });
+  const goal = await db.query.savingGoals.findFirst({ where: eq(savingGoals.id, id) });
   if (!goal) return;
 
-  const newAmount = Math.min(goal.currentAmount + amount, goal.targetAmount);
-  await db.update(savingGoals).set({ currentAmount: newAmount }).where(eq(savingGoals.id, parseInt(id)));
+  const newAmount = Math.min(goal.currentAmount + additionalAmount, goal.targetAmount);
+  await db.update(savingGoals).set({ currentAmount: newAmount }).where(eq(savingGoals.id, id));
 
   revalidatePath("/finance/saving-goals");
 }
 
-export async function deleteSavingGoal(formData: FormData) {
+export async function deleteSavingGoal(id: number) {
+  const authUser = await getCurrentUser();
+  if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
-  const id = formData.get("id") as string;
-  await db.delete(savingGoals).where(eq(savingGoals.id, parseInt(id)));
+  await db.delete(savingGoals).where(eq(savingGoals.id, id));
   revalidatePath("/finance/saving-goals");
 }
