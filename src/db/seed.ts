@@ -39,10 +39,8 @@ async function seed() {
     { name: "Tarawih", points: 10, category: "sunnah", type: "boolean" },
     { name: "Tulis Agenda Besok", points: 2, category: "sunnah", type: "boolean" },
     { name: "Belajar & Membaca Buku", points: 10, category: "sunnah", type: "boolean" },
-    { name: "Istigfar 100x", points: 5, category: "sunnah", type: "boolean" },
-    { name: "Bantu Orang Tua Banyak", points: 20, category: "sunnah", type: "boolean" },
-    { name: "Bantu Orang Tua Sedang", points: 10, category: "sunnah", type: "boolean" },
-    { name: "Bantu Orang Tua Sedikit", points: 5, category: "sunnah", type: "boolean" },
+    { name: "Istigfar 100x", points: 5, category: "sunnah", type: "boolean", levels: JSON.stringify([{label: "100x", points: 5}, {label: "300x", points: 15}, {label: "1000x", points: 50}]) },
+    { name: "Bantu Orang Tua", points: 5, category: "sunnah", type: "boolean", levels: JSON.stringify([{label: "Sedikit", points: 5}, {label: "Sedang", points: 10}, {label: "Banyak", points: 25}]) },
   ];
 
   await db.insert(worships).values(worshipList as any);

@@ -1,30 +1,26 @@
 import { db } from "@/db";
 import { users, worships, systemStats } from "@/db/schema";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import SettingsPage from "./settings-page";
+import { getCurrentUser, canAccessSettings } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page() {
-  const cookieStore = await cookies();
-  const userIdStr = cookieStore.get("mutabaah-user-id")?.value;
+export default async function SettingsPageLoader() {
+  const user = await getCurrentUser();
 
-  if (!userIdStr) redirect("/auth");
+  if (!user) {
+    redirect("/auth");
+  }
 
-  const userId = parseInt(userIdStr);
+  if (!canAccessSettings(user)) {
+    redirect("/dashboard");
+  }
 
   try {
     // Check if user is parent
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, userId),
-    });
-
-    if (!user || user.role !== "parent") {
-      redirect("/dashboard");
-    }
-
+    const hasUsers = await db.select().from(users).limit(1);
     const allUsers = await db.select().from(users);
     const allWorships = await db.select().from(worships);
     

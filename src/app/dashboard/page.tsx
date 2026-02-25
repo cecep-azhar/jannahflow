@@ -15,6 +15,7 @@ import { format, getDayOfYear } from "date-fns";
 import { parseQuotes } from "@/db/seed-quotes";
 const quotesData = parseQuotes();
 import { getLocalTodayStr, getLocalFormattedToday, getLocalDateObj } from "@/lib/date-utils";
+import { calculateAge, getIslamicLevel, IslamicLevel } from "@/lib/level-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -56,19 +57,30 @@ export default async function DashboardPage() {
                 eq(mutabaahLogs.date, today)
             )
           );
+          const age = calculateAge(member.birthDate);
+          const level = getIslamicLevel(age, member.role);
+
+          const memberWorships = allWorships.filter(w => {
+              if (!w.targetLevels) return true; // fallback to all
+              try {
+                  const targets: IslamicLevel[] = JSON.parse(w.targetLevels);
+                  if (targets.length === 0) return false;
+                  return targets.includes(level);
+              } catch { return true; }
+          });
 
           // Calculate points
-          const memberPoints = allWorships.reduce((acc, w) => {
+          const memberPoints = memberWorships.reduce((acc, w) => {
                const log = logs.find(l => l.worshipId === w.id);
                if (!log) return acc;
-               if (w.type === 'boolean') return acc + (log.value > 0 ? w.points : 0);
+               if (w.levels && log.value > 0) return acc + log.value;
                return acc + (log.value > 0 ? w.points : 0); 
           }, 0);
 
           const target = member.targetPoints || 100;
 
           // Exclude penalty points from max points
-          const memberMaxPoints = allWorships.reduce((acc, curr) => acc + (curr.points > 0 ? curr.points : 0), 0);
+          const memberMaxPoints = memberWorships.reduce((acc, curr) => acc + (curr.points > 0 ? curr.points : 0), 0);
           const computedTarget = memberMaxPoints > 0 ? memberMaxPoints : target;
 
           return {
@@ -247,17 +259,27 @@ export default async function DashboardPage() {
       eq(mutabaahLogs.date, today)
     )
   );
-  const totalPoints = allWorships.reduce((acc, curr) => {
+
+  const age = calculateAge(user.birthDate);
+  const level = getIslamicLevel(age, user.role);
+
+  const memberWorships = allWorships.filter(w => {
+      if (!w.targetLevels) return true;
+      try {
+          const targets: IslamicLevel[] = JSON.parse(w.targetLevels);
+          if (targets.length === 0) return false;
+          return targets.includes(level);
+      } catch { return true; }
+  });
+
+  const totalPoints = memberWorships.reduce((acc, curr) => {
     const log = memberLogs.find(l => l.worshipId === curr.id);
     if (!log) return acc;
-    if (curr.type === 'boolean') {
-      return acc + (log.value > 0 ? curr.points : 0);
-    } else {
-      return acc + (log.value > 0 ? curr.points : 0); 
-    }
+    if (curr.levels && log.value > 0) return acc + log.value;
+    return acc + (log.value > 0 ? curr.points : 0);
   }, 0);
 
-  const maxPoints = allWorships.reduce((acc, curr) => acc + (curr.points > 0 ? curr.points : 0), 0);
+  const maxPoints = memberWorships.reduce((acc, curr) => acc + (curr.points > 0 ? curr.points : 0), 0);
 
   // Fetch Quotes with auto-seed fallback
   let allQuotes: { id?: number; text: string; source: string; category: string }[] = [];

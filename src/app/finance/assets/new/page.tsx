@@ -30,12 +30,12 @@ export default function NewAssetPage() {
 
                 <div>
                     <label htmlFor="purchasePrice" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Harga Beli / Modal (Rp)</label>
-                    <input type="text" id="purchasePrice" name="purchasePrice" required placeholder="0" className="w-full border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-lg px-4 py-2 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                    <input type="number" min="0" id="purchasePrice" name="purchasePrice" required placeholder="0" className="w-full border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-lg px-4 py-2 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                 </div>
 
                 <div>
                     <label htmlFor="currentValuation" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Estimasi Nilai Saat Ini (Rp)</label>
-                    <input type="text" id="currentValuation" name="currentValuation" required placeholder="0" className="w-full border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-lg px-4 py-2 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                    <input type="number" min="0" id="currentValuation" name="currentValuation" required placeholder="0" className="w-full border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-lg px-4 py-2 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                     <p className="text-xs text-slate-500 mt-1">Nilai ini digunakan untuk kalkulasi Nisab Zakat jika aset bersifat likuid atau niat diperdagangkan.</p>
                 </div>
 

@@ -51,7 +51,7 @@ function SetupForm() {
             PIN Orang Tua
           </label>
           <input
-            type="text" // Simple text for now as per user request "sesimpel mungkin", maybe they want to see it? or password? Let's use password for PIN.
+            type="number"
             name="pin"
             value={pin}
             onChange={(e) => setPin(e.target.value)}

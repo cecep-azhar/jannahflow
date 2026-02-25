@@ -8,7 +8,7 @@ import { Header } from "@/components/header";
 import { ToastProvider } from "@/components/ui/toast";
 import { LoadingProvider } from "@/components/loading-provider";
 import { db } from "@/db";
-import { systemStats } from "@/db/schema";
+import { systemStats, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyProToken } from "@/lib/pro-utils";
 import { headers } from "next/headers";
@@ -47,6 +47,7 @@ export default async function RootLayout({
 }>) {
   let familyName = "Family";
   let isPro = false;
+  let currentUser: { name: string; avatarUrl: string | null } | undefined = undefined;
   try {
     await ensureDb();
     const nameStat = await db.query.systemStats.findFirst({
@@ -62,6 +63,17 @@ export default async function RootLayout({
     const host = headersList.get("host") || "localhost";
     const hostname = host.split(":")[0];
     isPro = await verifyProToken(tokenStat?.value, hostname);
+    
+    const cookieStore = await cookies();
+    const userIdStr = cookieStore.get("mutabaah-user-id")?.value;
+    if (userIdStr) {
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, parseInt(userIdStr)),
+      });
+      if (user) {
+        currentUser = { name: user.name, avatarUrl: user.avatarUrl };
+      }
+    }
   } catch {
     // DB not ready yet (first deploy); use safe defaults
   }
@@ -88,7 +100,7 @@ export default async function RootLayout({
             <LoadingProvider>
               <div className="w-full max-w-3xl bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen relative shadow-2xl flex flex-col overflow-x-hidden">
                   <SplashScreen />
-                  <Header familyName={familyName} isPro={isPro} />
+                  <Header familyName={familyName} isPro={isPro} user={currentUser} />
                   <main className="flex-1 flex flex-col w-full min-w-0">
                       {children}
                   </main>

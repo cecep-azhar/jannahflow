@@ -1,28 +1,21 @@
 import { db } from "@/db";
 import { users, bondingActivities } from "@/db/schema";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import BondingPageClient from "./bonding-page";
 import { bondingSeedData } from "@/lib/bonding-seed";
+import { getCurrentUser, canViewBounding } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function BondingPage() {
-  const cookieStore = await cookies();
-  const userIdStr = cookieStore.get("mutabaah-user-id")?.value;
+export default async function BondingPageLoader() {
+  const user = await getCurrentUser();
 
-  if (!userIdStr) {
+  if (!user) {
     redirect("/auth");
   }
 
-  const userId = parseInt(userIdStr);
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, userId),
-  });
-
-  if (!user || user.role !== "parent") {
-    // Only parents can access the bonding module
+  if (!canViewBounding(user)) {
     redirect("/dashboard");
   }
 

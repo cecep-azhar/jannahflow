@@ -23,6 +23,8 @@ export const worships = sqliteTable("worships", {
   points: integer("points").notNull().default(10),
   targetUnit: integer("target_unit"), // For counters, e.g. 100 dzikir
   iconName: text("icon_name"), // Lucide icon name
+  levels: text("levels"), // JSON string array of { label: string, points: number }
+  targetLevels: text("target_levels"), // JSON string array of IslamicLevel (e.g. '["parent", "baligh"]')
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -101,6 +103,21 @@ export const journals = sqliteTable("journals", {
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const journalLikes = sqliteTable("journal_likes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  journalId: text("journal_id").references(() => journals.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const journalComments = sqliteTable("journal_comments", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  journalId: text("journal_id").references(() => journals.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  content: text("content").notNull(),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const bondingActivities = sqliteTable("bonding_activities", {
   id: text("id").primaryKey(), // UUID
   title: text("title").notNull(),
@@ -112,14 +129,40 @@ export const bondingActivities = sqliteTable("bonding_activities", {
   photoUrl: text("photo_url"), // Foto kegiatan (base64 or URL)
 });
 
-export const journalsRelations = relations(journals, ({ one }) => ({
+export const journalsRelations = relations(journals, ({ one, many }) => ({
 	user: one(users, {
 		fields: [journals.userId],
 		references: [users.id],
 	}),
+  likes: many(journalLikes),
+  comments: many(journalComments),
+}));
+
+export const journalLikesRelations = relations(journalLikes, ({ one }) => ({
+  journal: one(journals, {
+    fields: [journalLikes.journalId],
+    references: [journals.id],
+  }),
+  user: one(users, {
+    fields: [journalLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const journalCommentsRelations = relations(journalComments, ({ one }) => ({
+  journal: one(journals, {
+    fields: [journalComments.journalId],
+    references: [journals.id],
+  }),
+  user: one(users, {
+    fields: [journalComments.userId],
+    references: [users.id],
+  }),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
   journals: many(journals),
+  journalLikes: many(journalLikes),
+  journalComments: many(journalComments),
 }));
 

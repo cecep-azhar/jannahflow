@@ -2,36 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Languages, Star, Settings } from "lucide-react";
-import { toast } from "@/components/ui/toast";
+import { Sun, Moon, Star, Settings } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import Image from "next/image";
 import Link from "next/link";
 import logoTextGreen from "@/app/logo/logo-jannahflow-logo-text-green.png";
 import logoTextWhite from "@/app/logo/logo-jannahflow-logo-text-white.png";
+import { UserAvatar } from "./user-avatar";
 
-export function Header({ familyName = "Family", isPro = false }: { familyName?: string, isPro?: boolean }) {
+export function Header({ 
+    familyName = "Family", 
+    isPro = false,
+    user
+}: { 
+    familyName?: string, 
+    isPro?: boolean,
+    user?: { name: string; avatarUrl: string | null }
+}) {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const { lang, t, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
 
   // Prevent hydration mismatch
   useEffect(() => {
-    const tm = setTimeout(() => setMounted(true), 0);
-    return () => clearTimeout(tm);
+    setMounted(true);
   }, []);
-
-  const handleToggleLanguage = () => {
-    toggleLanguage();
-    const nextLang = lang === "id" ? "English" : "Indonesia";
-    toast(t.langSwitched(nextLang), "success");
-  };
 
   if (!mounted) return null;
 
   return (
     <header className="w-full py-4 px-6 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
-      <div className="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
+      <Link href="/dashboard" className="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
          {resolvedTheme === "dark" ? (
              <Image src={logoTextWhite} alt="JannahFlow" height={28} className="w-auto" />
          ) : (
@@ -43,9 +44,14 @@ export function Header({ familyName = "Family", isPro = false }: { familyName?: 
                <Star className="w-3 h-3 fill-current" />
             </span>
          )}
-      </div>
+      </Link>
       
       <div className="flex items-center gap-2">
+         {user && (
+           <div className="flex items-center gap-2 mr-1">
+             <UserAvatar name={user.name} avatarUrl={user.avatarUrl} size="sm" />
+           </div>
+         )}
          <button
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"

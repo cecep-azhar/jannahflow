@@ -5,18 +5,11 @@ import { addFamilyMember, deleteFamilyMember, addWorshipItem, deleteWorshipItem,
 import { Trash, Plus, AlertCircle, CheckCircle, Save, Pencil, User, Shield, Heart, Star, Smile, LucideIcon } from "lucide-react";
 import Link from "next/link";
 
-// Matches AuthUI mapping
-const IconMap: Record<string, LucideIcon> = {
-  "user-check": Shield,
-  "heart": Heart,
-  "star": Star,
-  "smile": Smile,
-  "default": User,
-  "user": User, // Added for fallback
-};
+import { UserAvatar } from "@/components/user-avatar";
+import { calculateAge, getIslamicLevel, LEVEL_LABELS, IslamicLevel } from "@/lib/level-utils";
 
 type UserData = { id: number; name: string; role: string; avatarUrl: string | null; pin: string | null; gender: string | null; birthDate: string | null; };
-type WorshipData = { id: number; name: string; category: string; points: number };
+type WorshipData = { id: number; name: string; category: string; points: number; levels?: string | null; targetLevels?: string | null };
 
 function FamilySettings({ users }: { users: UserData[] }) {
     const [isAdding, setIsAdding] = useState(false);
@@ -42,10 +35,18 @@ function FamilySettings({ users }: { users: UserData[] }) {
                 <div id="family-form-container" className="scroll-mt-24">
                 <form key={editingItem ? `edit-${editingItem.id}` : 'add-new'} action={async (formData) => {
                     if (editingItem) {
-                        await updateFamilyMember(editingItem.id, formData);
+                        const res = await updateFamilyMember(editingItem.id, formData);
+                        if (res?.error) {
+                            alert(res.error);
+                            return;
+                        }
                         setEditingItem(null);
                     } else {
-                        await addFamilyMember(formData);
+                        const res = await addFamilyMember(formData);
+                        if (res?.error) {
+                            alert(res.error);
+                            return;
+                        }
                         setIsAdding(false);
                     }
                 }} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
@@ -80,9 +81,11 @@ function FamilySettings({ users }: { users: UserData[] }) {
                             type="date"
                             placeholder="Tanggal Lahir" 
                             defaultValue={editingItem?.birthDate || ""}
+                            required
                             className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950" 
                         />
                         <input 
+                            type="number"
                             name="pin" 
                             placeholder="PIN (Khusus Orang Tua)" 
                             defaultValue={editingItem?.pin || ""}
@@ -118,16 +121,27 @@ function FamilySettings({ users }: { users: UserData[] }) {
 
             <div className="space-y-2">
                 {users.map(u => {
-                    const Icon = IconMap[u.avatarUrl || "default"] || IconMap["default"];
+                    const age = calculateAge(u.birthDate);
+                    const islamicLevel = getIslamicLevel(age, u.role);
+                    const levelLabel = LEVEL_LABELS[islamicLevel];
+                    
                     return (
                     <div key={u.id} className="flex justify-between items-center p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${u.role === 'parent' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400' : 'bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400'}`}>
-                                <Icon className="w-5 h-5" />
-                            </div>
+                            <UserAvatar name={u.name} avatarUrl={u.avatarUrl} className={u.role === 'parent' ? 'ring-2 ring-emerald-500/20' : ''} />
                             <div className="min-w-0 flex-1">
                                 <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">{u.name}</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">{u.role}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                                    <span className="uppercase">{u.role}</span>
+                                    {u.role === 'child' && age !== null && (
+                                        <>
+                                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                            <span>{age} thn</span>
+                                        </>
+                                    )}
+                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">{levelLabel}</span>
+                                </div>
                             </div>
                         </div>
                         <div className="flex gap-1">
@@ -158,15 +172,35 @@ function FamilySettings({ users }: { users: UserData[] }) {
 function WorshipSettings({ worships }: { worships: WorshipData[] }) {
     const [isAdding, setIsAdding] = useState(false);
     const [editingItem, setEditingItem] = useState<WorshipData | null>(null);
+    const [levels, setLevels] = useState<{label: string, points: number}[]>([]);
+    const [targetLevels, setTargetLevels] = useState<IslamicLevel[]>(["parent", "baligh", "tamyiz", "ghairu_tamyiz"]);
 
     const showForm = isAdding || editingItem;
 
-    // Sort: Wajib -> Sunnah -> Penalty (Negative points)
-    const sortedWorships = [...worships].sort((a, b) => {
-        if (a.points < 0 && b.points >= 0) return 1;
-        if (a.points >= 0 && b.points < 0) return -1;
-        return 0; // Keep roughly original order or sort by ID
-    });
+    // Load levels when editing
+    const handleEdit = (w: WorshipData) => {
+        setEditingItem(w);
+        setIsAdding(false);
+        try {
+            if (w.levels) setLevels(JSON.parse(w.levels));
+            else setLevels([]);
+        } catch { setLevels([]); }
+
+        try {
+            if (w.targetLevels) setTargetLevels(JSON.parse(w.targetLevels));
+            else setTargetLevels(["parent", "baligh", "tamyiz", "ghairu_tamyiz"]);
+        } catch { setTargetLevels(["parent", "baligh", "tamyiz", "ghairu_tamyiz"]); }
+        
+        setTimeout(() => document.getElementById('worship-form-container')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    };
+
+    const handleAddLevel = () => setLevels([...levels, { label: "", points: 0 }]);
+    const handleRemoveLevel = (index: number) => setLevels(levels.filter((_, i) => i !== index));
+    const handleLevelChange = (index: number, field: 'label' | 'points', value: string | number) => {
+        const newLevels = [...levels];
+        newLevels[index] = { ...newLevels[index], [field]: value };
+        setLevels(newLevels);
+    };
 
     return (
         <div className="space-y-6">
@@ -174,7 +208,7 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
                 <h3 className="font-bold text-slate-700 dark:text-slate-300">Daftar Ibadah & Penalti</h3>
                 {!showForm && (
                     <button 
-                        onClick={() => setIsAdding(true)}
+                        onClick={() => { setIsAdding(true); setLevels([]); setTargetLevels(["parent", "baligh", "tamyiz", "ghairu_tamyiz"]); }}
                         className="flex items-center gap-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm"
                     >
                         <Plus className="w-4 h-4" /> Tambah Item
@@ -185,6 +219,8 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
             {showForm && (
                 <div id="worship-form-container" className="scroll-mt-24">
                 <form key={editingItem ? `edit-${editingItem.id}` : 'add-new'} action={async (formData) => {
+                    formData.append("levels", JSON.stringify(levels));
+                    formData.append("targetLevels", JSON.stringify(targetLevels));
                     if (editingItem) {
                          await updateWorshipItem(editingItem.id, formData);
                          setEditingItem(null);
@@ -192,7 +228,7 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
                         await addWorshipItem(formData);
                         setIsAdding(false);
                     }
-                }} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
+                }} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800 space-y-4">
                      <h4 className="font-semibold text-sm text-green-700 dark:text-green-500">{editingItem ? `Edit ${editingItem.name}` : 'Tambah Item Baru'}</h4>
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <input 
@@ -205,7 +241,7 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
                         <input 
                             name="points" 
                             type="number" 
-                            placeholder="Poin (Negatif untuk Penalti)" 
+                            placeholder="Poin Default (Jika tanpa level)" 
                             required 
                             defaultValue={editingItem?.points}
                             className="p-2 border dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950" 
@@ -220,10 +256,69 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
                             <option value="kesalahan">Kesalahan</option>
                         </select>
                      </div>
-                     <div className="flex justify-end gap-2">
+
+                     {/* Levels Management */}
+                     <div className="space-y-2 border-t pt-3 border-slate-200 dark:border-slate-800">
+                        <div className="flex justify-between items-center px-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Levels / Scoring Rules (Optional)</label>
+                            <button type="button" onClick={handleAddLevel} className="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-full font-bold hover:bg-indigo-100 transition-colors">+ Add Level</button>
+                        </div>
+                        {levels.length > 0 && (
+                            <div className="space-y-2">
+                                {levels.map((lvl, idx) => (
+                                    <div key={idx} className="flex gap-2 items-center">
+                                        <input 
+                                            placeholder="Level Label (e.g. Ringan)" 
+                                            value={lvl.label}
+                                            onChange={(e) => handleLevelChange(idx, 'label', e.target.value)}
+                                            className="flex-1 p-2 text-xs border dark:border-slate-800 bg-white dark:bg-slate-950 rounded"
+                                        />
+                                        <input 
+                                            type="number" 
+                                            placeholder="Pts" 
+                                            value={lvl.points}
+                                            onChange={(e) => handleLevelChange(idx, 'points', parseInt(e.target.value) || 0)}
+                                            className="w-20 p-2 text-xs border dark:border-slate-800 bg-white dark:bg-slate-950 rounded"
+                                        />
+                                        <button type="button" onClick={() => handleRemoveLevel(idx)} className="text-red-400 hover:text-red-600 p-1"><Trash className="w-4 h-4" /></button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {levels.length === 0 && <p className="text-[10px] text-slate-400 italic px-1">No levels defined. Uses default points.</p>}
+                     </div>
+
+                     {/* Target Levels Management */}
+                     <div className="space-y-2 border-t pt-3 border-slate-200 dark:border-slate-800">
+                        <div className="px-1 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            Target Audience (Usia)
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {(Object.entries(LEVEL_LABELS) as [IslamicLevel, string][]).map(([val, label]) => {
+                                const isChecked = targetLevels.includes(val);
+                                return (
+                                    <label key={val} className={`cursor-pointer px-3 py-1.5 rounded border text-xs font-medium transition-colors ${isChecked ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800/50 dark:text-indigo-300' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400'}`}>
+                                        <input 
+                                            type="checkbox" 
+                                            className="hidden"
+                                            checked={isChecked}
+                                            onChange={(e) => {
+                                                if (e.target.checked) setTargetLevels([...targetLevels, val]);
+                                                else setTargetLevels(targetLevels.filter(lvl => lvl !== val));
+                                            }}
+                                        />
+                                        {label}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                        {targetLevels.length === 0 && <p className="text-[10px] text-red-400 italic px-1">Warning: Item ini tidak akan muncul di mutabaah siapapun jika tidak ada target yang dipilih.</p>}
+                     </div>
+
+                     <div className="flex justify-end gap-2 border-t pt-3 border-slate-200 dark:border-slate-800">
                         <button 
                             type="button" 
-                            onClick={() => { setIsAdding(false); setEditingItem(null); }} 
+                            onClick={() => { setIsAdding(false); setEditingItem(null); setLevels([]); setTargetLevels(["parent", "baligh", "tamyiz", "ghairu_tamyiz"]); }} 
                             className="text-slate-500 text-sm px-3 py-1"
                         >
                             Batal
@@ -237,8 +332,15 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
             )}
 
             <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-                {sortedWorships.map(w => {
+                {[...worships].sort((a,b) => {
+                    if (a.points < 0 && b.points >= 0) return 1;
+                    if (a.points >= 0 && b.points < 0) return -1;
+                    return 0;
+                }).map(w => {
                     const isPenalty = w.points < 0;
+                    let levelCount = 0;
+                    try { if (w.levels) levelCount = JSON.parse(w.levels).length; } catch {}
+
                     return (
                         <div key={w.id} className={`flex justify-between items-center p-3 border rounded-lg ${isPenalty ? "bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900/50" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}>
                              <div className="flex items-center gap-3">
@@ -247,23 +349,38 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <div className={`font-medium truncate ${isPenalty ? "text-red-700 dark:text-red-400" : "text-slate-700 dark:text-slate-300"}`}>{w.name}</div>
-                                    <div className="flex gap-2 text-xs">
+                                    <div className="flex gap-2 text-xs flex-wrap">
                                         <span className={`px-2 py-0.5 rounded-full ${w.category === 'wajib' ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400' : 'bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 mr-1'}`}>
                                             {w.category}
                                         </span>
-                                        <span className={`font-bold ${isPenalty ? "text-red-600 dark:text-red-500" : "text-green-600 dark:text-green-500"}`}>
-                                            {w.points > 0 ? `+${w.points}` : w.points} Poin
-                                        </span>
+                                        {levelCount > 0 ? (
+                                            <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 font-bold">
+                                                {levelCount} Levels
+                                            </span>
+                                        ) : (
+                                            <span className={`font-bold ${isPenalty ? "text-red-600 dark:text-red-500" : "text-green-600 dark:text-green-500"}`}>
+                                                {w.points > 0 ? `+${w.points}` : w.points} Poin
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Target Level Badges */}
+                                    <div className="flex gap-1 mt-1.5 flex-wrap">
+                                        {(() => {
+                                            try {
+                                                const targets: IslamicLevel[] = w.targetLevels ? JSON.parse(w.targetLevels) : ["parent", "baligh", "tamyiz", "ghairu_tamyiz"];
+                                                return targets.map(t => (
+                                                    <span key={t} className="text-[9px] uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                                        {t.split('_').join(' ')}
+                                                    </span>
+                                                ));
+                                            } catch { return null; }
+                                        })()}
                                     </div>
                                 </div>
                             </div>
                             <div className="flex gap-1">
                                 <button 
-                                    onClick={() => { 
-                                        setEditingItem(w); 
-                                        setIsAdding(false); 
-                                        setTimeout(() => document.getElementById('worship-form-container')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
-                                    }}
+                                    onClick={() => handleEdit(w)}
                                     className="text-blue-400 hover:text-blue-600 p-2" 
                                     title="Edit"
                                 >
