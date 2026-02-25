@@ -63,7 +63,8 @@ export default async function SettingsPageLoader() {
       initialVisi={visiStat?.value || ""}
       initialMisi={misiStat?.value || ""}
       initialTimezone={timezoneStat?.value || ""}
-      showInspirasi={inspirasiStat ? inspirasiStat.value === "1" : true}
+      showInspirasi={showInspirasi}
+      isPro={!!tokenStat?.value}
     />;
   } catch (e) {
     console.error("Settings page DB error:", e);

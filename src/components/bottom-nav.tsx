@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, Wallet, PieChart, BookHeart, HeartHandshake, Star } from "lucide-react";
+import { Home, ClipboardList, Wallet, BookOpen, BookHeart, HeartHandshake, Star } from "lucide-react";
 import { useLoading } from "@/components/loading-provider";
 
 export function BottomNav() {
@@ -12,10 +12,10 @@ export function BottomNav() {
   const navItems = [
     { name: "Beranda", href: "/dashboard", icon: <Home className="w-6 h-6" /> },
     { name: "Mutabaah", href: "/mutabaah", icon: <ClipboardList className="w-6 h-6" /> },
+    { name: "Al-Quran", href: "/quran", icon: <BookOpen className="w-6 h-6" /> },
     { name: "Jurnal", href: "/journal", icon: <BookHeart className="w-6 h-6" /> },
     { name: "Bounding", href: "/bonding", icon: <HeartHandshake className="w-6 h-6" />, pro: true },
     { name: "Keuangan", href: "/finance", icon: <Wallet className="w-6 h-6" />, pro: true },
-    { name: "Laporan", href: "/report", icon: <PieChart className="w-6 h-6" /> },
   ];
 
   return (

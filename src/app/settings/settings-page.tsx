@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
     addFamilyMember, 
     deleteFamilyMember, 
@@ -18,10 +18,10 @@ import {
 } from "./actions";
 import { 
     Trash, Plus, AlertCircle, CheckCircle, Save, 
-    Pencil, User, Shield, Heart, Star, Smile, 
-    LucideIcon, Check, Loader2, Trash2, Lightbulb, 
-    Languages as LanguagesIcon 
+    Pencil, Star, Check, Loader2, Trash2, Lightbulb, 
+    Languages as LanguagesIcon, Sun, Moon
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { toast } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/language-context";
@@ -455,6 +455,60 @@ function LanguageSettings() {
     );
 }
 
+function ThemeSettings() {
+    const { setTheme, resolvedTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    
+    useEffect(() => {
+        let isMounted = true;
+        if(isMounted) {
+            setMounted(true);
+        }
+        return () => { isMounted = false };
+    }, []);
+
+    return (
+        <div className="space-y-4">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    {resolvedTheme === "dark" ? <Moon className="w-5 h-5 text-indigo-500" /> : <Sun className="w-5 h-5 text-amber-500" />} 
+                    Tampilan Aplikasi
+                </h3>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tema Gelap / Terang</label>
+                        <p className="text-xs text-slate-500">Ganti tampilan aplikasi sesuai dengan kenyamanan mata Anda.</p>
+                    </div>
+                    {mounted && (
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setTheme(resolvedTheme === "dark" ? "light" : "dark");
+                            }}
+                            className="flex items-center justify-center min-w-[140px] gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            {resolvedTheme === "dark" ? (
+                                <>
+                                    <Sun className="w-4 h-4 text-amber-500" />
+                                    <span className="text-sm font-medium">Mode Terang</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Moon className="w-4 h-4 text-indigo-500" />
+                                    <span className="text-sm font-medium">Mode Gelap</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function InspirasiSettings({ initialShow }: { initialShow: boolean }) {
     const [show, setShow] = useState(initialShow);
     const [saved, setSaved] = useState(false);
@@ -772,6 +826,12 @@ export default function SettingsPage({ users, worships, initialProToken, initial
         <hr className="border-slate-200 dark:border-slate-800" />
 
         <div>
+            <ThemeSettings />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <div>
             <TimezoneSettings initialTimezone={initialTimezone} />
         </div>
 
@@ -806,7 +866,7 @@ export default function SettingsPage({ users, worships, initialProToken, initial
         
         <div>
             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Sistem</h2>
-            <DatabaseSettings />
+            <DatabaseSettings isPro={isPro} />
         </div>
 
         <hr className="border-slate-200 dark:border-slate-800" />
@@ -822,11 +882,16 @@ export default function SettingsPage({ users, worships, initialProToken, initial
     );
 }
 
-function DatabaseSettings() {
+function DatabaseSettings({ isPro }: { isPro: boolean }) {
     const [isRestoring, setIsRestoring] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     async function handleRestore(e: React.ChangeEvent<HTMLInputElement>) {
+        if (!isPro) {
+            toast("Fitur Restore hanya untuk lisensi Pro.", "error");
+            return;
+        }
+
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -859,15 +924,23 @@ function DatabaseSettings() {
         }
     }
 
+    const handleBackup = (e: React.MouseEvent) => {
+        if (!isPro) {
+            e.preventDefault();
+            toast("Fitur Backup hanya untuk lisensi Pro.", "error");
+        }
+    };
+
     return (
         <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-4">
-            <h3 className="font-bold text-slate-700 dark:text-slate-300">Backup & Restore Database</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Amankan data keluarga Anda dengan mengekspor (Backup) seluruh database ke file .db. Anda dapat memulihkannya (Restore) di kemudian hari. Restore hanya mengisi tabel yang kosong.</p>
+            <h3 className="font-bold text-slate-700 dark:text-slate-300">Backup & Restore Database (Pro)</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Amankan data keluarga Anda dengan mengekspor (Backup) seluruh database ke file .json. Anda dapat memulihkannya (Restore) di kemudian hari. Restore hanya mengisi tabel yang kosong.</p>
             
             <div className="flex flex-wrap gap-4">
                 <a 
                     href="/api/backup"
                     target="_blank"
+                    onClick={handleBackup}
                     className="inline-flex items-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 dark:bg-emerald-900/50 dark:hover:bg-emerald-900/80 dark:text-emerald-300 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
                 >
                     <span className="text-xl">📥</span> Backup Database
@@ -875,14 +948,20 @@ function DatabaseSettings() {
 
                 <input 
                     type="file" 
-                    accept=".db" 
+                    accept=".json" 
                     className="hidden" 
                     ref={fileInputRef} 
                     onChange={handleRestore} 
-                    disabled={isRestoring}
+                    disabled={isRestoring || !isPro}
                 />
                 <button 
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => {
+                        if (!isPro) {
+                            toast("Fitur Restore hanya untuk lisensi Pro.", "error");
+                            return;
+                        }
+                        fileInputRef.current?.click();
+                    }}
                     disabled={isRestoring}
                     className="inline-flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-700 dark:bg-amber-900/50 dark:hover:bg-amber-900/80 dark:text-amber-300 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50"
                 >
@@ -891,6 +970,10 @@ function DatabaseSettings() {
 
                 <button 
                     onClick={async () => {
+                        if (!isPro) {
+                            toast("Fitur Dummy Data hanya untuk lisensi Pro.", "error");
+                            return;
+                        }
                         if (!confirm("Hasilkan data dummy untuk bulan ini? Ini akan menambah banyak log Mutabaah, Transaksi, dan Budget sampel.")) return;
                         setIsRestoring(true);
                         try {

@@ -369,11 +369,36 @@ export async function generateDemoData() {
         }
     }
 
+    console.log("Generating Journal Data...");
+    // 5. Journal
+    const journalContents = [
+        "Alhamdulillah hari ini bisa berkumpul bersama keluarga.",
+        "Anak-anak sangat senang belajar tahsin hari ini.",
+        "Bersyukur atas nikmat sehat yang diberikan Allah.",
+        "Semoga target hafalan bulan ini tercapai.",
+        "Hari yang penuh berkah, banyak rezeki tak terduga."
+    ];
+    const { journals } = await import("@/db/schema");
+    
+    for (let i = 0; i < 5; i++) {
+        const date = new Date();
+        date.setDate(today.getDate() - Math.floor(Math.random() * 10));
+        
+        await db.insert(journals).values({
+            id: crypto.randomUUID(),
+            userId: allUsers[Math.floor(Math.random() * allUsers.length)].id,
+            content: journalContents[Math.floor(Math.random() * journalContents.length)],
+            createdAt: date.toISOString(),
+            mood: ["😊", "😇", "🥰"][Math.floor(Math.random() * 3)]
+        });
+    }
+
     revalidatePath("/dashboard");
     revalidatePath("/finance");
     revalidatePath("/mutabaah");
     revalidatePath("/bonding");
     revalidatePath("/settings");
+    revalidatePath("/journal");
     
     return { success: true, message: "Data dummy berhasil dibuat untuk bulan ini." };
 }

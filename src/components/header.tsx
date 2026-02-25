@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Star, Settings } from "lucide-react";
+import { Star, Settings, PieChart } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import Image from "next/image";
 import Link from "next/link";
@@ -52,13 +52,13 @@ export function Header({
              <UserAvatar name={user.name} avatarUrl={user.avatarUrl} size="sm" />
            </div>
          )}
-         <button
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+         <Link
+            href="/report"
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-            title={t.changeTheme}
+            title="Laporan"
          >
-            {resolvedTheme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-         </button>
+            <PieChart className="w-4 h-4" />
+         </Link>
 
          <Link
             href="/settings"
