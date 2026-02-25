@@ -1,7 +1,7 @@
 import { client } from "@/db";
 import fs from "fs";
 import path from "path";
-import Database from "better-sqlite3";
+import { createClient } from "@libsql/client";
 import { NextResponse } from "next/server";
 import { getLocalFormattedToday } from "@/lib/date-utils";
 
@@ -10,7 +10,16 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     // 1. Get all tables and their schema
-    const result = await client.execute(`SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '_litestream_seq' AND name != '_litestream_lock'`);
+    // Exclude internal LibSQL/SQLite tables
+    const result = await client.execute(`
+      SELECT name, sql 
+      FROM sqlite_master 
+      WHERE type='table' 
+      AND name NOT LIKE 'sqlite_%' 
+      AND name NOT LIKE '_litestream_%'
+      AND name NOT LIKE '__drizzle_migrations'
+      AND sql IS NOT NULL
+    `);
     const tables = result.rows as unknown as { name: string; sql: string }[];
     
     // 2. Create temp db
@@ -24,34 +33,48 @@ export async function GET() {
     // Delete if already exists somehow
     if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
     
-    const sqlite = new Database(dbPath);
+    const tempClient = createClient({ url: `file:${dbPath}` });
     
     // 3. For each table, create it and copy data
     for (const table of tables) {
-       if (!table.sql) continue;
-       sqlite.exec(table.sql);
+       // LibSQL sometimes returns table names with 'main.' prefix in sqlite_master
+       const tableName = table.name.replace(/^main\./, '');
+       console.log(`Backing up table: ${tableName}`);
        
-       const dataResult = await client.execute(`SELECT * FROM \`${table.name}\``);
-       const rows = dataResult.rows;
+       // Create table in temp db
+       // Ensure SQL also doesn't have 'main.' prefix for table name if it was somehow included
+       let createSql = table.sql.replace(new RegExp(`"main"\\."${tableName}"`, 'g'), `"${tableName}"`);
+       createSql = createSql.replace(new RegExp(`main\\."${tableName}"`, 'g'), `"${tableName}"`);
+       createSql = createSql.replace(new RegExp(`main\\.${tableName}`, 'g'), `"${tableName}"`);
+       
+       await tempClient.execute(createSql);
+       
+       // Fetch data from main db
+       const dataResult = await client.execute(`SELECT * FROM "${tableName}"`);
+       const rows = dataResult.rows as unknown as Record<string, any>[];
+       
        if (rows.length > 0) {
           const columns = Object.keys(rows[0]);
-          const placeholders = columns.map(() => '?').join(', ');
-          const stmt = sqlite.prepare(`INSERT INTO \`${table.name}\` (${columns.map(c => `\`${c}\``).join(', ')}) VALUES (${placeholders})`);
+          const sql = `INSERT INTO "${tableName}" (${columns.map(c => `"${c}"`).join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
           
-          const insertMany = sqlite.transaction((rows: Record<string, unknown>[]) => {
-             for (const row of rows) {
-                stmt.run(columns.map(c => row[c]));
-             }
-          });
-          
-          insertMany(rows);
+          // Use individual inserts to avoid complex batch/schema issues
+          for (const row of rows) {
+             await tempClient.execute({
+                sql,
+                args: columns.map(c => row[c] ?? null)
+             });
+          }
        }
     }
     
-    sqlite.close();
+    await tempClient.close();
     
     const fileBuffer = fs.readFileSync(dbPath);
-    fs.unlinkSync(dbPath); // Cleanup
+    try {
+        fs.unlinkSync(dbPath); // Cleanup
+    } catch (e) {
+        console.error("Failed to cleanup temp db:", e);
+    }
     
     return new NextResponse(fileBuffer, {
        headers: {
@@ -61,6 +84,7 @@ export async function GET() {
     });
 
   } catch (error) {
+     console.error("Backup error:", error);
      return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
