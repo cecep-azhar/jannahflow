@@ -778,7 +778,7 @@ function TimezoneSettings({ initialTimezone }: { initialTimezone: string }) {
     );
 }
 
-export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, showInspirasi, initialTarget, initialVisi, initialMisi, initialTimezone }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, showInspirasi: boolean, initialTarget: string, initialVisi: string, initialMisi: string, initialTimezone: string }) {
+export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, showInspirasi, initialTarget, initialVisi, initialMisi, initialTimezone, isPro }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, showInspirasi: boolean, initialTarget: string, initialVisi: string, initialMisi: string, initialTimezone: string, isPro: boolean }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
             {/* Emerald Header Banner */}
