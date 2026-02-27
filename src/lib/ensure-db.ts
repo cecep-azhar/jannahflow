@@ -1,5 +1,7 @@
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
+import { quotes } from "@/db/schema";
+import quotesData from "@/db/quotes.json";
 
 const INIT_SQL = [
   `CREATE TABLE IF NOT EXISTS \`users\` (
@@ -136,6 +138,25 @@ export async function ensureDb() {
       // Line 85 of original ensure-db was title. So no rename needed.
   } catch (e) {
       console.error("Migration error (non-fatal):", e);
+  }
+
+  // 3. Seed quotes if empty
+  try {
+    const quoteCountResult = await db.run(sql`SELECT COUNT(*) as count FROM \`quotes\``) as unknown as { count?: number, rows?: { count: number }[] };
+    const count = Array.isArray(quoteCountResult) 
+      ? (quoteCountResult[0] as { count: number }).count 
+      : (quoteCountResult.rows ? quoteCountResult.rows[0].count : (quoteCountResult.count || 0));
+
+    if (count === 0) {
+      console.log(`Seeding ${quotesData.length} quotes...`);
+      for (let i = 0; i < quotesData.length; i += 50) {
+        const chunk = quotesData.slice(i, i + 50);
+        await db.insert(quotes).values(chunk);
+      }
+      console.log("Quotes seeded successfully.");
+    }
+  } catch (e) {
+    console.error("Quote seeding error (non-fatal):", e);
   }
 
   initialized = true;
