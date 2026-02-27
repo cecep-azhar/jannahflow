@@ -10,10 +10,7 @@ import { users, mutabaahLogs, worships, systemStats, quotes as quotesSchema } fr
 import { db } from "@/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq, and, sql } from "drizzle-orm";
-import { format, getDayOfYear } from "date-fns";
-import { parseQuotes } from "@/db/seed-quotes";
-const quotesData = parseQuotes();
+import { eq, and } from "drizzle-orm";
 import { getLocalTodayStr, getLocalFormattedToday, getLocalDateObj } from "@/lib/date-utils";
 import { calculateAge, getIslamicLevel, IslamicLevel } from "@/lib/level-utils";
 
@@ -94,20 +91,8 @@ export default async function DashboardPage() {
           };
       }));
 
-      // Fetch Quotes with auto-seed fallback
-      let allQuotes: { id?: number; text: string; source: string; category: string }[] = [];
-      try {
-          allQuotes = await db.select().from(quotesSchema);
-          if (allQuotes.length === 0) {
-              allQuotes = quotesData;
-          }
-      } catch {
-          console.warn("Quotes table missing or empty, using local JSON.");
-          allQuotes = quotesData;
-          try {
-              await db.run(sql`CREATE TABLE IF NOT EXISTS \`quotes\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`text\` text NOT NULL, \`source\` text NOT NULL, \`category\` text NOT NULL)`);
-          } catch(e) {}
-      }
+      // Fetch Quotes: Just use what's in the DB
+      const allQuotesInDb = await db.select().from(quotesSchema);
 
       const inspirasiStat = await db.query.systemStats.findFirst({
         where: eq(systemStats.key, "show_inspirasi")
@@ -131,12 +116,11 @@ export default async function DashboardPage() {
       });
 
       let randomQuote = null;
-      if (allQuotes.length > 0) {
-          const localDeviceDate = await getLocalDateObj();
-          const dayOfYear = getDayOfYear(localDeviceDate);
-          const year = localDeviceDate.getFullYear();
-          const seed = dayOfYear + year;
-          randomQuote = allQuotes[seed % allQuotes.length];
+      if (allQuotesInDb.length > 0) {
+          // Semi-random: change once per day based on date
+          const todayObj = await getLocalDateObj();
+          const seed = todayObj.getDate() + todayObj.getMonth() + todayObj.getFullYear();
+          randomQuote = allQuotesInDb[seed % allQuotesInDb.length];
       }
 
       return (
@@ -281,20 +265,8 @@ export default async function DashboardPage() {
 
   const maxPoints = memberWorships.reduce((acc, curr) => acc + (curr.points > 0 ? curr.points : 0), 0);
 
-  // Fetch Quotes with auto-seed fallback
-  let allQuotes: { id?: number; text: string; source: string; category: string }[] = [];
-  try {
-      allQuotes = await db.select().from(quotesSchema);
-      if (allQuotes.length === 0) {
-          allQuotes = quotesData;
-      }
-  } catch {
-      allQuotes = quotesData;
-      // Table already created by parent view if hit first, but handle concurrency just in case
-      try {
-          await db.run(sql`CREATE TABLE IF NOT EXISTS \`quotes\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`text\` text NOT NULL, \`source\` text NOT NULL, \`category\` text NOT NULL)`);
-      } catch {}
-  }
+  // Fetch Quotes: Just use what's in the DB (ensureDb run at higher level)
+  const allQuotesInDb = await db.select().from(quotesSchema);
 
   const inspirasiStat = await db.query.systemStats.findFirst({
     where: eq(systemStats.key, "show_inspirasi")
@@ -302,12 +274,10 @@ export default async function DashboardPage() {
   const showInspirasi = inspirasiStat ? inspirasiStat.value === "1" : true;
   
   let randomQuote = null;
-  if (allQuotes.length > 0) {
-      const localDeviceDate = await getLocalDateObj();
-      const dayOfYear = getDayOfYear(localDeviceDate);
-      const year = localDeviceDate.getFullYear();
-      const seed = dayOfYear + year;
-      randomQuote = allQuotes[seed % allQuotes.length];
+  if (allQuotesInDb.length > 0) {
+      const todayObj = await getLocalDateObj();
+      const seed = todayObj.getDate() + todayObj.getMonth() + todayObj.getFullYear();
+      randomQuote = allQuotesInDb[seed % allQuotesInDb.length];
   }
 
   const percentage = Math.min(100, Math.round((totalPoints / maxPoints) * 100));

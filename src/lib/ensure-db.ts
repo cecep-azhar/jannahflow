@@ -118,7 +118,7 @@ export async function ensureDb() {
       ];
 
       for (const table of tables) {
-          const tableInfo = await db.run(sql`PRAGMA table_info(${sql.raw(table.name)})`) as { name: string }[] | { rows: { name: string }[] };
+          const tableInfo = await db.run(sql`PRAGMA table_info(${sql.raw(table.name)})`) as unknown as { name: string }[] | { rows: { name: string }[] };
           // SQLite PRAGMA result varies by driver, usually it's an array or has a .rows property
           const existingColumns = Array.isArray(tableInfo) 
             ? tableInfo.map((c) => c.name)
@@ -147,8 +147,11 @@ export async function ensureDb() {
       ? (quoteCountResult[0] as { count: number }).count 
       : (quoteCountResult.rows ? quoteCountResult.rows[0].count : (quoteCountResult.count || 0));
 
-    if (count === 0) {
-      console.log(`Seeding ${quotesData.length} quotes...`);
+    if (count < 10) {
+      console.log(`Seeding ${quotesData.length} quotes (current count: ${count})...`);
+      // Clear existing potential fallback ones
+      await db.delete(quotes);
+      
       for (let i = 0; i < quotesData.length; i += 50) {
         const chunk = quotesData.slice(i, i + 50);
         await db.insert(quotes).values(chunk);
