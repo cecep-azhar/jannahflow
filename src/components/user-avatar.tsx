@@ -33,13 +33,14 @@ function getInitials(name: string) {
 interface UserAvatarProps {
     name: string
     avatarUrl?: string | null
+    avatarColor?: string | null
     size?: "sm" | "md" | "lg"
     className?: string
 }
 
-export function UserAvatar({ name, avatarUrl, size = "md", className = "" }: UserAvatarProps) {
+export function UserAvatar({ name, avatarUrl, avatarColor: customColor, size = "md", className = "" }: UserAvatarProps) {
     const initials = getInitials(name)
-    const avatarColor = getAvatarColor(name)
+    const avatarColor = customColor || getAvatarColor(name)
     const Icon = avatarUrl && IconMap[avatarUrl] ? IconMap[avatarUrl] : null
 
     const sizeClasses = {

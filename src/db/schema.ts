@@ -11,6 +11,7 @@ export const users = sqliteTable("users", {
   pin: text("pin"), // Encrypted or simple check for parents
   telegramId: text("telegram_id"),
   avatarUrl: text("avatar_url"),
+  avatarColor: text("avatar_color"), // Custom hex or tailwind class
   targetPoints: integer("target_points").default(100),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });

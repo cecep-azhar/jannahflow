@@ -4,10 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ClipboardList, Wallet, BookOpen, BookHeart, HeartHandshake, Star } from "lucide-react";
 import { useLoading } from "@/components/loading-provider";
+import { useState, useEffect } from "react"; // Added useState and useEffect import
 
 export function BottomNav() {
   const pathname = usePathname();
   const { showLoading } = useLoading();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const navItems = [
     { name: "Beranda", href: "/dashboard", icon: <Home className="w-6 h-6" /> },
@@ -22,10 +30,10 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pb-[env(safe-area-inset-bottom)] z-50">
       <div className="flex justify-around items-center h-16 w-full max-w-lg mx-auto px-2">
         {navItems.map((item) => {
-          const isActive = item.href === "/dashboard" 
-            ? pathname === "/dashboard" 
+          const isActive = item.href === "/dashboard"
+            ? pathname === "/dashboard"
             : pathname?.startsWith(item.href);
-            
+
           return (
             <Link
               key={item.href}

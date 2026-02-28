@@ -8,6 +8,7 @@ type FamilyMember = {
   name: string;
   role: string;
   avatarUrl: string | null;
+  avatarColor: string | null;
   points: number;
   targetPoints: number;
   percentage: number;
@@ -28,6 +29,7 @@ export function ParentView({ familyData }: { familyData: FamilyMember[] }) {
                 <UserAvatar 
                   name={member.name} 
                   avatarUrl={member.avatarUrl} 
+                  avatarColor={member.avatarColor}
                   size="lg" 
                   className={member.role === 'parent' ? 'ring-2 ring-emerald-500/10' : ''} 
                 />

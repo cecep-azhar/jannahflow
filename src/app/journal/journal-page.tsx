@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { format, parseISO } from "date-fns"
+import { type Locale } from "date-fns"
 import { id as localeID, enUS } from "date-fns/locale"
+import Image from "next/image"
 import { addJournal as createJournalEntry, deleteJournal as deleteJournalEntry } from "./actions"
 import { BottomNav } from "@/components/bottom-nav"
 import { ImagePlus, Send, SmilePlus, Trash2, Heart, ChevronLeft, ChevronRight, CalendarDays, X, MessageCircle } from "lucide-react"
@@ -13,6 +15,7 @@ type JournalUser = {
     name: string
     role: string
     avatarUrl: string | null
+    avatarColor: string | null
 }
 
 export type JournalEntry = {
@@ -32,12 +35,17 @@ import { toggleLike, addComment } from "./actions"
 
 const ITEMS_PER_PAGE = 5
 
-function todayString() {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+// Removed client-side todayString() to rely on server provided todayStr
+// Helper to ensure SQLite naive timestamps are parsed as UTC
+const sanitizeUTC = (dateStr: string | null) => {
+    if (!dateStr) return null
+    if (dateStr.includes('T') && (dateStr.endsWith('Z') || dateStr.includes('+'))) return dateStr
+    // Convert "YYYY-MM-DD HH:mm:ss" to "YYYY-MM-DDTHH:mm:ssZ"
+    return dateStr.replace(' ', 'T') + 'Z'
 }
 
-function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { entry: JournalEntry, currentUserId: number, onDelete: (id: string) => void, locale: any, lang: string, t: any }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { entry: JournalEntry, currentUserId: number, onDelete: (id: string) => void, locale: Locale, lang: string, t: any }) {
     const hasLiked = entry.likes?.some(l => l.userId === currentUserId)
     const [likeCount, setLikeCount] = useState(entry.likes?.length || 0)
     const [isLiked, setIsLiked] = useState(hasLiked)
@@ -46,6 +54,14 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
     const [comments, setComments] = useState(entry.comments || [])
     const [isLiking, setIsLiking] = useState(false)
     const [isCommenting, setIsCommenting] = useState(false)
+
+    const [prevEntry, setPrevEntry] = useState(entry)
+    if (entry !== prevEntry) {
+        setPrevEntry(entry)
+        setIsLiked(entry.likes?.some(l => l.userId === currentUserId) || false)
+        setLikeCount(entry.likes?.length || 0)
+        setComments(entry.comments || [])
+    }
 
     const handleLike = async () => {
         if (isLiking) return
@@ -66,7 +82,7 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
                 id: Date.now(),
                 userId: currentUserId,
                 content: commentText.trim(),
-                user: { name: t.you || "Anda", role: "parent", avatarUrl: null },
+                user: { name: t.you || "Anda", role: "parent", avatarUrl: null, avatarColor: null },
                 createdAt: new Date().toISOString()
             }])
             setCommentText("")
@@ -78,11 +94,11 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-3 items-center">
-                    <UserAvatar name={entry.user.name} avatarUrl={entry.user.avatarUrl} />
+                    <UserAvatar name={entry.user.name} avatarUrl={entry.user.avatarUrl} avatarColor={entry.user.avatarColor} />
                     <div>
                         <h3 className="font-bold text-slate-800 dark:text-slate-100">{entry.user.name}</h3>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {entry.createdAt ? format(parseISO(entry.createdAt), "dd MMM yyyy • HH:mm", { locale }) : (lang === "id" ? "Baru saja" : "Just now")}
+                            {entry.createdAt ? format(parseISO(sanitizeUTC(entry.createdAt)!), "dd MMM yyyy • HH:mm", { locale }) : (lang === "id" ? "Baru saja" : "Just now")}
                             {entry.mood && <span className="ml-2 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{entry.mood}</span>}
                         </p>
                     </div>
@@ -103,7 +119,7 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
                     const urls = JSON.parse(entry.mediaUrls)
                     return urls.map((url: string, idx: number) => (
                         <div key={idx} className="mt-4 ml-[52px] rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                            <img src={url} alt="Journal Attachment" className="w-full max-h-[300px] object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                            <Image src={url} alt="Journal Attachment" fill className="object-cover" unoptimized/>
                         </div>
                     ))
                 } catch { return null }
@@ -131,12 +147,12 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
                 <div className="ml-[52px] mt-4 pt-4 border-t border-slate-50 dark:border-slate-800 space-y-4">
                     {comments.map((c) => (
                         <div key={c.id} className="flex gap-3 text-sm">
-                             <UserAvatar name={c.user.name} avatarUrl={c.user.avatarUrl} className="w-8 h-8 flex-shrink-0" />
+                             <UserAvatar name={c.user.name} avatarUrl={c.user.avatarUrl} avatarColor={c.user.avatarColor} className="w-8 h-8 flex-shrink-0" />
                              <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none w-full">
                                  <h4 className="font-bold text-slate-800 dark:text-slate-200">{c.user.name}</h4>
                                  <p className="text-slate-600 dark:text-slate-300 mt-1">{c.content}</p>
                                  <span className="text-xs text-slate-400 mt-2 block">
-                                     {c.createdAt ? format(parseISO(c.createdAt), "dd MMM yyyy • HH:mm", { locale }) : "Baru saja"}
+                                     {c.createdAt ? format(parseISO(sanitizeUTC(c.createdAt)!), "dd MMM yyyy • HH:mm", { locale }) : "Baru saja"}
                                  </span>
                              </div>
                         </div>
@@ -166,16 +182,22 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
     )
 }
 
-export default function JournalPage({ initialJournals, currentUserId }: { initialJournals: JournalEntry[], currentUserId: number }) {
+export default function JournalPage({ initialJournals, currentUserId, todayStr }: { initialJournals: JournalEntry[], currentUserId: number, todayStr: string }) {
     const { lang, t } = useLanguage()
     const locale = lang === "id" ? localeID : enUS
 
     const [journals, setJournals] = useState<JournalEntry[]>(initialJournals)
+
+    // Sync state when server actions trigger revalidation
+    useEffect(() => {
+        setJournals(initialJournals)
+    }, [initialJournals])
+
     const [content, setContent] = useState("")
     const [mood, setMood] = useState("")
     const [mediaUrl, setMediaUrl] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [filterDate, setFilterDate] = useState<string>(todayString())
+    const [filterDate, setFilterDate] = useState<string>(todayStr)
     const [currentPage, setCurrentPage] = useState(1)
 
     const formRef = useRef<HTMLFormElement>(null)
@@ -187,7 +209,7 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
 
         const reader = new FileReader()
         reader.onload = (event) => {
-            const img = new Image()
+            const img = new window.Image()
             img.onload = () => {
                 const MAX_SIZE = 320
                 let width = img.width
@@ -229,7 +251,7 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
             setContent("")
             setMood("")
             setMediaUrl("")
-            setFilterDate(todayString())
+            setFilterDate(todayStr)
             setCurrentPage(1)
         } else {
             toast(t.journalFailed, "error")
@@ -248,7 +270,15 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
 
     // Filter by date
     const filteredJournals = filterDate
-        ? journals.filter((j) => j.createdAt && j.createdAt.slice(0, 10) === filterDate)
+        ? journals.filter((j) => {
+            if (!j.createdAt) return false
+            try {
+                const isoStr = sanitizeUTC(j.createdAt)!
+                return format(new Date(isoStr), "yyyy-MM-dd") === filterDate
+            } catch {
+                return false
+            }
+        })
         : journals
 
     // Pagination
@@ -258,7 +288,7 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
 
     const handleDateChange = (val: string) => { setFilterDate(val); setCurrentPage(1) }
     const clearFilter = () => { setFilterDate(""); setCurrentPage(1) }
-    const setToday = () => { setFilterDate(todayString()); setCurrentPage(1) }
+    const setToday = () => { setFilterDate(todayStr); setCurrentPage(1) }
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-slate-900 dark:text-slate-100">
@@ -285,8 +315,8 @@ export default function JournalPage({ initialJournals, currentUserId }: { initia
                     {/* Media Preview */}
                     {mediaUrl && (
                         <div className="mb-4 relative w-24 h-24 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm bg-slate-100 dark:bg-slate-800">
-                            <img src={mediaUrl} alt="Preview" className="w-full h-full object-cover" />
-                            <button type="button" onClick={() => setMediaUrl("")} title="Hapus gambar" aria-label="Hapus gambar" className="absolute top-1 right-1 bg-black/50 hover:bg-black text-white rounded-full p-1 transition-colors">
+                            <Image src={mediaUrl} alt="Preview" fill className="object-cover" unoptimized/>
+                            <button type="button" onClick={() => setMediaUrl("")} title="Hapus gambar" aria-label="Hapus gambar" className="absolute top-1 right-1 bg-black/50 hover:bg-black text-white rounded-full p-1 transition-colors z-10">
                                 <Trash2 className="w-3 h-3" />
                             </button>
                         </div>

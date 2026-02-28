@@ -13,14 +13,17 @@ import {
     revokeProToken, 
     saveInspirasiSetting, 
     saveFamilyVision,
+    saveFamilyPhoto,
     updateSystemStat,
     generateDemoData
 } from "./actions";
 import { 
     Trash, Plus, AlertCircle, CheckCircle, Save, 
     Pencil, Star, Check, Loader2, Trash2, Lightbulb, 
-    Languages as LanguagesIcon, Sun, Moon
+    Languages as LanguagesIcon, Sun, Moon,
+    Image as ImageIcon, UploadCloud
 } from "lucide-react";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { toast } from "@/components/ui/toast";
@@ -29,12 +32,29 @@ import { useLanguage } from "@/lib/language-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { calculateAge, getIslamicLevel, LEVEL_LABELS, IslamicLevel } from "@/lib/level-utils";
 
-type UserData = { id: number; name: string; role: string; avatarUrl: string | null; pin: string | null; gender: string | null; birthDate: string | null; };
+type UserData = { id: number; name: string; role: string; avatarUrl: string | null; avatarColor: string | null; pin: string | null; gender: string | null; birthDate: string | null; };
 type WorshipData = { id: number; name: string; category: string; points: number; levels?: string | null; targetLevels?: string | null };
+
+const PRESET_COLORS = [
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300",
+    "bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300",
+    "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300",
+    "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300",
+    "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300",
+    "bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300",
+    "bg-slate-100 text-slate-700 dark:bg-slate-900/60 dark:text-slate-300",
+    "bg-pink-100 text-pink-700 dark:bg-pink-900/60 dark:text-pink-300",
+];
 
 function FamilySettings({ users }: { users: UserData[] }) {
     const [isAdding, setIsAdding] = useState(false);
     const [editingItem, setEditingItem] = useState<UserData | null>(null);
+    const [selectedColor, setSelectedColor] = useState<string>("");
+
+    useEffect(() => {
+        if (editingItem) setSelectedColor(editingItem.avatarColor || "");
+        else setSelectedColor("");
+    }, [editingItem, isAdding]);
 
     const showForm = isAdding || editingItem;
 
@@ -124,6 +144,21 @@ function FamilySettings({ users }: { users: UserData[] }) {
                             <option value="user-check">🛡️ Admin/Shield</option>
                         </select>
                     </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Warna Avatar</label>
+                        <div className="flex flex-wrap gap-2">
+                            {PRESET_COLORS.map((color) => (
+                                <button
+                                    key={color}
+                                    type="button"
+                                    onClick={() => setSelectedColor(color)}
+                                    className={`w-8 h-8 rounded-full border-2 transition-all ${color.split(' ')[0]} ${selectedColor === color ? 'border-emerald-500 scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
+                                />
+                            ))}
+                        </div>
+                        <input type="hidden" name="avatarColor" value={selectedColor} />
+                    </div>
                     <div className="flex justify-end gap-2">
                         <button 
                             type="button" 
@@ -149,7 +184,7 @@ function FamilySettings({ users }: { users: UserData[] }) {
                     return (
                     <div key={u.id} className="flex justify-between items-center p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:shadow-sm">
                         <div className="flex items-center gap-3">
-                            <UserAvatar name={u.name} avatarUrl={u.avatarUrl} className={u.role === 'parent' ? 'ring-2 ring-emerald-500/20' : ''} />
+                            <UserAvatar name={u.name} avatarUrl={u.avatarUrl} avatarColor={u.avatarColor} className={u.role === 'parent' ? 'ring-2 ring-emerald-500/20' : ''} />
                             <div className="min-w-0 flex-1">
                                 <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">{u.name}</div>
                                 <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
@@ -458,13 +493,9 @@ function LanguageSettings() {
 function ThemeSettings() {
     const { setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
-    
     useEffect(() => {
-        let isMounted = true;
-        if(isMounted) {
-            setMounted(true);
-        }
-        return () => { isMounted = false };
+        const timer = setTimeout(() => setMounted(true), 0);
+        return () => clearTimeout(timer);
     }, []);
 
     return (
@@ -778,7 +809,128 @@ function TimezoneSettings({ initialTimezone }: { initialTimezone: string }) {
     );
 }
 
-export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, showInspirasi, initialTarget, initialVisi, initialMisi, initialTimezone, isPro }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, showInspirasi: boolean, initialTarget: string, initialVisi: string, initialMisi: string, initialTimezone: string, isPro: boolean }) {
+function FamilyPhotoSettings({ initialPhoto }: { initialPhoto: string }) {
+    const [preview, setPreview] = useState(initialPhoto);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const MAX_WIDTH = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH) {
+                    height = Math.round((height * MAX_WIDTH) / width);
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+                    setPreview(compressedBase64);
+                }
+            };
+            if (typeof event.target?.result === "string") {
+                img.src = event.target.result;
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    return (
+        <div className="space-y-4">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><ImageIcon className="w-5 h-5 text-indigo-500" /> Foto Keluarga</h3>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Banner Foto Keluarga (Muncul di Dashboard)</label>
+                    <p className="text-xs text-slate-500">Foto akan otomatis dikompresi agar ukuran tetap kecil.</p>
+                </div>
+                
+                <form action={async () => {
+                    setIsSaving(true);
+                    const fd = new FormData();
+                    fd.append("familyPhoto", preview);
+                    try {
+                        await saveFamilyPhoto(fd);
+                        setSaved(true);
+                        setTimeout(() => setSaved(false), 3000);
+                    } catch {
+                         toast("Gagal menyimpan foto", "error");
+                    } finally {
+                        setIsSaving(false);
+                    }
+                }} className="flex gap-4">
+                    <div className="flex-1 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-slate-950 overflow-hidden relative min-h-[160px]">
+                        {preview ? (
+                            <>
+                                <Image src={preview} alt="Family Banner" fill className="object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="bg-white text-slate-800 px-3 py-1 rounded-lg text-sm font-medium flex items-center gap-2"
+                                    >
+                                        <UploadCloud className="w-4 h-4" /> Ganti
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setPreview("")}
+                                        className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-medium flex items-center gap-2"
+                                    >
+                                        <Trash className="w-4 h-4" /> Hapus
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <button 
+                                type="button" 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="flex flex-col items-center gap-2 text-slate-400 hover:text-emerald-500 transition-colors"
+                            >
+                                <UploadCloud className="w-8 h-8" />
+                                <span className="text-sm font-medium">Klik untuk upload foto</span>
+                            </button>
+                        )}
+                        <input 
+                            ref={fileInputRef}
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={handleFileChange}
+                        />
+                    </div>
+                    <div className="flex flex-col justify-end">
+                        <button 
+                            type="submit" 
+                            disabled={isSaving}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white w-24 h-12 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+                        >
+                            {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : saved ? <Check className="w-5 h-5" /> : <Save className="w-5 h-5" />}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+export default function SettingsPage({ users, worships, initialProToken, initialFamilyName, initialFamilyPhoto, showInspirasi, initialTarget, initialVisi, initialMisi, initialTimezone, isPro }: { users: UserData[], worships: WorshipData[], initialProToken: string, initialFamilyName: string, initialFamilyPhoto: string, showInspirasi: boolean, initialTarget: string, initialVisi: string, initialMisi: string, initialTimezone: string, isPro: boolean }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
             {/* Emerald Header Banner */}
@@ -803,6 +955,12 @@ export default function SettingsPage({ users, worships, initialProToken, initial
 
         <div>
             <FamilyNameSettings initialName={initialFamilyName} />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <div>
+            <FamilyPhotoSettings initialPhoto={initialFamilyPhoto} />
         </div>
 
         <hr className="border-slate-200 dark:border-slate-800" />
@@ -968,33 +1126,51 @@ function DatabaseSettings({ isPro }: { isPro: boolean }) {
                     <span className="text-xl">📤</span> {isRestoring ? "Memproses..." : "Restore Database"}
                 </button>
 
-                <button 
-                    onClick={async () => {
-                        if (!isPro) {
-                            toast("Fitur Dummy Data hanya untuk lisensi Pro.", "error");
-                            return;
-                        }
-                        if (!confirm("Hasilkan data dummy untuk bulan ini? Ini akan menambah banyak log Mutabaah, Transaksi, dan Budget sampel.")) return;
-                        setIsRestoring(true);
-                        try {
-                            const res = await generateDemoData();
-                            if (res.success) {
-                                toast(res.message, "success");
-                                setTimeout(() => window.location.reload(), 1500);
-                            } else {
-                                toast(res.error || "Gagal menghasilkan data.", "error");
-                            }
-                        } catch {
-                            toast("Terjadi kesalahan.", "error");
-                        } finally {
-                            setIsRestoring(false);
-                        }
-                    }}
-                    disabled={isRestoring}
-                    className="inline-flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:hover:bg-indigo-900/80 dark:text-indigo-300 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50"
-                >
-                    <Star className="w-5 h-5 text-amber-500" /> {isRestoring ? "Memproses..." : "Hasilkan Data Sampel (Dummy)"}
-                </button>
+                <div className="w-full space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Hasilkan Data Sampel (Dummy) Per Kategori:</p>
+                    <div className="flex flex-wrap gap-2">
+                        {[
+                            { label: "Mutabaah", type: "mutabaah", icon: "🕌" },
+                            { label: "Jurnal", type: "journal", icon: "📝" },
+                            { label: "Bounding", type: "bounding", icon: "❤️" },
+                            { label: "Keuangan", type: "finance", icon: "💰" },
+                            { label: "Semua Sekaligus", type: "all", icon: "🌟", primary: true },
+                        ].map((btn) => (
+                            <button
+                                key={btn.type}
+                                onClick={async () => {
+                                    if (!isPro) {
+                                        toast("Fitur Dummy Data hanya untuk lisensi Pro.", "error");
+                                        return;
+                                    }
+                                    if (!confirm(`Hasilkan data dummy ${btn.label}?`)) return;
+                                    setIsRestoring(true);
+                                    try {
+                                        const res = await generateDemoData(btn.type as any);
+                                        if (res.success) {
+                                            toast(res.message || "Berhasil.", "success");
+                                            setTimeout(() => window.location.reload(), 1500);
+                                        } else {
+                                            toast(res.error || "Gagal.", "error");
+                                        }
+                                    } catch {
+                                        toast("Terjadi kesalahan.", "error");
+                                    } finally {
+                                        setIsRestoring(false);
+                                    }
+                                }}
+                                disabled={isRestoring}
+                                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50 text-sm ${
+                                    btn.primary 
+                                    ? "bg-indigo-600 hover:bg-indigo-700 text-white" 
+                                    : "bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                                }`}
+                            >
+                                <span>{btn.icon}</span> {isRestoring ? "..." : btn.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -19,6 +19,7 @@ export async function addFamilyMember(formData: FormData) {
   const role = formData.get("role") as "parent" | "child";
   const pin = formData.get("pin") as string;
   const avatarUrl = formData.get("avatarUrl") as string;
+  const avatarColor = formData.get("avatarColor") as string;
   const gender = formData.get("gender") as "M" | "F" | "";
   const birthDate = formData.get("birthDate") as string;
 
@@ -43,6 +44,7 @@ export async function addFamilyMember(formData: FormData) {
     role,
     pin: role === "parent" ? pin : undefined,
     avatarUrl,
+    avatarColor,
     gender,
     birthDate: birthDate || todayStr,
   });
@@ -67,6 +69,7 @@ export async function updateFamilyMember(id: number, formData: FormData) {
     const role = formData.get("role") as "parent" | "child";
     const pin = formData.get("pin") as string;
     const avatarUrl = formData.get("avatarUrl") as string;
+    const avatarColor = formData.get("avatarColor") as string;
     const gender = formData.get("gender") as "M" | "F" | "";
     const birthDate = formData.get("birthDate") as string;
     
@@ -96,6 +99,7 @@ export async function updateFamilyMember(id: number, formData: FormData) {
         role,
         pin: pin || undefined,
         avatarUrl,
+        avatarColor,
         gender,
         birthDate: birthDate || todayStr,
     }).where(eq(users.id, id));
@@ -199,6 +203,24 @@ export async function saveFamilyName(formData: FormData) {
   revalidatePath("/settings");
 }
 
+export async function saveFamilyPhoto(formData: FormData) {
+  const photoBase64 = formData.get("familyPhoto") as string;
+  
+  // Can be empty if deleting
+  await db.insert(systemStats)
+    .values({ key: "family_photo", value: photoBase64 || "" })
+    .onConflictDoUpdate({
+      target: systemStats.key,
+      set: { value: photoBase64 || "", lastUpdated: new Date().toISOString() }
+    });
+
+  revalidatePath("/");
+  revalidatePath("/dashboard");
+  revalidatePath("/settings");
+  
+  return { success: true };
+}
+
 export async function saveFamilyVision(formData: FormData) {
   const target = formData.get("familyTarget") as string;
   const visi = formData.get("familyVisi") as string;
@@ -270,9 +292,9 @@ export async function updateSystemStat(key: string, value: string) {
   return { success: true };
 }
 
-import { mutabaahLogs, accounts, transactions, budgets, bondingActivities } from "@/db/schema";
+import { mutabaahLogs, accounts, transactions, budgets, bondingActivities, journals } from "@/db/schema";
 
-export async function generateDemoData() {
+export async function generateDemoData(seedType: 'all' | 'mutabaah' | 'journal' | 'bounding' | 'finance' = 'all') {
     const authUser = await getCurrentUser();
     if (!canEditRecord(authUser)) return { error: "Unauthorized" };
 
@@ -281,116 +303,144 @@ export async function generateDemoData() {
     
     const today = new Date();
     
-    console.log("Generating Mutabaah Logs...");
-    // 1. Mutabaah Logs (Last 30 days)
-    for (const user of allUsers) {
-        for (let i = 0; i < 30; i++) {
-            const date = new Date();
-            date.setDate(today.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
-            
-            // Randomly select 3-5 worships to log
-            const randomWorships = allWorships.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 3);
-            
-            for (const w of randomWorships) {
-                // Skip if log already exists
-                const existing = await db.select().from(mutabaahLogs).where(
-                    and(eq(mutabaahLogs.userId, user.id), eq(mutabaahLogs.worshipId, w.id), eq(mutabaahLogs.date, dateStr))
-                ).get();
-                
-                if (!existing) {
-                    await db.insert(mutabaahLogs).values({
-                        userId: user.id,
-                        worshipId: w.id,
-                        date: dateStr,
-                        value: w.levels ? Math.floor(Math.random() * 3) + 1 : 1, // Random level or boolean
-                        timestamp: date.toISOString()
-                    });
-                }
-            }
-        }
+    if (seedType === 'all' || seedType === 'mutabaah') {
+      console.log("Clearing old mutabaah logs...");
+      await db.delete(mutabaahLogs);
+    }
+    if (seedType === 'all' || seedType === 'finance') {
+      console.log("Clearing old finance data...");
+      await db.delete(transactions);
+      await db.delete(accounts);
+      await db.delete(budgets);
+    }
+    if (seedType === 'all' || seedType === 'journal') {
+      console.log("Clearing old journal data...");
+      await db.delete(journals);
+    }
+    if (seedType === 'all' || seedType === 'bounding') {
+      // Bounding usually doesn't need full clear if we're just updating status
+      // but if we want a fresh start:
+      // await db.delete(bondingActivities); 
+      // however our previous logic just updated status.
     }
 
-    console.log("Generating Finance Data...");
-    // 2. Finance Data
-    let myAccounts = await db.select().from(accounts);
-    if (myAccounts.length === 0) {
-        await db.insert(accounts).values([
-            { id: crypto.randomUUID(), name: "Dompet Tunai", type: "CASH", balance: 1500000 },
-            { id: crypto.randomUUID(), name: "Bank Syariah", type: "BANK", balance: 25000000 },
-        ]);
-        myAccounts = await db.select().from(accounts);
+    if (seedType === 'all' || seedType === 'mutabaah') {
+      console.log("Generating Mutabaah Logs...");
+      // 1. Mutabaah Logs (Last 30 days)
+      for (const user of allUsers) {
+          for (let i = 0; i < 30; i++) {
+              const date = new Date();
+              date.setDate(today.getDate() - i);
+              const dateStr = date.toISOString().split('T')[0];
+              
+              const randomWorships = allWorships.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 3);
+              
+              for (const w of randomWorships) {
+                  const existing = await db.select().from(mutabaahLogs).where(
+                      and(eq(mutabaahLogs.userId, user.id), eq(mutabaahLogs.worshipId, w.id), eq(mutabaahLogs.date, dateStr))
+                  ).get();
+                  
+                  if (!existing) {
+                      await db.insert(mutabaahLogs).values({
+                          userId: user.id,
+                          worshipId: w.id,
+                          date: dateStr,
+                          value: w.levels ? Math.floor(Math.random() * 3) + 1 : 1,
+                          timestamp: date.toISOString()
+                      });
+                  }
+              }
+          }
+      }
     }
 
-    const categories = ["Makanan", "Transportasi", "Pendidikan", "Kesehatan", "Hiburan", "Zakat/Infaq"];
-    
-    for (const acc of myAccounts) {
-        for (let i = 0; i < 15; i++) {
-            const date = new Date();
-            date.setDate(today.getDate() - Math.floor(Math.random() * 25));
-            const dateStr = date.toISOString().split('T')[0];
-            
-            const isIncome = Math.random() > 0.8;
-            const amount = isIncome ? (Math.floor(Math.random() * 5) + 1) * 1000000 : (Math.floor(Math.random() * 20) + 1) * 10000;
-            
-            await db.insert(transactions).values({
-                id: crypto.randomUUID(),
-                accountId: acc.id,
-                type: isIncome ? "INCOME" : "EXPENSE",
-                amount,
-                category: isIncome ? "Gaji/Bonus" : categories[Math.floor(Math.random() * categories.length)],
-                description: isIncome ? "Penghasilan Bulanan" : "Belanja Kebutuhan",
-                dateMasehi: dateStr,
-                dateHijri: dateStr, // Simplified for seed
-                isHalalCertified: true
-            });
-        }
+    if (seedType === 'all' || seedType === 'finance') {
+      console.log("Generating Finance Data...");
+      const cashAccountId = crypto.randomUUID();
+      const bankAccountId = crypto.randomUUID();
+      
+      await db.insert(accounts).values([
+          { id: cashAccountId, name: "Dompet Tunai", type: "CASH", balance: 1500000 },
+          { id: bankAccountId, name: "Bank Syariah", type: "BANK", balance: 25000000 },
+      ]);
+
+      const categories = ["Makanan", "Transportasi", "Pendidikan", "Kesehatan", "Hiburan", "Zakat/Infaq"];
+      const accountIds = [cashAccountId, bankAccountId];
+      
+      for (const accId of accountIds) {
+          let currentBalance = accId === cashAccountId ? 1500000 : 25000000;
+          
+          for (let i = 0; i < 20; i++) {
+              const date = new Date();
+              date.setDate(today.getDate() - Math.floor(Math.random() * 28));
+              const dateStr = date.toISOString().split('T')[0];
+              
+              const isIncome = Math.random() > 0.7;
+              const amount = isIncome 
+                  ? (Math.floor(Math.random() * 3) + 1) * 1000000 
+                  : (Math.floor(Math.random() * 15) + 1) * 20000;
+              
+              await db.insert(transactions).values({
+                  id: crypto.randomUUID(),
+                  accountId: accId,
+                  type: isIncome ? "INCOME" : "EXPENSE",
+                  amount,
+                  category: isIncome ? "Gaji/Bonus" : categories[Math.floor(Math.random() * categories.length)],
+                  description: isIncome ? "Penghasilan Bulanan" : "Belanja Kebutuhan",
+                  dateMasehi: dateStr,
+                  dateHijri: dateStr,
+                  isHalalCertified: true
+              });
+
+              currentBalance += isIncome ? amount : -amount;
+          }
+
+          await db.update(accounts).set({ balance: currentBalance }).where(eq(accounts.id, accId));
+      }
+
+      // Budgets
+      await db.insert(budgets).values([
+          { category: "Makanan", monthlyLimit: 3000000, periodType: "MASEHI" },
+          { category: "Transportasi", monthlyLimit: 1000000, periodType: "MASEHI" },
+          { category: "Zakat/Infaq", monthlyLimit: 500000, periodType: "MASEHI" },
+      ]);
     }
 
-    // 3. Budgets
-    const existingBudgets = await db.select().from(budgets);
-    if (existingBudgets.length === 0) {
-        await db.insert(budgets).values([
-            { category: "Makanan", monthlyLimit: 3000000, periodType: "MASEHI" },
-            { category: "Transportasi", monthlyLimit: 1000000, periodType: "MASEHI" },
-            { category: "Zakat/Infaq", monthlyLimit: 500000, periodType: "MASEHI" },
-        ]);
+    if (seedType === 'all' || seedType === 'bounding') {
+      console.log("Generating Bounding Data...");
+      const allActivities = await db.select().from(bondingActivities);
+      if (allActivities.length > 0) {
+          const randomActivities = allActivities.sort(() => 0.5 - Math.random()).slice(0, 5);
+          for (const act of randomActivities) {
+              await db.update(bondingActivities)
+                  .set({ isCompleted: true, completedAt: today.toISOString() })
+                  .where(eq(bondingActivities.id, act.id));
+          }
+      }
     }
 
-    console.log("Generating Bounding Data...");
-    // 4. Bounding
-    const allActivities = await db.select().from(bondingActivities);
-    if (allActivities.length > 0) {
-        const randomActivities = allActivities.sort(() => 0.5 - Math.random()).slice(0, 5);
-        for (const act of randomActivities) {
-            await db.update(bondingActivities)
-                .set({ isCompleted: true, completedAt: today.toISOString() })
-                .where(eq(bondingActivities.id, act.id));
-        }
-    }
-
-    console.log("Generating Journal Data...");
-    // 5. Journal
-    const journalContents = [
-        "Alhamdulillah hari ini bisa berkumpul bersama keluarga.",
-        "Anak-anak sangat senang belajar tahsin hari ini.",
-        "Bersyukur atas nikmat sehat yang diberikan Allah.",
-        "Semoga target hafalan bulan ini tercapai.",
-        "Hari yang penuh berkah, banyak rezeki tak terduga."
-    ];
-    const { journals } = await import("@/db/schema");
-    
-    for (let i = 0; i < 5; i++) {
-        const date = new Date();
-        date.setDate(today.getDate() - Math.floor(Math.random() * 10));
-        
-        await db.insert(journals).values({
-            id: crypto.randomUUID(),
-            userId: allUsers[Math.floor(Math.random() * allUsers.length)].id,
-            content: journalContents[Math.floor(Math.random() * journalContents.length)],
-            createdAt: date.toISOString(),
-            mood: ["😊", "😇", "🥰"][Math.floor(Math.random() * 3)]
-        });
+    if (seedType === 'all' || seedType === 'journal') {
+      console.log("Generating Journal Data...");
+      const journalContents = [
+          "Alhamdulillah hari ini bisa berkumpul bersama keluarga.",
+          "Anak-anak sangat senang belajar tahsin hari ini.",
+          "Bersyukur atas nikmat sehat yang diberikan Allah.",
+          "Semoga target hafalan bulan ini tercapai.",
+          "Hari yang penuh berkah, banyak rezeki tak terduga."
+      ];
+      
+      for (let i = 0; i < 5; i++) {
+          const date = new Date();
+          date.setDate(today.getDate() - Math.floor(Math.random() * 10));
+          
+          await db.insert(journals).values({
+              id: crypto.randomUUID(),
+              userId: allUsers[Math.floor(Math.random() * allUsers.length)].id,
+              content: journalContents[Math.floor(Math.random() * journalContents.length)],
+              createdAt: date.toISOString(),
+              mood: ["😊", "😇", "🥰"][Math.floor(Math.random() * 3)]
+          });
+      }
     }
 
     revalidatePath("/dashboard");
@@ -400,5 +450,5 @@ export async function generateDemoData() {
     revalidatePath("/settings");
     revalidatePath("/journal");
     
-    return { success: true, message: "Data dummy berhasil dibuat untuk bulan ini." };
+    return { success: true, message: `Data dummy ${seedType === 'all' ? '' : seedType} berhasil dibuat.` };
 }

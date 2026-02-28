@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Star, Settings, PieChart } from "lucide-react";
-import { useLanguage } from "@/lib/language-context";
+import { Star, Settings, PieChart, LogOut } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import logoTextGreen from "@/app/logo/logo-jannahflow-logo-text-green.png";
 import logoTextWhite from "@/app/logo/logo-jannahflow-logo-text-white.png";
 import { UserAvatar } from "./user-avatar";
+import { logout } from "@/app/actions";
 
 export function Header({ 
     familyName = "Family", 
@@ -17,11 +17,10 @@ export function Header({
 }: { 
     familyName?: string, 
     isPro?: boolean,
-    user?: { name: string; avatarUrl: string | null }
+    user?: { name: string; avatarUrl: string | null; avatarColor?: string | null }
 }) {
-  const { setTheme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const { t } = useLanguage();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -38,7 +37,7 @@ export function Header({
          ) : (
              <Image src={logoTextGreen} alt="JannahFlow" height={28} className="w-auto" />
          )}
-         <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">{familyName}</span>
+          {/* <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">{familyName}</span> */}
          {isPro && (
             <span className="flex items-center gap-0.5 text-[10px] bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-500 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">
                <Star className="w-3 h-3 fill-current" />
@@ -49,7 +48,7 @@ export function Header({
       <div className="flex items-center gap-2">
          {user && (
            <div className="flex items-center gap-2 mr-1">
-             <UserAvatar name={user.name} avatarUrl={user.avatarUrl} size="sm" />
+             <UserAvatar name={user.name} avatarUrl={user.avatarUrl} avatarColor={user.avatarColor} size="sm" />
            </div>
          )}
          <Link
@@ -60,13 +59,23 @@ export function Header({
             <PieChart className="w-4 h-4" />
          </Link>
 
-         <Link
+          <Link
             href="/settings"
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
             title="Pengaturan"
          >
             <Settings className="w-4 h-4" />
          </Link>
+
+          <form action={logout}>
+             <button 
+               type="submit"
+               className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-slate-600 dark:text-slate-400 hover:text-red-600"
+               title="Keluar"
+             >
+               <LogOut className="w-4 h-4" />
+             </button>
+          </form>
       </div>
     </header>
   );

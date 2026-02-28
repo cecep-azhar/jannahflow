@@ -1,13 +1,13 @@
 "use server";
 
 import { db } from "@/db";
-import { journals, journalLikes, journalComments, users } from "@/db/schema";
+import { journals, journalLikes, journalComments } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { eq, desc, and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { getCurrentUser, canDeleteRecord } from "@/lib/auth-utils";
 
-export async function addJournal(content: string, mood?: "smile" | "sad" | "heart" | "star", mediaUrls?: string) {
+export async function addJournal(content: string, mood?: string, mediaUrls?: string) {
     const cookieStore = await cookies();
     const userIdStr = cookieStore.get("mutabaah-user-id")?.value;
 
@@ -22,6 +22,7 @@ export async function addJournal(content: string, mood?: "smile" | "sad" | "hear
             content,
             mood: mood || null,
             mediaUrls: mediaUrls || null,
+            createdAt: new Date().toISOString(),
         });
 
         revalidatePath("/dashboard");
@@ -66,7 +67,8 @@ export async function addComment(journalId: string, content: string) {
         await db.insert(journalComments).values({
             journalId,
             userId: user.id,
-            content: content.trim()
+            content: content.trim(),
+            createdAt: new Date().toISOString(),
         });
         revalidatePath("/journal");
         return { success: true };
@@ -83,25 +85,29 @@ export async function deleteJournal(id: string) {
     await db.delete(journals).where(eq(journals.id, id));
     revalidatePath("/dashboard");
     revalidatePath("/journal");
+    return { success: true };
 }
 
 export async function getJournals() {
     try {
-        const rows = await db
-            .select({
-                id: journals.id,
-                userId: journals.userId,
-                content: journals.content,
-                mediaUrls: journals.mediaUrls,
-                mood: journals.mood,
-                createdAt: journals.createdAt,
-                userName: users.name,
-                userRole: users.role,
-                userAvatarUrl: users.avatarUrl,
-            })
-            .from(journals)
-            .leftJoin(users, eq(journals.userId, users.id))
-            .orderBy(desc(journals.createdAt));
+        const rows = await db.query.journals.findMany({
+            with: {
+                user: true,
+                likes: {
+                    columns: {
+                        id: true,
+                        userId: true
+                    }
+                },
+                comments: {
+                    with: {
+                        user: true
+                    },
+                    orderBy: [desc(journalComments.createdAt)]
+                }
+            },
+            orderBy: [desc(journals.createdAt)]
+        });
 
         return rows.map((row) => ({
             id: row.id,
@@ -111,10 +117,24 @@ export async function getJournals() {
             mood: row.mood,
             createdAt: row.createdAt,
             user: {
-                name: row.userName ?? "Unknown",
-                role: row.userRole ?? "child",
-                avatarUrl: row.userAvatarUrl ?? null,
+                name: row.user?.name ?? "Unknown",
+                role: row.user?.role ?? "child",
+                avatarUrl: row.user?.avatarUrl ?? null,
+                avatarColor: row.user?.avatarColor ?? null,
             },
+            likes: row.likes || [],
+            comments: (row.comments || []).map(c => ({
+                id: c.id,
+                userId: c.userId,
+                content: c.content,
+                createdAt: c.createdAt,
+                user: {
+                    name: c.user?.name ?? "Unknown",
+                    role: c.user?.role ?? "child",
+                    avatarUrl: c.user?.avatarUrl ?? null,
+                    avatarColor: c.user?.avatarColor ?? null,
+                }
+            }))
         }));
     } catch (e) {
         console.error("Error fetching journals:", e);

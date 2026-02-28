@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { getJournals } from "./actions";
-import JournalPageClient from "./journal-page";
+import JournalPageClient, { JournalEntry } from "./journal-page";
+import { getLocalTodayStr } from "@/lib/date-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function JournalPage() {
   }
 
   const journals = await getJournals();
+  const todayStr = await getLocalTodayStr();
 
-  return <JournalPageClient initialJournals={journals as any} currentUserId={userId} />;
+  return <JournalPageClient initialJournals={journals as unknown as JournalEntry[]} currentUserId={userId} todayStr={todayStr} />;
 }

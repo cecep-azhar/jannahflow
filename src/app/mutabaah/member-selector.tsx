@@ -7,6 +7,7 @@ type Member = {
   id: number;
   name: string;
   avatarUrl: string | null;
+  avatarColor: string | null;
 };
 
 export function MemberSelector({ members, activeUserId }: { members: Member[], activeUserId: number }) {
@@ -34,6 +35,7 @@ export function MemberSelector({ members, activeUserId }: { members: Member[], a
           <UserAvatar 
             name={member.name} 
             avatarUrl={member.avatarUrl} 
+            avatarColor={member.avatarColor}
             size="sm" 
             className={activeUserId === member.id ? "ring-2 ring-white/20" : ""}
           />

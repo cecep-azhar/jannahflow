@@ -2,10 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Wallet, CreditCard, ArrowRightLeft, Target, ShieldAlert, BadgeDollarSign } from "lucide-react";
 
 export function FinanceNav() {
     const pathname = usePathname();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
 
     const tabs = [
         { name: "Ringkasan", href: "/finance", icon: <BadgeDollarSign className="w-4 h-4 shrink-0" /> },

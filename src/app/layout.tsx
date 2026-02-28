@@ -16,6 +16,7 @@ import { headers } from "next/headers";
 import { ensureDb } from "@/lib/ensure-db";
 import { cookies } from "next/headers";
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -39,6 +40,14 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+/*  icons: {
+    icon: [
+      { url: logoImage.src, type: 'image/png' }
+    ],
+    apple: [
+      { url: logoImage.src, type: 'image/png' }
+    ]
+  }, */
 };
 
 
@@ -49,7 +58,7 @@ export default async function RootLayout({
 }>) {
   let familyName = "Family";
   let isPro = false;
-  let currentUser: { name: string; avatarUrl: string | null } | undefined = undefined;
+  let currentUser: { name: string; avatarUrl: string | null; avatarColor: string | null } | undefined = undefined;
   try {
     await ensureDb();
     const nameStat = await db.query.systemStats.findFirst({
@@ -73,7 +82,7 @@ export default async function RootLayout({
         where: eq(users.id, parseInt(userIdStr)),
       });
       if (user) {
-        currentUser = { name: user.name, avatarUrl: user.avatarUrl };
+        currentUser = { name: user.name, avatarUrl: user.avatarUrl, avatarColor: user.avatarColor };
       }
     }
   } catch {

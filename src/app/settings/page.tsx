@@ -20,7 +20,6 @@ export default async function SettingsPageLoader() {
 
   try {
     // Check if user is parent
-    const hasUsers = await db.select().from(users).limit(1);
     const allUsers = await db.select().from(users);
     const allWorships = await db.select().from(worships);
     
@@ -44,6 +43,10 @@ export default async function SettingsPageLoader() {
       where: eq(systemStats.key, "family_mission")
     });
 
+    const photoStat = await db.query.systemStats.findFirst({
+      where: eq(systemStats.key, "family_photo")
+    });
+
     const inspirasiStat = await db.query.systemStats.findFirst({
         where: eq(systemStats.key, "show_inspirasi")
     });
@@ -59,6 +62,7 @@ export default async function SettingsPageLoader() {
       worships={allWorships} 
       initialProToken={tokenStat?.value || ""} 
       initialFamilyName={nameStat?.value || ""}
+      initialFamilyPhoto={photoStat?.value || ""}
       initialTarget={targetStat?.value || ""}
       initialVisi={visiStat?.value || ""}
       initialMisi={misiStat?.value || ""}

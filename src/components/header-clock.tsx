@@ -26,7 +26,7 @@ export function HeaderClock() {
     if (!now) return <div className="h-10 w-32 ml-auto" />; // Skeleton-like spacer
 
     return (
-        <div className="text-right ml-auto mr-4 hidden sm:block">
+        <div className="text-right ml-auto mr-4">
             <p className="text-[10px] font-bold text-emerald-100 uppercase tracking-tighter opacity-80 mb-0.5">
                 {format(now, "EEEE, dd MMMM yyyy", { locale: id })}
             </p>

@@ -10,9 +10,12 @@ import { users, mutabaahLogs, worships, systemStats, quotes as quotesSchema } fr
 import { db } from "@/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { eq, and } from "drizzle-orm";
 import { getLocalTodayStr, getLocalFormattedToday, getLocalDateObj } from "@/lib/date-utils";
 import { calculateAge, getIslamicLevel, IslamicLevel } from "@/lib/level-utils";
+
+import logoImage from "../logo/logo-jannahflow-green.png";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +45,11 @@ export default async function DashboardPage() {
 
   // Common data fetching
   const allWorships = await db.select().from(worships);
+  
+  const photoStat = await db.query.systemStats.findFirst({
+    where: eq(systemStats.key, "family_photo")
+  });
+  const familyPhoto = photoStat?.value || null;
   
   if (user.role === "parent") {
       // Fetch all family data
@@ -85,6 +93,7 @@ export default async function DashboardPage() {
               name: member.name,
               role: member.role,
               avatarUrl: member.avatarUrl,
+              avatarColor: member.avatarColor,
               points: memberPoints,
               targetPoints: computedTarget,
               percentage: Math.min(100, Math.round((memberPoints / computedTarget) * 100))
@@ -132,18 +141,25 @@ export default async function DashboardPage() {
                 <h1 className="text-3xl font-bold">Hi, {user.name}</h1>
                 <p className="text-emerald-100">Dashboard</p>
               </div>
-              <div className="flex items-center gap-4">
+               <div className="flex items-center gap-4">
                 <HeaderClock />
-                <form action={logout}>
-                   <button className="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors" title="Keluar">
-                   <LogOut className="w-5 h-5" />
-                   </button>
-                </form>
               </div>
             </div>
           </header>
 
           <main className="p-4 space-y-8">
+              <div className="relative w-full h-[350px] sm:h-[450px] rounded-xl overflow-hidden shadow-sm bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/30">
+                 {familyPhoto ? (
+                    <Image src={familyPhoto} alt="Family Hero" fill className="object-cover" />
+                 ) : (
+                    <div className="flex flex-col items-center justify-center text-emerald-600 dark:text-emerald-500 opacity-60">
+                        <div className="relative w-16 h-16 mb-2 opacity-80">
+                            <Image src={logoImage} alt="JannahFlow" fill className="object-contain" />
+                        </div>
+                        <span className="font-semibold tracking-widest text-sm">JannahFlow</span>
+                    </div>
+                 )}
+              </div>
               {showInspirasi && randomQuote && (
                 <InspirationCard initialQuote={randomQuote} />
               )}
@@ -154,12 +170,6 @@ export default async function DashboardPage() {
                     Keluarga {familyName?.value || ""}
                   </h3>
                   
-                  {familyTarget?.value && (
-                    <div>
-                      <h4 className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">🎯 Target Tahun Ini</h4>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{familyTarget.value}</p>
-                    </div>
-                  )}
 
                   {familyVision?.value && (
                     <div>
@@ -174,6 +184,14 @@ export default async function DashboardPage() {
                       <p className="text-slate-600 dark:text-slate-400 text-sm mt-1 whitespace-pre-wrap">{familyMission.value}</p>
                     </div>
                   )}
+                  {familyTarget?.value && (
+                    <div>
+                      <h4 className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">🎯 Target Tahun Ini</h4>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{familyTarget.value}</p>
+                    </div>
+                  )}
+
+
                 </div>
               )}
 
@@ -317,6 +335,18 @@ export default async function DashboardPage() {
 
       {/* Content */}
       <main className="p-4">
+        <div className="relative w-full h-[350px] sm:h-[450px] rounded-xl overflow-hidden shadow-sm bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/30 mb-6">
+           {familyPhoto ? (
+              <Image src={familyPhoto} alt="Family Hero" fill className="object-cover" />
+           ) : (
+              <div className="flex flex-col items-center justify-center text-emerald-600 dark:text-emerald-500 opacity-60">
+                  <div className="relative w-16 h-16 mb-2 opacity-80">
+                      <Image src={logoImage} alt="JannahFlow" fill className="object-contain" />
+                  </div>
+                  <span className="font-semibold tracking-widest text-sm">JannahFlow</span>
+              </div>
+           )}
+        </div>
         {showInspirasi && randomQuote && (
           <div className="mb-6">
              <InspirationCard initialQuote={randomQuote} />

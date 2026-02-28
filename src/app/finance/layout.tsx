@@ -11,18 +11,14 @@ import { headers } from "next/headers";
 
 export default async function FinanceLayout({ children }: { children: React.ReactNode }) {
     try {
-        await db.select().from(accounts).limit(1);
-    } catch {
-        console.warn("Finance tables missing, auto-creating...");
-        await db.run(sql`CREATE TABLE IF NOT EXISTS \`accounts\` (\`id\` text PRIMARY KEY NOT NULL, \`name\` text NOT NULL, \`type\` text NOT NULL, \`balance\` integer DEFAULT 0 NOT NULL)`);
-        await db.run(sql`CREATE TABLE IF NOT EXISTS \`transactions\` (\`id\` text PRIMARY KEY NOT NULL, \`account_id\` text NOT NULL REFERENCES accounts(id) ON DELETE cascade, \`type\` text NOT NULL, \`amount\` integer NOT NULL, \`category\` text NOT NULL, \`description\` text, \`date_masehi\` text NOT NULL, \`date_hijri\` text NOT NULL, \`is_halal_certified\` integer DEFAULT 0)`);
-        await db.run(sql`CREATE TABLE IF NOT EXISTS \`budgets\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`category\` text NOT NULL, \`monthly_limit\` integer NOT NULL, \`period_type\` text DEFAULT 'MASEHI' NOT NULL)`);
-        await db.run(sql`CREATE TABLE IF NOT EXISTS \`assets\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`purchase_price\` integer NOT NULL, \`current_valuation\` integer NOT NULL, \`asset_type\` text NOT NULL)`);
-        await db.run(sql`CREATE TABLE IF NOT EXISTS \`saving_goals\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`target_amount\` integer NOT NULL, \`current_amount\` integer DEFAULT 0 NOT NULL, \`deadline\` text, \`created_at\` text DEFAULT CURRENT_TIMESTAMP)`);
+        await db.run(sql.raw(`CREATE TABLE IF NOT EXISTS \`accounts\` (\`id\` text PRIMARY KEY NOT NULL, \`name\` text NOT NULL, \`type\` text NOT NULL, \`balance\` integer DEFAULT 0 NOT NULL)`));
+        await db.run(sql.raw(`CREATE TABLE IF NOT EXISTS \`transactions\` (\`id\` text PRIMARY KEY NOT NULL, \`account_id\` text NOT NULL REFERENCES accounts(id) ON DELETE cascade, \`type\` text NOT NULL, \`amount\` integer NOT NULL, \`category\` text NOT NULL, \`description\` text, \`date_masehi\` text NOT NULL, \`date_hijri\` text NOT NULL, \`is_halal_certified\` integer DEFAULT 0)`));
+        await db.run(sql.raw(`CREATE TABLE IF NOT EXISTS \`budgets\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`category\` text NOT NULL, \`monthly_limit\` integer NOT NULL, \`period_type\` text DEFAULT 'MASEHI' NOT NULL)`));
+        await db.run(sql.raw(`CREATE TABLE IF NOT EXISTS \`assets\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`purchase_price\` integer NOT NULL, \`current_valuation\` integer NOT NULL, \`asset_type\` text NOT NULL)`));
+        await db.run(sql.raw(`CREATE TABLE IF NOT EXISTS \`saving_goals\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`target_amount\` integer NOT NULL, \`current_amount\` integer DEFAULT 0 NOT NULL, \`deadline\` text, \`created_at\` text DEFAULT CURRENT_TIMESTAMP)`));
+    } catch (err) {
+        console.error("Finance DB init error:", err);
     }
-
-    // Ensure saving_goals table exists for older installations
-    await db.run(sql`CREATE TABLE IF NOT EXISTS \`saving_goals\` (\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL, \`name\` text NOT NULL, \`target_amount\` integer NOT NULL, \`current_amount\` integer DEFAULT 0 NOT NULL, \`deadline\` text, \`created_at\` text DEFAULT CURRENT_TIMESTAMP)`);
 
     let isPro = false;
     try {
