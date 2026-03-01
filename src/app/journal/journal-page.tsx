@@ -120,7 +120,7 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
                     const urls = JSON.parse(entry.mediaUrls)
                     return urls.map((url: string, idx: number) => (
                         <div key={idx} className="mt-4 ml-[52px] rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                            <Image src={url} alt="Journal Attachment" fill className="object-cover" unoptimized/>
+                            <Image src={url} alt="Journal Attachment" width={600} height={400} className="w-full h-auto object-cover max-h-[400px]" unoptimized/>
                         </div>
                     ))
                 } catch { return null }
@@ -226,9 +226,12 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
         if (!content.trim()) return
 
         setIsSubmitting(true)
-        const result = await createJournalEntry(content, mood, mediaUrl ? JSON.stringify([mediaUrl]) : undefined)
+        const mediaPayload = mediaUrl ? JSON.stringify([mediaUrl]) : undefined
+        const result = await createJournalEntry(content, mood, mediaPayload)
 
-        if (result.success) {
+        if (result.success && result.entry) {
+            // Optimistic update: immediately add new entry to state
+            setJournals(prev => [result.entry as JournalEntry, ...prev])
             toast(t.journalAdded, "success")
             setContent("")
             setMood("")
@@ -236,7 +239,7 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
             setFilterDate(todayStr)
             setCurrentPage(1)
         } else {
-            toast(t.journalFailed, "error")
+            toast(result.error || t.journalFailed, "error")
         }
         setIsSubmitting(false)
     }

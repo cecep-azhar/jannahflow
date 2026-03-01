@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { journals, journalLikes, journalComments } from "@/db/schema";
+import { journals, journalLikes, journalComments, users } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { eq, desc, and } from "drizzle-orm";
 import { cookies } from "next/headers";
@@ -16,21 +16,48 @@ export async function addJournal(content: string, mood?: string, mediaUrls?: str
     }
 
     try {
+        const userId = parseInt(userIdStr);
+        const newId = crypto.randomUUID();
+        const createdAt = new Date().toISOString();
+
         await db.insert(journals).values({
-            id: crypto.randomUUID(),
-            userId: parseInt(userIdStr),
+            id: newId,
+            userId,
             content,
             mood: mood || null,
             mediaUrls: mediaUrls || null,
-            createdAt: new Date().toISOString(),
+            createdAt,
+        });
+
+        // Fetch user info to return complete entry for optimistic update
+        const user = await db.query.users.findFirst({
+            where: eq(users.id, userId),
         });
 
         revalidatePath("/dashboard");
         revalidatePath("/journal");
-        return { success: true };
+        return {
+            success: true,
+            entry: {
+                id: newId,
+                userId,
+                content,
+                mediaUrls: mediaUrls || null,
+                mood: mood || null,
+                createdAt,
+                user: {
+                    name: user?.name ?? "Unknown",
+                    role: user?.role ?? "child",
+                    avatarUrl: user?.avatarUrl ?? null,
+                    avatarColor: user?.avatarColor ?? null,
+                },
+                likes: [],
+                comments: [],
+            }
+        };
     } catch (e) {
         console.error(e);
-        return { error: "Failed to fetch journal entries" };
+        return { error: "Failed to add journal entry" };
     }
 }
 
