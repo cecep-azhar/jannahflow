@@ -188,10 +188,19 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
     const locale = lang === "id" ? localeID : enUS
 
     const [journals, setJournals] = useState<JournalEntry[]>(initialJournals)
+    const deletedIdsRef = useRef<Set<string>>(new Set())
 
-    // Sync state when server actions trigger revalidation
+    // Merge server data with optimistic entries (prevents stale revalidation from overwriting)
     useEffect(() => {
-        setJournals(initialJournals)
+        setJournals(prev => {
+            const serverIds = new Set(initialJournals.map(j => j.id))
+            // Keep optimistic entries not yet in server data
+            const optimisticOnly = prev.filter(j => !serverIds.has(j.id))
+            // Filter out locally deleted entries from server data
+            const serverFiltered = initialJournals.filter(j => !deletedIdsRef.current.has(j.id))
+            // Merge: optimistic first (newest), then server data
+            return [...optimisticOnly, ...serverFiltered]
+        })
     }, [initialJournals])
 
     const [content, setContent] = useState("")
@@ -248,6 +257,7 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
         if (!confirm(t.confirmDelete)) return
         const result = await deleteJournalEntry(id)
         if (result.success) {
+            deletedIdsRef.current.add(id)
             setJournals(journals.filter(j => j.id !== id))
             toast(t.journalDeleted, "success")
         }
