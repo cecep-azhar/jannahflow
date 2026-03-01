@@ -91,10 +91,12 @@ const INIT_SQL = [
     \`title\` text NOT NULL,
     \`description\` text,
     \`category\` text NOT NULL,
+    \`target\` text NOT NULL DEFAULT 'COUPLE',
     \`is_completed\` integer DEFAULT 0,
     \`completed_at\` text,
     \`insight\` text,
-    \`photo_url\` text
+    \`photo_url\` text,
+    \`mood\` text
   )`,
 ];
 
@@ -114,7 +116,7 @@ export async function ensureDb() {
       const tables = [
           { name: "users", columns: ["gender", "birth_date", "telegram_id", "target_points"] },
           { name: "worships", columns: ["levels", "target_levels"] },
-          { name: "bonding_activities", columns: ["insight", "photo_url"] }
+          { name: "bonding_activities", columns: ["insight", "photo_url", "target", "mood"] }
       ];
 
       for (const table of tables) {

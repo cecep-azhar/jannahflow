@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { bondingActivities } from "@/db/schema";
 import { redirect } from "next/navigation";
-import { sql } from "drizzle-orm";
 import BondingPageClient, { Activity } from "./bonding-page";
 import { bondingSeedData } from "@/lib/bonding-seed";
 import { bondingFamilySeedData } from "@/lib/bonding-family-seed";
@@ -30,9 +29,8 @@ export default async function BondingPageLoader() {
       try {
            console.warn("Bonding activities table seeding/updating...");
            
-           // Ensure table exists with the correct columns (target)
-           await db.run(sql`DROP TABLE IF EXISTS \`bonding_activities\``);
-           await db.run(sql`CREATE TABLE \`bonding_activities\` (\`id\` text PRIMARY KEY NOT NULL, \`title\` text NOT NULL, \`description\` text, \`category\` text NOT NULL, \`target\` text NOT NULL DEFAULT 'COUPLE', \`is_completed\` integer DEFAULT false, \`completed_at\` text, \`insight\` text, \`photo_url\` text, \`mood\` text)`);
+           // Clear existing data and re-seed (table structure is managed by ensureDb)
+           await db.delete(bondingActivities);
 
             // Seed COUPLE activities
             for (let i = 0; i < bondingSeedData.length; i += 50) {
