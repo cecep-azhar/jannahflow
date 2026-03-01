@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'JannahFlow',
+    name: 'JannahFlow - Moslem Family Management',
     short_name: 'JannahFlow',
-    description: 'Aplikasi manajemen ibadah, keuangan, dan bounding keluarga muslim.',
+    description: 'Aplikasi Moslem Family Management untuk manajemen ibadah, keuangan, dan kedekatan keluarga.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

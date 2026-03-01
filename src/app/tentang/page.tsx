@@ -20,7 +20,7 @@ export default function TentangPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-white mb-1">Tentang Aplikasi</h1>
-            <p className="text-emerald-100 text-sm">Informasi & Pengembangan JannahFlow</p>
+            <p className="text-emerald-100 text-sm">Moslem Family Management by JannahFlow</p>
           </div>
         </div>
       </div>
@@ -36,7 +36,7 @@ export default function TentangPage() {
             <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">JannahFlow</h2>
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-            JannahFlow adalah aplikasi manajemen ibadah, keuangan, dan bounding keluarga yang dirancang untuk membantu keluarga muslim mencapai visi dunia dan akhirat. Aplikasi ini dibangun dengan niat jariyah agar bermanfaat bagi banyak keluarga.
+            JannahFlow adalah aplikasi **Moslem Family Management** yang mengintegrasikan manajemen ibadah, keuangan, dan bonding keluarga untuk membantu keluarga muslim mencapai visi dunia dan akhirat secara syar&apos;i dan profesional.
           </p>
 
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 mt-4">

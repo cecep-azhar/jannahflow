@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { id } from "date-fns/locale";
+import { id, enUS } from "date-fns/locale";
+import { useLanguage } from "@/lib/language-context";
 
 export function HeaderClock() {
     const [now, setNow] = useState<Date | null>(null);
@@ -23,12 +24,15 @@ export function HeaderClock() {
         };
     }, []);
 
+    const { lang } = useLanguage();
+    const locale = lang === "id" ? id : enUS;
+
     if (!now) return <div className="h-10 w-32 ml-auto" />; // Skeleton-like spacer
 
     return (
         <div className="text-right ml-auto mr-4">
             <p className="text-[10px] font-bold text-emerald-100 uppercase tracking-tighter opacity-80 mb-0.5">
-                {format(now, "EEEE, dd MMMM yyyy", { locale: id })}
+                {format(now, "EEEE, dd MMMM yyyy", { locale })}
             </p>
             <p className="text-xl font-bold font-mono tracking-tight leading-none text-white drop-shadow-sm">
                 {format(now, "HH:mm:ss")}

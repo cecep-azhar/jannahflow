@@ -140,50 +140,38 @@ export async function ensureDb() {
       console.error("Migration error (non-fatal):", e);
   }
 
-  // 3. Seed quotes if empty
+  // 3. Seed quotes if empty or to fix data
   try {
-    const quoteCountResult = await db.run(sql`SELECT COUNT(*) as count FROM \`quotes\``) as unknown as { count?: number, rows?: { count: number }[] };
-    const count = Array.isArray(quoteCountResult) 
-      ? (quoteCountResult[0] as { count: number }).count 
-      : (quoteCountResult.rows ? quoteCountResult.rows[0].count : (quoteCountResult.count || 0));
+    console.log(`Applying quote fixes...`);
+    await db.delete(quotes);
+    
+    // Fix Quote Seeder format
+    const fixedQuotes = quotesData.map((q: { category: string, text: string, source: string }) => {
+        const match = q.category.match(/^(.*\([0-9-]+\))(.*)$/);
+        if (match && match[2].trim()) {
+            const cat = match[1].trim();
+            let indText = match[2].trim();
+            if (indText.endsWith('*') || indText.endsWith('"') || indText.endsWith('.')) {
+                indText = indText.replace(/[*".]+$/, '');
+            }
+            return { ...q, category: cat, text: indText + ' (' + q.text + ')' };
+        }
+        return q;
+    });
 
-    if (count < 10) {
-      console.log(`Seeding ${quotesData.length} quotes (current count: ${count})...`);
-      // Clear existing potential fallback ones
-      await db.delete(quotes);
-      
-      for (let i = 0; i < quotesData.length; i += 50) {
-        const chunk = quotesData.slice(i, i + 50);
-        await db.insert(quotes).values(chunk);
-      }
-      console.log("Quotes seeded successfully.");
+    for (let i = 0; i < fixedQuotes.length; i += 50) {
+      const chunk = fixedQuotes.slice(i, i + 50);
+      await db.insert(quotes).values(chunk);
     }
+    console.log("Quotes seeded successfully.");
   } catch (e) {
     console.error("Quote seeding error (non-fatal):", e);
   }
 
-  // 4. Seed Quran Worships if missing
+  // 4. Remove Quran Worships if they exist in Mutabaah
   try {
-    const quranWorships = [
-      { name: "Tilawah", type: "counter", category: "sunnah", points: 15, target_unit: 1, icon_name: "BookOpen" },
-      { name: "Murojaah", type: "counter", category: "sunnah", points: 10, target_unit: 1, icon_name: "Headphones" },
-      { name: "Ziyadah", type: "counter", category: "sunnah", points: 20, target_unit: 1, icon_name: "Star" },
-      { name: "Setoran", type: "counter", category: "sunnah", points: 25, target_unit: 1, icon_name: "CheckCircle" },
-      { name: "Tadabur", type: "boolean", category: "sunnah", points: 5, icon_name: "Heart" },
-    ];
-
-    for (const q of quranWorships) {
-      const existing = await db.run(sql`SELECT id FROM \`worships\` WHERE \`name\` = ${q.name}`) as unknown as { rows?: unknown[] } | unknown[];
-      const exists = Array.isArray(existing) ? existing.length > 0 : (existing as { rows?: unknown[] }).rows?.length ? ((existing as { rows: unknown[] }).rows?.length || 0) > 0 : false;
-      
-      if (!exists) {
-        console.log(`Seeding Quran Worship: ${q.name}`);
-        await db.run(sql.raw(`INSERT INTO \`worships\` (\`name\`, \`type\`, \`category\`, \`points\`, \`target_unit\`, \`icon_name\`) VALUES ('${q.name}', '${q.type}', '${q.category}', ${q.points}, ${q.target_unit || 'NULL'}, '${q.icon_name}')`));
-      }
-    }
-  } catch (e) {
-    console.error("Quran worship seeding error (non-fatal):", e);
-  }
+    await db.run(sql.raw(`DELETE FROM \`worships\` WHERE \`name\` IN ('Tilawah', 'Murojaah', 'Ziyadah', 'Setoran', 'Tadabur')`));
+  } catch(e) {}
 
   initialized = true;
 }

@@ -33,7 +33,7 @@ export function SplashScreen() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-linear-to-br from-emerald-600 via-emerald-800 to-emerald-950 text-white animate-out fade-out duration-1000 fill-mode-forwards"
+    <div className="fixed inset-0 z-10000 flex flex-col items-center justify-center bg-linear-to-br from-emerald-600 via-emerald-800 to-emerald-950 text-white animate-out fade-out duration-1000 fill-mode-forwards"
         style={{ animationDelay: "2.5s" }}
     >
       <div className="text-center space-y-4 animate-in zoom-in duration-500 flex flex-col items-center">
@@ -42,7 +42,7 @@ export function SplashScreen() {
         </div>
         <div className="text-2xl font-bold text-white tracking-wide">JannahFlow</div>
         <div className="text-xl md:text-2xl font-light text-emerald-200">
-          Family Management
+          Moslem Family Management
         </div>
         
         <div className="mt-12 space-y-2">

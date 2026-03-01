@@ -1,16 +1,18 @@
 "use server";
 
 import { db } from "@/db";
-import { users, worships, systemStats } from "@/db/schema";
+import { users, worships, systemStats, journals, bondingActivities, accounts, transactions, budgets, mutabaahLogs } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { eq, and, ne } from "drizzle-orm";
+import { bondingSeedData } from "@/lib/bonding-seed";
+import { bondingFamilySeedData } from "@/lib/bonding-family-seed";
 
 import { headers } from "next/headers";
 import { verifyProToken } from "@/lib/pro-utils";
 
 import { getCurrentUser, canDeleteRecord, canEditRecord } from "@/lib/auth-utils";
 
-// --- Family Management ---
+// --- Moslem Family Management ---
 
 export async function addFamilyMember(formData: FormData) {
   const authUser = await getCurrentUser();
@@ -292,7 +294,6 @@ export async function updateSystemStat(key: string, value: string) {
   return { success: true };
 }
 
-import { mutabaahLogs, accounts, transactions, budgets, bondingActivities, journals } from "@/db/schema";
 
 export async function generateDemoData(seedType: 'all' | 'mutabaah' | 'journal' | 'bounding' | 'finance' = 'all') {
     const authUser = await getCurrentUser();
@@ -408,14 +409,38 @@ export async function generateDemoData(seedType: 'all' | 'mutabaah' | 'journal' 
 
     if (seedType === 'all' || seedType === 'bounding') {
       console.log("Generating Bounding Data...");
-      const allActivities = await db.select().from(bondingActivities);
-      if (allActivities.length > 0) {
-          const randomActivities = allActivities.sort(() => 0.5 - Math.random()).slice(0, 5);
-          for (const act of randomActivities) {
-              await db.update(bondingActivities)
-                  .set({ isCompleted: true, completedAt: today.toISOString() })
-                  .where(eq(bondingActivities.id, act.id));
-          }
+      await db.delete(bondingActivities);
+
+      // Seed COUPLE activities (from bondingSeedData)
+      for (const act of bondingSeedData) {
+        const isCompleted = Math.random() > 0.8; // Lower completion rate for 100+ items
+        await db.insert(bondingActivities).values({
+          id: crypto.randomUUID(),
+          title: act.title,
+          description: act.description,
+          category: act.category as "SPIRITUAL" | "FUN" | "SERVICE" | "DEEP_TALK",
+          target: "COUPLE",
+          isCompleted,
+          completedAt: isCompleted ? today.toISOString() : null,
+          mood: isCompleted ? ["😊", "🥰", "😇", "🤩", "💖", "🤝", "🤲", "🔥"][Math.floor(Math.random() * 8)] : null,
+          insight: isCompleted ? "Alhamdulillah kegiatan ini sangat bermanfaat untuk keharmonisan kami." : null
+        });
+      }
+
+      // Seed FAMILY activities (from bondingFamilySeedData)
+      for (const act of bondingFamilySeedData) {
+        const isCompleted = Math.random() > 0.8;
+        await db.insert(bondingActivities).values({
+          id: crypto.randomUUID(),
+          title: act.title,
+          description: act.description,
+          category: act.category as "SPIRITUAL" | "FUN" | "SERVICE" | "DEEP_TALK",
+          target: "FAMILY",
+          isCompleted,
+          completedAt: isCompleted ? today.toISOString() : null,
+          mood: isCompleted ? ["😊", "🥰", "😇", "🤩", "💖", "🤝", "🤲", "🔥"][Math.floor(Math.random() * 8)] : null,
+          insight: isCompleted ? "Alhamdulillah anak-anak sangat antusias mengikuti kegiatan ini." : null
+        });
       }
     }
 

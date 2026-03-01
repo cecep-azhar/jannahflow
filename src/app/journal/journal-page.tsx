@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { format, parseISO } from "date-fns"
 import { type Locale } from "date-fns"
 import { id as localeID, enUS } from "date-fns/locale"
+import { compressImage } from "@/lib/image-utils"
 import Image from "next/image"
 import { addJournal as createJournalEntry, deleteJournal as deleteJournalEntry } from "./actions"
 import { BottomNav } from "@/components/bottom-nav"
@@ -195,6 +196,7 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
 
     const [content, setContent] = useState("")
     const [mood, setMood] = useState("")
+    const [showMoodPicker, setShowMoodPicker] = useState(false)
     const [mediaUrl, setMediaUrl] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [filterDate, setFilterDate] = useState<string>(todayStr)
@@ -203,36 +205,16 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
     const formRef = useRef<HTMLFormElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
 
-        const reader = new FileReader()
-        reader.onload = (event) => {
-            const img = new window.Image()
-            img.onload = () => {
-                const MAX_SIZE = 320
-                let width = img.width
-                let height = img.height
-
-                if (width > height) {
-                    if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE }
-                } else {
-                    if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE }
-                }
-
-                const canvas = document.createElement("canvas")
-                canvas.width = width
-                canvas.height = height
-                const ctx = canvas.getContext("2d")
-                ctx?.drawImage(img, 0, 0, width, height)
-                const dataUrl = canvas.toDataURL("image/jpeg", 0.7)
-                setMediaUrl(dataUrl)
-                if (fileInputRef.current) fileInputRef.current.value = ""
-            }
-            img.src = event.target?.result as string
+        try {
+            const compressedBase64 = await compressImage(file, 500, 0.7)
+            setMediaUrl(compressedBase64)
+        } catch (error) {
+            console.error("Error compressing image:", error)
         }
-        reader.readAsDataURL(file)
     }
 
     const moodOptions = lang === "id"
@@ -324,18 +306,35 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
 
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                         <div className="flex gap-2">
-                            <div className="relative group">
-                                <button type="button" className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title={t.pickMood}>
+                            <div className="relative">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowMoodPicker(!showMoodPicker)}
+                                    className={`p-2 rounded-full transition-colors ${showMoodPicker ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50' : 'text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`} 
+                                    title={t.pickMood}
+                                >
                                     <SmilePlus className="w-5 h-5" />
                                 </button>
-                                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:flex flex-wrap bg-white dark:bg-slate-800 shadow-xl rounded-xl p-2 gap-1 border border-slate-100 dark:border-slate-700 z-20 max-w-[260px]">
-                                    {moodOptions.map(m => (
-                                        <button key={m} type="button" onClick={() => setMood(m)}
-                                            className={`px-3 py-1.5 text-sm rounded-lg whitespace-nowrap ${mood === m ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' : 'hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
-                                            {m}
-                                        </button>
-                                    ))}
-                                </div>
+                                {showMoodPicker && (
+                                    <>
+                                        <div className="fixed inset-0 z-10" onClick={() => setShowMoodPicker(false)}></div>
+                                        <div className="absolute left-0 bottom-full mb-2 bg-white dark:bg-slate-800 shadow-xl rounded-xl p-2 gap-1 border border-slate-100 dark:border-slate-700 z-20 flex flex-wrap max-w-[260px] animate-in fade-in zoom-in duration-200 origin-bottom-left">
+                                            {moodOptions.map(m => (
+                                                <button 
+                                                    key={m} 
+                                                    type="button" 
+                                                    onClick={() => {
+                                                        setMood(m)
+                                                        setShowMoodPicker(false)
+                                                    }}
+                                                    className={`px-3 py-1.5 text-sm rounded-lg whitespace-nowrap transition-colors ${mood === m ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'}`}
+                                                >
+                                                    {m}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             <input type="file" accept="image/*" title="Upload gambar" aria-label="Upload gambar" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />

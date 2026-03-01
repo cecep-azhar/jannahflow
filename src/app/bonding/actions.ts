@@ -5,14 +5,15 @@ import { bondingActivities } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function toggleBondingActivity(id: string, currentStatus: boolean, insight?: string | null, photoUrl?: string | null) {
+export async function toggleBondingActivity(id: string, currentStatus: boolean, insight?: string | null, photoUrl?: string | null, mood?: string | null) {
     try {
         await db.update(bondingActivities)
             .set({
                 isCompleted: !currentStatus,
                 completedAt: !currentStatus ? new Date().toISOString() : null,
                 insight: insight || null,
-                photoUrl: photoUrl || null
+                photoUrl: photoUrl || null,
+                mood: mood || null
             })
             .where(eq(bondingActivities.id, id));
             

@@ -1,12 +1,15 @@
 import React from "react";
-import { BookOpen, Book, GraduationCap, RefreshCw, PenTool, Hash } from "lucide-react";
+import { BookOpen, Book, GraduationCap, RefreshCw, PenTool } from "lucide-react";
+import { cookies } from "next/headers";
 import { getLocalFormattedToday } from "@/lib/date-utils";
 import { BottomNav } from "@/components/bottom-nav";
 
 export const dynamic = "force-dynamic";
 
 export default async function QuranPage() {
-  const formattedDate = await getLocalFormattedToday("EEEE, dd MMMM yyyy");
+  const cookieStore = await cookies();
+  const lang = cookieStore.get("NEXT_LOCALE")?.value || "id";
+  const formattedDate = await getLocalFormattedToday("EEEE, dd MMMM yyyy", lang);
 
   const cards = [
     { name: "Tilawah", icon: <Book className="w-6 h-6" />, desc: "Bacaan Al-Quran harian" },
@@ -17,24 +20,20 @@ export default async function QuranPage() {
   ];
 
   return (
-    <main className="min-h-screen pb-24 bg-slate-50 dark:bg-slate-950">
-      <div className="p-6 max-w-2xl mx-auto">
-        <header className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                <div className="p-2 bg-emerald-500 rounded-lg text-white shadow-lg shadow-emerald-500/20">
-                  <BookOpen className="w-6 h-6" />
-                </div>
-                <span>Al-Quran</span>
-              </h1>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2">
-                {formattedDate}
-              </p>
-            </div>
+    <div className="min-h-screen pb-24 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+      {/* Header Area */}
+      <div className="bg-linear-to-br from-emerald-500 to-teal-600 px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-white/20 rounded-lg text-white shadow-lg shadow-black/10 backdrop-blur-sm">
+            <BookOpen className="w-6 h-6" />
           </div>
-        </header>
+          <h1 className="text-3xl font-bold text-white">Al-Quran</h1>
+        </div>
+        <p className="text-emerald-100 text-sm">{formattedDate}</p>
+      </div>
 
+      <div className="max-w-2xl mx-auto px-4 -mt-10 relative z-10 space-y-4">
         <div className="grid grid-cols-1 gap-4">
           {cards.map((card) => (
             <div 
@@ -63,6 +62,6 @@ export default async function QuranPage() {
         </div>
       </div>
       <BottomNav />
-    </main>
+    </div>
   );
 }

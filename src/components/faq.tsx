@@ -5,8 +5,8 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 const faqs = [
   {
-    question: "Apa itu Aplikasi Mutabaah Keluarga Muslim?",
-    answer: "Aplikasi ini dirancang untuk membantu keluarga muslim memantau ibadah harian dan mengevaluasi perkembangan spiritual anggota keluarga secara terstruktur dan digital."
+    question: "Apa itu JannahFlow - Moslem Family Management?",
+    answer: "JannahFlow adalah aplikasi Moslem Family Management yang dirancang untuk membantu keluarga muslim mengelola ibadah, keuangan, dan kedekatan keluarga secara terstruktur dan digital."
   },
   {
     question: "Bagaimana cara mengisi data harian?",

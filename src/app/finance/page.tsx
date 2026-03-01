@@ -4,20 +4,23 @@ import { formatMasehiDateTime, convertToHijri, formatHijriReadable } from "@/lib
 import { Calendar, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { redirect } from "next/navigation";
 import { like, or } from "drizzle-orm";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const MONTH_NAMES_ID = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const MONTH_NAMES_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function getLast6Months(): { year: number; month: number; label: string; prefix: string }[] {
+function getLast6Months(lang: string): { year: number; month: number; label: string; prefix: string }[] {
     const result = [];
     const now = new Date();
+    const monthNames = lang === "id" ? MONTH_NAMES_ID : MONTH_NAMES_EN;
     for (let i = 5; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         result.push({
             year: d.getFullYear(),
             month: d.getMonth() + 1,
-            label: MONTH_NAMES[d.getMonth()],
+            label: monthNames[d.getMonth()],
             prefix: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
         });
     }
@@ -25,6 +28,9 @@ function getLast6Months(): { year: number; month: number; label: string; prefix:
 }
 
 export default async function FinanceDashboard() {
+    const cookieStore = await cookies();
+    const lang = cookieStore.get("NEXT_LOCALE")?.value || "id";
+
     let allAccounts: { id: string; name: string; type: string; balance: number }[] = [];
     let pemasukan = 0;
     let pengeluaran = 0;
@@ -37,7 +43,7 @@ export default async function FinanceDashboard() {
         const masehiMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
 
         // Get last 6 months for chart
-        const months = getLast6Months();
+        const months = getLast6Months(lang);
 
         allTransactions = await db
             .select({ type: transactions.type, amount: transactions.amount, dateMasehi: transactions.dateMasehi })
@@ -57,9 +63,9 @@ export default async function FinanceDashboard() {
     }
 
     const totalBalance = allAccounts.reduce((sum, acc) => sum + acc.balance, 0);
-    const masehiToday = formatMasehiDateTime();
+    const masehiToday = formatMasehiDateTime(new Date(), lang);
     const hijriToday = convertToHijri();
-    const hijriReadable = formatHijriReadable(hijriToday);
+    const hijriReadable = formatHijriReadable(hijriToday, lang);
 
     const formatRupiah = (val: number) =>
         new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(val);
@@ -71,7 +77,7 @@ export default async function FinanceDashboard() {
     };
 
     // Build per-month chart data
-    const months = getLast6Months();
+    const months = getLast6Months(lang);
     const chartData = months.map(m => {
         let inc = 0, exp = 0;
         for (const tx of allTransactions) {
@@ -103,12 +109,12 @@ export default async function FinanceDashboard() {
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-xl font-bold border-b dark:border-slate-700 pb-2 w-full md:w-auto md:border-b-0 text-slate-800 dark:text-slate-200">Ringkasan Keuangan</h2>
-                <div className="flex items-center gap-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-indigo-800 dark:text-indigo-300 px-4 py-2 rounded-lg text-sm font-medium">
+                <h2 className="text-xl font-bold border-b dark:border-slate-700 pb-2 w-full md:w-auto md:border-b-0 text-slate-800 dark:text-slate-200">{lang === 'id' ? 'Ringkasan Keuangan' : 'Finance Summary'}</h2>
+                <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 px-4 py-2 rounded-lg text-sm font-medium">
                     <Calendar className="w-4 h-4" />
                     <div className="text-right">
                         <div>{masehiToday} Masehi</div>
-                        <div className="text-xs text-indigo-600 dark:text-indigo-400 font-bold">{hijriReadable}</div>
+                        <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">{hijriReadable}</div>
                     </div>
                 </div>
             </div>
@@ -155,7 +161,7 @@ export default async function FinanceDashboard() {
                     <h3 className="font-bold text-slate-800 dark:text-slate-200">Arus Kas — 6 Bulan Terakhir</h3>
                     <div className="flex items-center gap-4 text-xs font-semibold">
                         <span className="flex items-center gap-1.5">
-                            <span className="w-3 h-3 rounded-sm bg-indigo-500 inline-block"></span>
+                            <span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block"></span>
                             <span className="text-slate-500 dark:text-slate-400">Pemasukan</span>
                         </span>
                         <span className="flex items-center gap-1.5">
@@ -208,7 +214,7 @@ export default async function FinanceDashboard() {
                                                     x={incX} y={baseY - incH}
                                                     width={barW} height={incH}
                                                     rx="4" ry="4"
-                                                    fill="#6366f1"
+                                                    fill="#10b981"
                                                     opacity="0.9"
                                                 />
                                                 {incH > 18 && (
@@ -219,7 +225,7 @@ export default async function FinanceDashboard() {
                                             </>
                                         )}
                                         {d.income === 0 && (
-                                            <rect x={incX} y={baseY - 2} width={barW} height={2} rx="1" fill="#6366f1" opacity="0.2" />
+                                            <rect x={incX} y={baseY - 2} width={barW} height={2} rx="1" fill="#10b981" opacity="0.2" />
                                         )}
 
                                         {/* Expense bar */}
@@ -274,7 +280,7 @@ export default async function FinanceDashboard() {
                             return (
                                 <div key={i} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 text-center border border-slate-100 dark:border-slate-800">
                                     <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{d.label}</div>
-                                    <div className={`text-sm font-bold ${net >= 0 ? "text-indigo-600 dark:text-indigo-400" : "text-rose-500 dark:text-rose-400"}`}>
+                                    <div className={`text-sm font-bold ${net >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>
                                         {net >= 0 ? "+" : ""}{formatShort(net)}
                                     </div>
                                     <div className="text-xs text-slate-400 dark:text-slate-500">net</div>

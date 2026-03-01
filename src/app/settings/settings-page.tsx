@@ -28,6 +28,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { toast } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/language-context";
+import { compressImage } from "@/lib/image-utils";
 
 import { UserAvatar } from "@/components/user-avatar";
 import { calculateAge, getIslamicLevel, LEVEL_LABELS, IslamicLevel } from "@/lib/level-utils";
@@ -815,39 +816,16 @@ function FamilyPhotoSettings({ initialPhoto }: { initialPhoto: string }) {
     const [saved, setSaved] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const img = new window.Image();
-            img.onload = () => {
-                const canvas = document.createElement("canvas");
-                const MAX_WIDTH = 800;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > MAX_WIDTH) {
-                    height = Math.round((height * MAX_WIDTH) / width);
-                    width = MAX_WIDTH;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-
-                const ctx = canvas.getContext("2d");
-                if (ctx) {
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
-                    setPreview(compressedBase64);
-                }
-            };
-            if (typeof event.target?.result === "string") {
-                img.src = event.target.result;
-            }
-        };
-        reader.readAsDataURL(file);
+        try {
+            const compressedBase64 = await compressImage(file, 500, 0.7);
+            setPreview(compressedBase64);
+        } catch (error) {
+            console.error("Error compressing image:", error);
+        }
     };
 
     return (

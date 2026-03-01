@@ -19,6 +19,7 @@ export default async function MutabaahPage({
   const { date: queryDate, userId: queryUserId } = await searchParams;
   const cookieStore = await cookies();
   const loggedInUserIdStr = cookieStore.get("mutabaah-user-id")?.value;
+  const lang = cookieStore.get("NEXT_LOCALE")?.value || "id";
 
   if (!loggedInUserIdStr) {
     redirect("/auth");
@@ -109,11 +110,11 @@ export default async function MutabaahPage({
   }, 0);
 
   // For header formatting if not today
-  let formattedDateHeader = await getLocalFormattedToday("EEEE, dd MMMM yyyy");
-  if (queryDate && queryDate !== todayStr) {
+  let formattedDateHeader = await getLocalFormattedToday("EEEE, dd MMMM yyyy", lang);
+  if (activeDate !== todayStr) {
       try {
           const d = new Date(activeDate);
-          formattedDateHeader = new Intl.DateTimeFormat('id-ID', {
+          formattedDateHeader = new Intl.DateTimeFormat(lang === 'id' ? 'id-ID' : 'en-US', {
               weekday: 'long',
               day: 'numeric',
               month: 'long',

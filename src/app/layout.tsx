@@ -29,7 +29,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   applicationName: "JannahFlow",
-  title: "JannahFlow - Family Management",
+  title: "JannahFlow - Moslem Family Management",
   description: "Powered by CACUBE 2026",
   manifest: "/manifest.json",
   appleWebApp: {

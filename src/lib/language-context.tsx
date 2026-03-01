@@ -96,10 +96,24 @@ const LanguageContext = createContext<LanguageContextValue>({
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>("id");
+  const [lang, setLang] = useState<Lang>(() => {
+    if (typeof document !== 'undefined') {
+        const match = document.cookie.match(/NEXT_LOCALE=([^;]+)/);
+        if (match && (match[1] === 'id' || match[1] === 'en')) {
+            return match[1] as Lang;
+        }
+    }
+    return "id";
+  });
 
   const toggleLanguage = () => {
-    setLang((prev) => (prev === "id" ? "en" : "id"));
+    setLang((prev) => {
+        const next = prev === "id" ? "en" : "id";
+        if (typeof document !== 'undefined') {
+            document.cookie = `NEXT_LOCALE=${next};path=/;max-age=31536000`; // 1 year
+        }
+        return next;
+    });
   };
 
   const t = translations[lang] as Translations;

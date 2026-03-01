@@ -45,8 +45,11 @@ export async function getLocalDateObj() {
   return new Date(dateStr);
 }
 
+import { id, enUS } from "date-fns/locale";
+
 // Formats the current local date with a specified date-fns format string
-export async function getLocalFormattedToday(formatStr: string) {
+export async function getLocalFormattedToday(formatStr: string, lang: string = "id") {
   const localDate = await getLocalDateObj();
-  return dateFnsFormat(localDate, formatStr);
+  const locale = lang === "id" ? id : enUS;
+  return dateFnsFormat(localDate, formatStr, { locale });
 }

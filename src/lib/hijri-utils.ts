@@ -15,8 +15,9 @@ export function formatMasehiDate(date: Date = new Date()): string {
 /**
  * Format date to full format: Hari, Tanggal Bulan Tahun Jam:Menit
  */
-export function formatMasehiDateTime(date: Date = new Date()): string {
-  const formatter = new Intl.DateTimeFormat('id-ID', {
+export function formatMasehiDateTime(date: Date = new Date(), lang: string = "id"): string {
+  const locale = lang === "id" ? 'id-ID' : 'en-US';
+  const formatter = new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -76,9 +77,14 @@ export function getHijriMonthName(monthNumber: number): string {
 /**
  * Format Hijri string (YYYY-MM-DD) into readable (e.g., 01 Ramadhan 1446)
  */
-export function formatHijriReadable(hijriDateStr: string): string {
+export function formatHijriReadable(hijriDateStr: string, lang: string = "id"): string {
   if (!hijriDateStr) return "";
   const [y, m, d] = hijriDateStr.split('-');
   const monthName = getHijriMonthName(parseInt(m));
+  
+  // Use lang to potentially customize format or satisfy linter
+  if (lang === 'en') {
+      return `${monthName} ${d}, ${y}`;
+  }
   return `${d} ${monthName} ${y}`;
 }

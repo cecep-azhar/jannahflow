@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { mutabaahLogs } from "@/db/schema";
+import { mutabaahLogs, users } from "@/db/schema";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
@@ -9,9 +9,19 @@ import { eq, and } from "drizzle-orm";
 async function verifyUser(userId: number) {
   const cookieStore = await cookies();
   const currentUserIdStr = cookieStore.get("mutabaah-user-id")?.value;
-  if (!currentUserIdStr || parseInt(currentUserIdStr) !== userId) {
-    throw new Error("Unauthorized");
-  }
+  if (!currentUserIdStr) throw new Error("Unauthorized");
+  
+  const currentUserId = parseInt(currentUserIdStr);
+  if (currentUserId === userId) return;
+
+  // Let parents update children
+  const currentUser = await db.query.users.findFirst({
+    where: eq(users.id, currentUserId)
+  });
+
+  if (currentUser?.role === "parent") return;
+
+  throw new Error("Unauthorized");
 }
 
 export async function toggleLog(userId: number, worshipId: number, date: string, currentValue: number) {

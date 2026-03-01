@@ -124,10 +124,12 @@ export const bondingActivities = sqliteTable("bonding_activities", {
   title: text("title").notNull(),
   description: text("description"),
   category: text("category", { enum: ["SPIRITUAL", "FUN", "SERVICE", "DEEP_TALK"] }).notNull(),
+  target: text("target", { enum: ["COUPLE", "FAMILY"] }).notNull().default("COUPLE"),
   isCompleted: integer("is_completed", { mode: "boolean" }).default(false),
   completedAt: text("completed_at"),
   insight: text("insight"), // Catatan/refleksi setelah selesai
   photoUrl: text("photo_url"), // Foto kegiatan (base64 or URL)
+  mood: text("mood"), // Emoticon/perasaan
 });
 
 export const journalsRelations = relations(journals, ({ one, many }) => ({
@@ -165,5 +167,21 @@ export const usersRelations = relations(users, ({ many }) => ({
   journals: many(journals),
   journalLikes: many(journalLikes),
   journalComments: many(journalComments),
+  mutabaahLogs: many(mutabaahLogs),
+}));
+
+export const mutabaahLogsRelations = relations(mutabaahLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [mutabaahLogs.userId],
+    references: [users.id],
+  }),
+  worship: one(worships, {
+    fields: [mutabaahLogs.worshipId],
+    references: [worships.id],
+  }),
+}));
+
+export const worshipsRelations = relations(worships, ({ many }) => ({
+  logs: many(mutabaahLogs),
 }));
 
