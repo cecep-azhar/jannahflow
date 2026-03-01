@@ -132,35 +132,28 @@ export async function ensureDb() {
     await db.run(sql.raw(stmt));
   }
 
-  // 2. Migration: Add missing columns if they don't exist
-  try {
-      const tables = [
-          { name: "users", columns: ["gender", "birth_date", "telegram_id", "target_points"] },
-          { name: "worships", columns: ["levels", "target_levels"] },
-          { name: "bonding_activities", columns: ["insight", "photo_url", "target", "mood"] }
-      ];
+  // 2. Migration: Add missing columns (each wrapped in own try-catch)
+  const migrations = [
+      { table: "users", column: "gender", type: "text DEFAULT ''" },
+      { table: "users", column: "birth_date", type: "text" },
+      { table: "users", column: "telegram_id", type: "text" },
+      { table: "users", column: "target_points", type: "integer DEFAULT 100" },
+      { table: "users", column: "avatar_color", type: "text" },
+      { table: "worships", column: "levels", type: "text" },
+      { table: "worships", column: "target_levels", type: "text" },
+      { table: "bonding_activities", column: "insight", type: "text" },
+      { table: "bonding_activities", column: "photo_url", type: "text" },
+      { table: "bonding_activities", column: "target", type: "text NOT NULL DEFAULT 'COUPLE'" },
+      { table: "bonding_activities", column: "mood", type: "text" },
+  ];
 
-      for (const table of tables) {
-          const tableInfo = await db.run(sql`PRAGMA table_info(${sql.raw(table.name)})`) as unknown as { name: string }[] | { rows: { name: string }[] };
-          // SQLite PRAGMA result varies by driver, usually it's an array or has a .rows property
-          const existingColumns = Array.isArray(tableInfo) 
-            ? tableInfo.map((c) => c.name)
-            : (tableInfo.rows || []).map((c: { name: string }) => c.name);
-          
-          for (const col of table.columns) {
-              if (!existingColumns.includes(col)) {
-                  console.log(`Migrating DB: Adding column ${col} to ${table.name}`);
-                  await db.run(sql.raw(`ALTER TABLE \`${table.name}\` ADD COLUMN \`${col}\` text`));
-              }
-          }
+  for (const m of migrations) {
+      try {
+          await db.run(sql.raw(`ALTER TABLE \`${m.table}\` ADD COLUMN \`${m.column}\` ${m.type}`));
+          console.log(`Migrated: added ${m.column} to ${m.table}`);
+      } catch {
+          // Column already exists, skip
       }
-
-      // Special case: Rename 'name' to 'title' if 'name' exists but 'title' doesn't in bonding_activities
-      // Wait, bonding_activities was initialized with 'title' in previous ensure-db.ts versions?
-      // Actually it used 'title' from the start in the Provided Code? Let's check.
-      // Line 85 of original ensure-db was title. So no rename needed.
-  } catch (e) {
-      console.error("Migration error (non-fatal):", e);
   }
 
   // 3. Seed quotes if empty or to fix data
