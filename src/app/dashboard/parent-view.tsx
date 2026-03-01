@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AppLink } from "@/components/app-link";
 import { UserAvatar } from "@/components/user-avatar";
 
 type FamilyMember = {
@@ -19,7 +19,7 @@ export function ParentView({ familyData }: { familyData: FamilyMember[] }) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {familyData.map((member) => (
-          <Link 
+          <AppLink 
             key={member.id} 
             href={`/mutabaah?userId=${member.id}`}
             className="block group active:scale-[0.98] transition-all"
@@ -57,7 +57,7 @@ export function ParentView({ familyData }: { familyData: FamilyMember[] }) {
                   {member.percentage}% Tercapai
               </div>
             </div>
-          </Link>
+          </AppLink>
         ))}
       </div>
     </div>

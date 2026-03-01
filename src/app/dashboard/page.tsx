@@ -1,7 +1,6 @@
 import { ParentView } from "./parent-view";
 import { InspirationCard } from "./inspiration-card";
 import { 
-  LogOut, 
   HeartHandshake, 
   Trophy, 
   BookCheck, 
@@ -21,7 +20,8 @@ import { logout } from "../actions";
 import { FAQ } from "@/components/faq";
 import { Footer } from "@/components/footer";
 import { HeaderClock } from "@/components/header-clock";
-import Link from "next/link";
+import { AppLink } from "@/components/app-link";
+import { ChildLogoutButton } from "./child-logout-button";
 import { users, mutabaahLogs, worships, systemStats, quotes as quotesSchema } from "@/db/schema";
 import { db } from "@/db";
 import { cookies } from "next/headers";
@@ -362,11 +362,7 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <HeaderClock />
-            <form action={logout}>
-              <button className="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors">
-                <LogOut className="w-5 h-5" />
-              </button>
-            </form>
+            <ChildLogoutButton logoutAction={logout} />
           </div>
         </div>
 
@@ -559,13 +555,13 @@ function FamilyStatsSection({ stats, familyName, averageProgress = 0 }: { stats:
 
 function DashboardIconItem({ href, icon, label, color }: { href: string; icon: React.ReactNode; label: string; color: string }) {
   return (
-    <Link href={href} className="flex flex-col items-center group active:scale-95 transition-all">
+    <AppLink href={href} className="flex flex-col items-center group active:scale-95 transition-all">
       <div className={`${color} text-white p-5 rounded-3xl mb-3 group-hover:scale-110 transition-transform duration-300 flex items-center justify-center shadow-md`}>
         {icon}
       </div>
       <span className="text-[13px] font-black text-slate-800 dark:text-slate-200 text-center leading-none tracking-tight uppercase px-1">
         {label}
       </span>
-    </Link>
+    </AppLink>
   );
 }
