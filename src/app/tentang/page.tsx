@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Github, Globe, Heart, Mail, MessageCircle, Star } from "lucide-react";
+import { ArrowLeft, Github, Globe, Heart, Mail, MessageCircle } from "lucide-react";
 import qrisImage from "../assets/qris/qris-cecep-azhar.jpeg";
+import creatorPhoto from "../assets/creator/cecepazhar.png";
+import appLogo from "../logo/logo-jannahflow-green.png";
 
 export const metadata = {
   title: "Tentang JannahFlow",
@@ -25,13 +27,13 @@ export default function TentangPage() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 -mt-6 relative z-10 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 mt-4 relative z-10 space-y-6">
         
         {/* Info Card */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="bg-emerald-100 dark:bg-emerald-900/50 p-2 rounded-xl">
-              <Star className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <Image src={appLogo} alt="JannahFlow Logo" className="w-6 h-6 object-contain" />
             </div>
             <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">JannahFlow</h2>
           </div>
@@ -42,8 +44,8 @@ export default function TentangPage() {
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 mt-4">
              <h3 className="font-semibold text-sm text-slate-700 dark:text-slate-300">Pengembang</h3>
              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-lg">
-                    CA
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold overflow-hidden border border-emerald-200 dark:border-emerald-800">
+                    <Image src={creatorPhoto} alt="Cecep Saeful Azhar" className="w-full h-full object-cover" />
                 </div>
                 <div>
                    <div className="font-bold text-slate-800 dark:text-slate-200">Cecep Saeful Azhar Hidayat, ST</div>
@@ -61,7 +63,7 @@ export default function TentangPage() {
                 <a href="https://github.com/cecep-azhar" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 hover:underline">
                   <Github className="w-4 h-4" /> cecep-azhar
                 </a>
-                <a href="https://cecepazhar.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 hover:underline">
+                <a href="https://www.JannahFlow.my.id" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 hover:underline">
                   <Globe className="w-4 h-4" /> Website
                 </a>
              </div>
@@ -101,17 +103,17 @@ export default function TentangPage() {
               {[
                 { title: "Quran Suite", desc: "Tilawah, Murojaah, Ziyadah, Storan, Tadabur" },
                 { title: "AI Insight & Analitics", desc: "Analisis cerdas ibadah dan kebiasaan keluarga" },
-                { title: "Bounding Keluarga", desc: "Fitur interaktif untuk kedekatan keluarga" },
+                { title: "Bounding Keluarga", desc: "Fitur interaktif untuk kedekatan keluarga", completed: true },
                 { title: "Kalender Menu Makan", desc: "Perencanaan menu makan sehat keluarga" },
-                { title: "Multi Pilihan Point", desc: "Gamifikasi ibadah dengan reward fleksibel" }
+                { title: "Multi Pilihan Point", desc: "Gamifikasi ibadah dengan reward fleksibel", completed: true }
               ].map((item, idx) => (
-                <li key={idx} className="flex gap-3 items-start bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                   <div className="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                <li key={idx} className={`flex gap-3 items-start p-3 rounded-xl border ${item.completed ? 'bg-slate-100 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/50' : 'bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800'}`}>
+                   <div className={`${item.completed ? 'bg-slate-200 dark:bg-slate-800 text-slate-500' : 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400'} w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5`}>
                      {idx + 1}
                    </div>
                    <div>
-                     <div className="font-semibold text-sm text-slate-800 dark:text-slate-200">{item.title}</div>
-                     <div className="text-xs text-slate-500 dark:text-slate-400">{item.desc}</div>
+                     <div className={`font-semibold text-sm ${item.completed ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>{item.title}</div>
+                     <div className={`text-xs ${item.completed ? 'text-slate-400 dark:text-slate-600' : 'text-slate-500 dark:text-slate-400'}`}>{item.desc}</div>
                    </div>
                 </li>
               ))}

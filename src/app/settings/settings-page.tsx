@@ -973,24 +973,6 @@ export default function SettingsPage({ users, worships, initialProToken, initial
 
         <hr className="border-slate-200 dark:border-slate-800" />
 
-        <div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Informasi</h2>
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <Link href="/tentang" className="flex items-center justify-between text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 group transition-colors w-full">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg group-hover:bg-emerald-100 dark:group-hover:bg-emerald-800/50 transition-colors">
-                           <Star className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                        <div className="text-left">
-                            <div className="font-semibold text-sm">Tentang Aplikasi</div>
-                            <div className="text-xs text-slate-500">Informasi Creator dan Pengembangan</div>
-                        </div>
-                    </div>
-                </Link>
-            </div>
-        </div>
-
-        <hr className="border-slate-200 dark:border-slate-800" />
 
         <div>
             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Keluarga</h2>
@@ -1010,6 +992,25 @@ export default function SettingsPage({ users, worships, initialProToken, initial
         <div>
             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Pengaturan Ibadah</h2>
             <WorshipSettings worships={worships} />
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <div>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Informasi</h2>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <Link href="/tentang" className="flex items-center justify-between text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 group transition-colors w-full">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg group-hover:bg-emerald-100 dark:group-hover:bg-emerald-800/50 transition-colors">
+                           <Star className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div className="text-left">
+                            <div className="font-semibold text-sm">Tentang Aplikasi</div>
+                            <div className="text-xs text-slate-500">Informasi Creator dan Pengembangan</div>
+                        </div>
+                    </div>
+                </Link>
+            </div>
         </div>
 
             </div>
