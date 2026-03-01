@@ -98,6 +98,27 @@ const INIT_SQL = [
     \`photo_url\` text,
     \`mood\` text
   )`,
+  `CREATE TABLE IF NOT EXISTS \`journal_likes\` (
+    \`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    \`journal_id\` text NOT NULL,
+    \`user_id\` integer NOT NULL,
+    \`created_at\` text DEFAULT CURRENT_TIMESTAMP
+  )`,
+  `CREATE TABLE IF NOT EXISTS \`journal_comments\` (
+    \`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    \`journal_id\` text NOT NULL,
+    \`user_id\` integer NOT NULL,
+    \`content\` text NOT NULL,
+    \`created_at\` text DEFAULT CURRENT_TIMESTAMP
+  )`,
+  `CREATE TABLE IF NOT EXISTS \`saving_goals\` (
+    \`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    \`name\` text NOT NULL,
+    \`target_amount\` integer NOT NULL,
+    \`current_amount\` integer NOT NULL DEFAULT 0,
+    \`deadline\` text,
+    \`created_at\` text DEFAULT CURRENT_TIMESTAMP
+  )`,
 ];
 
 let initialized = false;

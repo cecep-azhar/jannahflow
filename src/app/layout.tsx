@@ -100,6 +100,7 @@ export default async function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-200 dark:bg-slate-900 transition-colors flex justify-center`}
+        suppressHydrationWarning
       >
         <ThemeProvider
             attribute="class"
