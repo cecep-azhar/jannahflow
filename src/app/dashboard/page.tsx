@@ -338,10 +338,11 @@ export default async function DashboardPage() {
   const percentage = Math.min(100, Math.round((totalPoints / maxPoints) * 100));
 
   // Fetch all members to calculate family average for child view
-  const allMembers = await db.select().from(usersSchema);
+  const allMembers = await db.select().from(users);
   const familyProgressResults = await Promise.all(allMembers.map(async (member) => {
       const memberLogs = await db.query.mutabaahLogs.findMany({
           where: and(eq(mutabaahLogs.userId, member.id), eq(mutabaahLogs.date, today))
+
       });
       const memberPoints = memberLogs.reduce((acc, log) => acc + log.value, 0);
       const mTarget = await db.query.systemStats.findFirst({ where: eq(systemStats.key, `target_points_${member.id}`) });
