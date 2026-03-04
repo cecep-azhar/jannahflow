@@ -7,6 +7,7 @@ import { ArrowLeft, Trophy, Star } from "lucide-react";
 import Link from "next/link";
 import { UserAvatar } from "@/components/user-avatar";
 import { BottomNav } from "@/components/bottom-nav";
+import { getServerTimezone } from "@/lib/date-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -28,26 +29,46 @@ export default async function LeaderboardPage({
   const { filter = "today" } = await searchParams;
   const currentFilter = filter as FilterType;
 
-  // Calculate date range based on filter
-  const now = new Date();
-  let startDate = new Date();
-  
+  // Gunakan timezone WIB (dari setting atau device) agar tanggal konsisten
+  const tz = await getServerTimezone();
+
+  // Helper: format tanggal ke YYYY-MM-DD dalam timezone yang benar
+  const toLocalDateStr = (date: Date) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+
+  // Tanggal "hari ini" dalam WIB
+  const todayStr = toLocalDateStr(new Date());
+
+  // Hitung startDate berdasarkan filter — tanpa mutasi objek
+  let startDateStr: string;
+
   if (currentFilter === "today") {
-    startDate.setHours(0, 0, 0, 0);
+    startDateStr = todayStr;
   } else if (currentFilter === "week") {
-    const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday start
-    startDate = new Date(now.setDate(diff));
-    startDate.setHours(0, 0, 0, 0);
+    // Cari Senin pekan ini dalam timezone WIB
+    const now = new Date();
+    const todayParts = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      weekday: "long",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(now);
+    const dayName = todayParts.find(p => p.type === "weekday")?.value || "Monday";
+    const dayIndex: Record<string, number> = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+    const daysFromMonday = ((dayIndex[dayName] ?? 1) + 6) % 7; // Monday=0
+    const monday = new Date(now.getTime() - daysFromMonday * 86400000);
+    startDateStr = toLocalDateStr(monday);
   } else if (currentFilter === "month") {
-    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-  } else if (currentFilter === "year") {
-    startDate = new Date(now.getFullYear(), 0, 1);
+    const parts = todayStr.split("-");
+    startDateStr = `${parts[0]}-${parts[1]}-01`;
+  } else {
+    // year
+    const year = todayStr.split("-")[0];
+    startDateStr = `${year}-01-01`;
   }
 
-  const startDateStr = startDate.toISOString().split('T')[0];
-
-  // Fetch all users and their logs within the date range
+  // Fetch semua user dan log dalam rentang tanggal
   const allUsers = await db.select().from(users);
   const allWorships = await db.select().from(worships);
   
@@ -66,9 +87,13 @@ export default async function LeaderboardPage({
       const totalPoints = logs.reduce((acc, log) => {
         const worship = allWorships.find((w) => w.id === log.worshipId);
         if (!worship) return acc;
-        // Logic similar to dashboard point calculation
-        if (worship.levels && log.value > 0) return acc + log.value;
-        return acc + (log.value > 0 ? worship.points : 0);
+        if (log.value <= 0) return acc;
+
+        // Ibadah dengan level bertahap: log.value menyimpan poin langsung
+        if (worship.levels) return acc + log.value;
+
+        // Ibadah biasa: boolean atau counter
+        return acc + worship.points;
       }, 0);
 
       return {
