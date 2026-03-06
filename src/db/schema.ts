@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, real } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
@@ -132,6 +132,47 @@ export const bondingActivities = sqliteTable("bonding_activities", {
   mood: text("mood"), // Emoticon/perasaan
 });
 
+// =============================================
+// AL-QURAN MODULE
+// =============================================
+
+export const quranLogs = sqliteTable("quran_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  type: text("type", { enum: ["tilawah", "ziyadah", "murojaah", "tadabur", "setoran"] }).notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD
+  sessionTime: text("session_time"), // e.g. "07:30" – waktu sesi
+  // Tilawah fields
+  startSurah: integer("start_surah"),
+  startAyat: integer("start_ayat"),
+  endSurah: integer("end_surah"),
+  endAyat: integer("end_ayat"),
+  totalAyat: integer("total_ayat"), // computed & stored for fast access
+  // Murojaah / Ziyadah
+  surahNumber: integer("surah_number"),
+  quality: text("quality", { enum: ["lancar", "cukup", "perlu_diulang"] }),
+  // Tadabur
+  ayatRef: text("ayat_ref"), // e.g. "Al-Baqarah:255"
+  // Setoran
+  teacherName: text("teacher_name"),
+  material: text("material"),
+  // General
+  notes: text("notes"),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const ziyadahProgress = sqliteTable("ziyadah_progress", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  surahNumber: integer("surah_number").notNull(),
+  memorizedAyat: integer("memorized_ayat").notNull().default(0),
+  totalAyat: integer("total_ayat").notNull(),
+  percentComplete: real("percent_complete").notNull().default(0),
+  status: text("status", { enum: ["hafalan", "mutqin"] }).notNull().default("hafalan"),
+  lastMurojaahAt: text("last_murojaah_at"),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const journalsRelations = relations(journals, ({ one, many }) => ({
 	user: one(users, {
 		fields: [journals.userId],
@@ -168,6 +209,22 @@ export const usersRelations = relations(users, ({ many }) => ({
   journalLikes: many(journalLikes),
   journalComments: many(journalComments),
   mutabaahLogs: many(mutabaahLogs),
+  quranLogs: many(quranLogs),
+  ziyadahProgress: many(ziyadahProgress),
+}));
+
+export const quranLogsRelations = relations(quranLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [quranLogs.userId],
+    references: [users.id],
+  }),
+}));
+
+export const ziyadahProgressRelations = relations(ziyadahProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [ziyadahProgress.userId],
+    references: [users.id],
+  }),
 }));
 
 export const mutabaahLogsRelations = relations(mutabaahLogs, ({ one }) => ({
