@@ -1,6 +1,7 @@
 import { addTransaction } from "../../actions";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { db } from "@/db";
 import { accounts } from "@/db/schema";
 import { formatMasehiDate, convertToHijri } from "@/lib/hijri-utils";
@@ -81,9 +82,9 @@ export default async function NewTransactionPage() {
                 </div>
 
                 <div className="pt-4">
-                    <button type="submit" disabled={allAccounts.length === 0} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <SubmitButton type="submit" disabled={allAccounts.length === 0} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <Save className="w-5 h-5" /> Simpan Transaksi
-                    </button>
+                    </SubmitButton>
                     {allAccounts.length === 0 && <p className="text-sm text-red-500 text-center mt-2">Silakan buat akun terlebih dahulu.</p>}
                 </div>
             </form>

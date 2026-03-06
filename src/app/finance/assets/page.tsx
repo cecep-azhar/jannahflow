@@ -88,7 +88,7 @@ export default async function AssetsZakatPage() {
                                         {!isChild && (
                                             <form action={deleteAsset}>
                                                 <input type="hidden" name="id" value={asset.id} />
-                                                <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Aset">
+                                                <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Aset">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </form>

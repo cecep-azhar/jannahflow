@@ -58,7 +58,7 @@ export default async function AccountsPage() {
                             {!isChild && (
                                 <form action={deleteAccount}>
                                     <input type="hidden" name="id" value={account.id} />
-                                    <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors p-1" title="Hapus Akun">
+                                    <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors p-1" title="Hapus Akun">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </form>

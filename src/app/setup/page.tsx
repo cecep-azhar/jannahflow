@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { setupFamily } from "./actions";
 import { Plus, Trash, Check, User, Heart, Lock, Sparkles } from "lucide-react";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function SetupPage() {
   const [children, setChildren] = useState<string[]>([""]);
-  const [loading, setLoading] = useState(false);
 
   function addChild() {
     setChildren([...children, ""]);
@@ -32,7 +32,7 @@ export default function SetupPage() {
           <p className="opacity-90 mt-2">Mari siapkan aplikasi Mutabaah Keluarga Anda.</p>
         </div>
 
-        <form action={setupFamily} className="p-6 space-y-6" onSubmit={() => setLoading(true)}>
+        <form action={setupFamily} className="p-6 space-y-6">
           {/* Parents Section */}
           <div className="space-y-4">
             <h2 className="font-semibold text-slate-700 flex items-center gap-2">
@@ -132,19 +132,12 @@ export default function SetupPage() {
               </label>
             </div>
 
-          <button 
+          <SubmitButton 
             type="submit" 
-            disabled={loading}
             className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <span>Memproses...</span>
-            ) : (
-              <>
-                <Check className="w-5 h-5" /> Selesai & Mulai
-              </>
-            )}
-          </button>
+            <Check className="w-5 h-5" /> Selesai & Mulai
+          </SubmitButton>
         </form>
       </div>
 

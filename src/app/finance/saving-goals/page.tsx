@@ -3,6 +3,7 @@ import { savingGoals } from "@/db/schema";
 import { Target, Plus, Trash2, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { deleteSavingGoal, addSavingProgressAction } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -65,7 +66,7 @@ export default async function SavingGoalsPage() {
                                             {!isChild && (
                                                 <form action={deleteSavingGoal}>
                                                     <input type="hidden" name="id" value={goal.id} />
-                                                    <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Target">
+                                                    <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Target">
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </form>
@@ -102,9 +103,9 @@ export default async function SavingGoalsPage() {
                                                 placeholder="Tambah tabungan (Rp)" 
                                                 className="flex-1 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" 
                                             />
-                                            <button type="submit" className="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1 text-sm font-medium">
+                                            <SubmitButton type="submit" className="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1 text-sm font-medium">
                                                 <PlusCircle className="w-4 h-4" />
-                                            </button>
+                                            </SubmitButton>
                                         </form>
                                     )}
                                 </div>

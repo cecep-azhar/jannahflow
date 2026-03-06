@@ -1,6 +1,7 @@
 import { addBudget } from "../../actions";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function NewBudgetPage() {
     return (
@@ -40,9 +41,9 @@ export default function NewBudgetPage() {
                 </div>
 
                 <div className="pt-4">
-                    <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2">
+                    <SubmitButton type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2">
                         <Save className="w-5 h-5" /> Simpan Anggaran
-                    </button>
+                    </SubmitButton>
                 </div>
             </form>
         </div>

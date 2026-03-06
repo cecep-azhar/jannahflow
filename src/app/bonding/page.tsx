@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { bondingActivities } from "@/db/schema";
 import { redirect } from "next/navigation";
-import BondingPageClient, { Activity } from "./bonding-page";
+import BondingPageClient from "./bonding-page";
 import { bondingSeedData } from "@/lib/bonding-seed";
 import { bondingFamilySeedData } from "@/lib/bonding-family-seed";
 import { getCurrentUser, canViewBounding } from "@/lib/auth-utils";
@@ -23,8 +23,10 @@ export default async function BondingPageLoader() {
   let activities = await db.query.bondingActivities.findMany();
 
   // Seed if empty or needing update (we reset it to ensure the new columns like target/mood are populated)
-  const firstActivity = activities[0] as Activity | undefined;
-  const needsMigration = activities.length > 0 && (!firstActivity || !('target' in firstActivity) || !('mood' in firstActivity));
+  const hasFamilyActivities = activities.some(a => a.target === 'FAMILY');
+  const hasCoupleActivities = activities.some(a => a.target === 'COUPLE');
+  const needsMigration = activities.length > 0 && (!hasFamilyActivities || !hasCoupleActivities);
+
   if (activities.length === 0 || needsMigration) {
       try {
            console.warn("Bonding activities table seeding/updating...");

@@ -32,6 +32,7 @@ import { compressImage } from "@/lib/image-utils";
 
 import { UserAvatar } from "@/components/user-avatar";
 import { calculateAge, getIslamicLevel, LEVEL_LABELS, IslamicLevel } from "@/lib/level-utils";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type UserData = { id: number; name: string; role: string; avatarUrl: string | null; avatarColor: string | null; pin: string | null; gender: string | null; birthDate: string | null; };
 type WorshipData = { id: number; name: string; category: string; points: number; levels?: string | null; targetLevels?: string | null };
@@ -168,9 +169,9 @@ function FamilySettings({ users }: { users: UserData[] }) {
                         >
                             Batal
                         </button>
-                        <button type="submit" className="bg-emerald-600 text-white px-4 py-1 rounded text-sm flex items-center gap-1">
+                        <SubmitButton type="submit" className="bg-emerald-600 disabled:opacity-75 text-white px-4 py-1 rounded text-sm flex items-center gap-1">
                             <Save className="w-4 h-4" /> Simpan
-                        </button>
+                        </SubmitButton>
                     </div>
                 </form>
                 </div>
@@ -214,7 +215,7 @@ function FamilySettings({ users }: { users: UserData[] }) {
                                 <Pencil className="w-4 h-4" />
                             </button>
                             <form action={deleteFamilyMember.bind(null, u.id)}>
-                                <button className="text-red-400 hover:text-red-600 p-2" title="Hapus" onClick={(e) => !confirm(`Hapus ${u.name}?`) && e.preventDefault()}>
+                                <button className="text-red-400 hover:text-red-600 p-2" title="Hapus" onClick={(e) => !confirm(`Apakah yakin akan dihapus?`) && e.preventDefault()}>
                                     <Trash className="w-4 h-4" />
                                 </button>
                             </form>
@@ -380,9 +381,9 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
                         >
                             Batal
                         </button>
-                        <button type="submit" className="bg-green-600 text-white px-4 py-1 rounded text-sm flex items-center gap-1">
+                        <SubmitButton type="submit" className="bg-green-600 disabled:opacity-75 text-white px-4 py-1 rounded text-sm flex items-center gap-1">
                             <Save className="w-4 h-4" /> Simpan
-                        </button>
+                        </SubmitButton>
                     </div>
                 </form>
                 </div>
@@ -444,7 +445,7 @@ function WorshipSettings({ worships }: { worships: WorshipData[] }) {
                                     <Pencil className="w-4 h-4" />
                                 </button>
                                 <form action={deleteWorshipItem.bind(null, w.id)}>
-                                    <button className="text-slate-400 hover:text-red-600 p-2" onClick={(e) => !confirm(`Hapus ${w.name}?`) && e.preventDefault()}>
+                                    <button className="text-slate-400 hover:text-red-600 p-2" onClick={(e) => !confirm(`Apakah yakin akan dihapus?`) && e.preventDefault()}>
                                         <Trash className="w-4 h-4" />
                                     </button>
                                 </form>
@@ -571,9 +572,9 @@ function InspirasiSettings({ initialShow }: { initialShow: boolean }) {
                             />
                             <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
                         </label>
-                        <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+                        <SubmitButton type="submit" className="bg-emerald-600 disabled:opacity-75 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
                             {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan</>}
-                        </button>
+                        </SubmitButton>
                     </div>
                 </div>
             </form>
@@ -607,9 +608,9 @@ function FamilyNameSettings({ initialName }: { initialName: string }) {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
-                        <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                        <SubmitButton type="submit" className="bg-emerald-600 disabled:opacity-75 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors">
                             {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan</>}
-                        </button>
+                        </SubmitButton>
                     </div>
                 </div>
             </form>
@@ -669,9 +670,9 @@ function FamilyVisionSettings({ initialTarget, initialVisi, initialMisi }: { ini
                         />
                     </div>
                     <div className="flex justify-end pt-2">
-                        <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                        <SubmitButton type="submit" className="bg-emerald-600 disabled:opacity-75 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
                             {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : <><Save className="w-4 h-4" /> Simpan</>}
-                        </button>
+                        </SubmitButton>
                     </div>
                 </div>
             </form>
@@ -758,9 +759,9 @@ function ProSettings({ initialToken }: { initialToken: string }) {
                                 {isRevoking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Hapus Lisensi
                             </button>
                         )}
-                        <button disabled={isSaving || isRevoking} type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed flex-1 sm:flex-none">
+                        <SubmitButton disabled={isSaving || isRevoking} type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed flex-1 sm:flex-none">
                             {isSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Sedang Mengaktivasi</> : <><Check className="w-4 h-4" /> Aktivasi</>}
-                        </button>
+                        </SubmitButton>
                     </div>
                 </div>
             </form>

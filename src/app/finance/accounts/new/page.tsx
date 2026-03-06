@@ -1,6 +1,7 @@
 import { addAccount } from "../../actions";
 import Link from "next/link";
 import { ArrowLeft, Wallet } from "lucide-react";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function NewAccountPage() {
     return (
@@ -34,9 +35,9 @@ export default function NewAccountPage() {
                 </div>
 
                 <div className="pt-4">
-                    <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2">
+                    <SubmitButton type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2">
                         <Wallet className="w-5 h-5" /> Simpan Akun
-                    </button>
+                    </SubmitButton>
                 </div>
             </form>
         </div>

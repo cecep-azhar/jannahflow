@@ -116,6 +116,7 @@ export function TilawahClient({ userId, date, sessions: initialSessions, suggest
   };
 
   const handleDelete = (id: number) => {
+    if (!window.confirm("Apakah yakin akan dihapus?")) return;
     setDeletingId(id);
     startTransition(async () => {
       try {

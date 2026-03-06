@@ -82,7 +82,7 @@ export default async function TransactionsPage() {
                                                     <input type="hidden" name="accountId" value={t.accountId} />
                                                     <input type="hidden" name="amount" value={t.amount} />
                                                     <input type="hidden" name="type" value={t.type} />
-                                                    <button type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Transaksi">
+                                                    <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Transaksi">
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </form>
