@@ -119,6 +119,36 @@ const INIT_SQL = [
     \`deadline\` text,
     \`created_at\` text DEFAULT CURRENT_TIMESTAMP
   )`,
+  `CREATE TABLE IF NOT EXISTS \`quran_logs\` (
+    \`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    \`user_id\` integer NOT NULL REFERENCES users(id) ON DELETE cascade,
+    \`type\` text NOT NULL,
+    \`date\` text NOT NULL,
+    \`session_time\` text,
+    \`start_surah\` integer,
+    \`start_ayat\` integer,
+    \`end_surah\` integer,
+    \`end_ayat\` integer,
+    \`total_ayat\` integer,
+    \`surah_number\` integer,
+    \`quality\` text,
+    \`ayat_ref\` text,
+    \`teacher_name\` text,
+    \`material\` text,
+    \`notes\` text,
+    \`created_at\` text DEFAULT CURRENT_TIMESTAMP
+  )`,
+  `CREATE TABLE IF NOT EXISTS \`ziyadah_progress\` (
+    \`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    \`user_id\` integer NOT NULL REFERENCES users(id) ON DELETE cascade,
+    \`surah_number\` integer NOT NULL,
+    \`memorized_ayat\` integer NOT NULL DEFAULT 0,
+    \`total_ayat\` integer NOT NULL,
+    \`percent_complete\` real NOT NULL DEFAULT 0,
+    \`status\` text NOT NULL DEFAULT 'hafalan',
+    \`last_murojaah_at\` text,
+    \`created_at\` text DEFAULT CURRENT_TIMESTAMP
+  )`,
 ];
 
 let initialized = false;
