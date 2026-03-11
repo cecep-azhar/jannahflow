@@ -1,10 +1,11 @@
 import { db } from "@/db";
 import { transactions } from "@/db/schema";
-import { Plus, ArrowDownCircle, ArrowUpCircle, Trash2 } from "lucide-react";
+import { Plus, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
 import { desc } from "drizzle-orm";
 import { deleteTransaction } from "../actions";
 import { cookies } from "next/headers";
+import { DeleteButton } from "@/components/ui/delete-button";
 
 export const dynamic = "force-dynamic";
 
@@ -82,9 +83,7 @@ export default async function TransactionsPage() {
                                                     <input type="hidden" name="accountId" value={t.accountId} />
                                                     <input type="hidden" name="amount" value={t.amount} />
                                                     <input type="hidden" name="type" value={t.type} />
-                                                    <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Transaksi">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
+                                                    <DeleteButton title="Hapus Transaksi" confirmMessage="Apakah yakin akan dihapus?" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" />
                                                 </form>
                                             )}
                                         </td>

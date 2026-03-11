@@ -1,10 +1,11 @@
 import { db } from "@/db";
 import { budgets, transactions } from "@/db/schema";
-import { Plus, Target, CheckCircle2, Trash2 } from "lucide-react";
+import { Plus, Target, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { deleteBudget } from "../actions";
 import { like } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { DeleteButton } from "@/components/ui/delete-button";
 
 export const dynamic = "force-dynamic";
 
@@ -89,9 +90,7 @@ export default async function BudgetsPage() {
                                         {!isChild && (
                                             <form action={deleteBudget}>
                                                 <input type="hidden" name="id" value={b.id} />
-                                                <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Anggaran">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                <DeleteButton title="Hapus Anggaran" confirmMessage="Apakah yakin akan dihapus?" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" />
                                             </form>
                                         )}
                                     </div>

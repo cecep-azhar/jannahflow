@@ -1,10 +1,11 @@
 import { db } from "@/db";
 import { savingGoals } from "@/db/schema";
-import { Target, Plus, Trash2, PlusCircle } from "lucide-react";
+import { Target, Plus, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { deleteSavingGoal, addSavingProgressAction } from "../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { cookies } from "next/headers";
+import { DeleteButton } from "@/components/ui/delete-button";
 
 export const dynamic = "force-dynamic";
 
@@ -64,13 +65,11 @@ export default async function SavingGoalsPage() {
                                         <div className="flex items-center gap-2">
                                             {isCompleted && <span className="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded-full font-bold">Tercapai 🎉</span>}
                                             {!isChild && (
-                                                <form action={deleteSavingGoal}>
-                                                    <input type="hidden" name="id" value={goal.id} />
-                                                    <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Target">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </form>
-                                            )}
+                                            <form action={deleteSavingGoal}>
+                                                <input type="hidden" name="id" value={goal.id} />
+                                                <DeleteButton title="Hapus Target" confirmMessage="Apakah yakin akan dihapus?" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" />
+                                            </form>
+                                        )}
                                         </div>
                                     </div>
 

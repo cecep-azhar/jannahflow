@@ -1,9 +1,10 @@
 import { db } from "@/db";
 import { accounts } from "@/db/schema";
-import { Plus, Wallet, HandCoins, Building2, TrendingUp, Trash2 } from "lucide-react";
+import { Plus, Wallet, HandCoins, Building2, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { deleteAccount } from "../actions";
 import { cookies } from "next/headers";
+import { DeleteButton } from "@/components/ui/delete-button";
 
 export const dynamic = "force-dynamic";
 
@@ -58,9 +59,7 @@ export default async function AccountsPage() {
                             {!isChild && (
                                 <form action={deleteAccount}>
                                     <input type="hidden" name="id" value={account.id} />
-                                    <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors p-1" title="Hapus Akun">
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    <DeleteButton title="Hapus Akun" confirmMessage="Apakah yakin akan dihapus?" />
                                 </form>
                             )}
                         </div>

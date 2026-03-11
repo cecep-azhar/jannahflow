@@ -38,7 +38,8 @@ export async function addAccount(formData: FormData) {
   redirect("/finance/accounts");
 }
 
-export async function deleteAccount(id: string) {
+export async function deleteAccount(formData: FormData) {
+  const id = formData.get("id") as string;
   const authUser = await getCurrentUser();
   if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
@@ -104,7 +105,11 @@ export async function addTransaction(formData: FormData) {
   redirect("/finance/transactions");
 }
 
-export async function deleteTransaction(id: string, accountId: string, amount: number, type: "INCOME" | "EXPENSE") {
+export async function deleteTransaction(formData: FormData) {
+  const id = formData.get("id") as string;
+  const accountId = formData.get("accountId") as string;
+  const amount = Number(formData.get("amount"));
+  const type = formData.get("type") as "INCOME" | "EXPENSE";
   const authUser = await getCurrentUser();
   if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
@@ -151,7 +156,8 @@ export async function addBudget(formData: FormData) {
   redirect("/finance/budgets");
 }
 
-export async function deleteBudget(id: number) {
+export async function deleteBudget(formData: FormData) {
+  const id = Number(formData.get("id"));
   const authUser = await getCurrentUser();
   if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
@@ -186,7 +192,8 @@ export async function addAsset(formData: FormData) {
   redirect("/finance/assets");
 }
 
-export async function deleteAsset(id: number) {
+export async function deleteAsset(formData: FormData) {
+  const id = Number(formData.get("id"));
   const authUser = await getCurrentUser();
   if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();
@@ -247,7 +254,8 @@ export async function addSavingProgressAction(formData: FormData) {
     }
 }
 
-export async function deleteSavingGoal(id: number) {
+export async function deleteSavingGoal(formData: FormData) {
+  const id = Number(formData.get("id"));
   const authUser = await getCurrentUser();
   if (!canDeleteRecord(authUser)) throw new Error("Unauthorized");
   await verifyNotChild();

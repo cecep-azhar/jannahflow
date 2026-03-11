@@ -1,9 +1,10 @@
 import { db } from "@/db";
 import { assets } from "@/db/schema";
-import { ShieldAlert, TrendingUp, Info, Plus, Trash2 } from "lucide-react";
+import { ShieldAlert, TrendingUp, Info, Plus } from "lucide-react";
 import Link from "next/link";
 import { deleteAsset } from "../actions";
 import { cookies } from "next/headers";
+import { DeleteButton } from "@/components/ui/delete-button";
 
 export const dynamic = "force-dynamic";
 
@@ -88,9 +89,7 @@ export default async function AssetsZakatPage() {
                                         {!isChild && (
                                             <form action={deleteAsset}>
                                                 <input type="hidden" name="id" value={asset.id} />
-                                                <button onClick={(e) => !confirm("Apakah yakin akan dihapus?") && e.preventDefault()} type="submit" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="Hapus Aset">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                <DeleteButton title="Hapus Aset" confirmMessage="Apakah yakin akan dihapus?" className="text-slate-400 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" />
                                             </form>
                                         )}
                                     </div>
