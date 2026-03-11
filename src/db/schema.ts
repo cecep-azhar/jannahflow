@@ -133,6 +133,49 @@ export const bondingActivities = sqliteTable("bonding_activities", {
 });
 
 // =============================================
+// MENU MAKAN MODULE
+// =============================================
+
+export const menuFoods = sqliteTable("menu_foods", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  category: text("category", { enum: ["APPETIZER", "MAIN", "DESSERT"] }).notNull(),
+  mealTime: text("meal_time").notNull(), // JSON: ["PAGI","SIANG","MALAM"]
+  foodType: text("food_type", { enum: ["TRADISIONAL", "SIMPLE", "SEHAT", "DIET", "SUNNAH"] }).notNull(),
+  description: text("description"),
+  benefits: text("benefits").notNull(), // JSON string[]
+  ingredients: text("ingredients").notNull(), // JSON: [{item, amount, perServing}]
+  steps: text("steps").notNull(), // JSON string[]
+  emoji: text("emoji").notNull().default("🍽️"),
+  gradientFrom: text("gradient_from").notNull().default("#f97316"),
+  gradientTo: text("gradient_to").notNull().default("#ef4444"),
+  priceMin: integer("price_min").notNull().default(5000),
+  priceMax: integer("price_max").notNull().default(20000),
+  tags: text("tags"), // JSON string[]
+  isSunnah: integer("is_sunnah", { mode: "boolean" }).default(false),
+  servingUnit: text("serving_unit").notNull().default("porsi"),
+  isCustom: integer("is_custom", { mode: "boolean" }).default(false),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const mealPlans = sqliteTable("meal_plans", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  date: text("date").notNull(), // YYYY-MM-DD, unique
+  memberCount: integer("member_count").notNull().default(4),
+  notes: text("notes"),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const mealPlanItems = sqliteTable("meal_plan_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  planId: integer("plan_id").references(() => mealPlans.id, { onDelete: "cascade" }).notNull(),
+  foodId: integer("food_id").references(() => menuFoods.id, { onDelete: "cascade" }).notNull(),
+  mealTime: text("meal_time", { enum: ["PAGI", "SIANG", "MALAM"] }).notNull(),
+  servings: integer("servings").notNull().default(1),
+  notes: text("notes"),
+});
+
+// =============================================
 // AL-QURAN MODULE
 // =============================================
 

@@ -1,5 +1,6 @@
 import { ParentView } from "./parent-view";
 import { InspirationCard } from "./inspiration-card";
+import { DashboardExtras } from "./dashboard-extras";
 import { 
   HeartHandshake, 
   Trophy, 
@@ -67,6 +68,10 @@ export default async function DashboardPage() {
     where: eq(systemStats.key, "family_photo")
   });
   const familyPhoto = photoStat?.value || null;
+
+  // Detect PRO status
+  const proTokenStat = await db.query.systemStats.findFirst({ where: eq(systemStats.key, "pro_token") });
+  const isPro = !!(proTokenStat && proTokenStat.value && proTokenStat.value.length > 5);
   
   if (user.role === "parent") {
       // Fetch all family data
@@ -258,12 +263,14 @@ export default async function DashboardPage() {
 
               <FamilyStatsSection stats={familyStats} familyName={user.name} averageProgress={familyAverage} />
 
-              <section>
-                  <div className="flex justify-between items-center mb-4">
+              <section className="space-y-4">
+                  <div className="flex justify-between items-center">
                       <h2 className="font-bold text-slate-800 dark:text-slate-200 text-lg">Laporan Keluarga</h2>
                   </div>
                   <ParentView familyData={familyData} />
               </section>
+
+              <DashboardExtras userId={userId} isPro={isPro} />
 
               <div className="pt-8 border-t border-slate-200">
                  <FAQ />
@@ -476,6 +483,8 @@ export default async function DashboardPage() {
         )}
 
         <FamilyStatsSection stats={familyStats} familyName={user.name} averageProgress={familyAverage} />
+
+        <DashboardExtras userId={userId} isPro={isPro} />
         
         <div className="pt-8 border-t border-slate-200 mt-8">
             <FAQ />
