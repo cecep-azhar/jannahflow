@@ -113,7 +113,8 @@ export async function DashboardExtras({ userId, isPro }: { userId: number; isPro
         .orderBy(desc(quranLogs.createdAt))
         .limit(5);
 
-    // 5. Weekly leaderboard
+    // 5. Weekly leaderboard — correct point calc, matching leaderboard/page.tsx
+    const allWorships = await db.select().from(worships);
     const weeklyData = await Promise.all(allUsers.map(async (member) => {
         const weekLogs = await db.select().from(mutabaahLogs).where(
             and(
@@ -122,19 +123,49 @@ export async function DashboardExtras({ userId, isPro }: { userId: number; isPro
                 lte(mutabaahLogs.date, weekTo)
             )
         );
-        const points = weekLogs.reduce((s, l) => s + l.value, 0);
+        const points = weekLogs.reduce((acc, log) => {
+            const worship = allWorships.find(w => w.id === log.worshipId);
+            if (!worship) return acc;
+            if (log.value <= 0) return acc;
+            // Leveled worship: log.value already stores the earned points
+            if (worship.levels) return acc + log.value;
+            // Boolean / counter worship: each positive log earns worship.points
+            return acc + worship.points;
+        }, 0);
         return { id: member.id, name: member.name, points, avatarColor: member.avatarColor, role: member.role };
     }));
     weeklyData.sort((a, b) => b.points - a.points);
 
-    // 6. Bonding not done today (PRO)
-    let pendingBonding: { id: string; title: string; category: string }[] = [];
+    // 6. Bonding — today's date-seeded surprise challenge (same algorithm as bonding-page.tsx)
+    let pendingBonding: { id: string; title: string; category: string; description: string | null }[] = [];
     if (isPro) {
         try {
-            const notDone = await db.select().from(bondingActivities)
-                .where(eq(bondingActivities.isCompleted, false))
-                .limit(3);
-            pendingBonding = notDone.map(b => ({ id: b.id, title: b.title, category: b.category }));
+            const allBonding = await db.select().from(bondingActivities)
+                .where(eq(bondingActivities.isCompleted, false));
+
+            if (allBonding.length > 0) {
+                // Pick today's FAMILY challenge
+                const familyItems = allBonding.filter(b => b.target === 'FAMILY');
+                const coupleItems = allBonding.filter(b => b.target === 'COUPLE');
+
+                const pickTodayChallenge = (items: typeof allBonding) => {
+                    if (items.length === 0) return null;
+                    const dateSeed = new Date().toDateString();
+                    let hash = 0;
+                    for (let i = 0; i < dateSeed.length; i++) {
+                        hash = (hash << 5) - hash + dateSeed.charCodeAt(i);
+                        hash |= 0;
+                    }
+                    return items[Math.abs(hash) % items.length];
+                };
+
+                const todayFamily = pickTodayChallenge(familyItems);
+                const todayCouple = pickTodayChallenge(coupleItems);
+
+                pendingBonding = [todayFamily, todayCouple]
+                    .filter(Boolean)
+                    .map(b => ({ id: b!.id, title: b!.title, category: b!.category, description: b!.description }));
+            }
         } catch { pendingBonding = []; }
     }
 
@@ -389,17 +420,20 @@ export async function DashboardExtras({ userId, isPro }: { userId: number; isPro
                         {pendingBonding.length === 0 ? (
                             <div className="text-center py-4">
                                 <Star className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">Semua bonding sudah selesai!</p>
+                                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">Semua challenge hari ini selesai!</p>
                                 <p className="text-xs text-slate-400">MasyaAllah, keluarga yang luar biasa 🌟</p>
                             </div>
-                        ) : pendingBonding.map((b) => (
-                            <Link key={b.id} href="/bonding" className="flex items-center gap-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl px-4 py-3 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors">
-                                <span className="text-2xl">{categoryEmoji[b.category] || "💝"}</span>
+                        ) : pendingBonding.map((b, i) => (
+                            <Link key={b.id} href="/bonding" className="flex items-start gap-3 bg-rose-50 dark:bg-rose-900/20 rounded-2xl px-4 py-3 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors">
+                                <span className="text-2xl mt-0.5">{categoryEmoji[b.category] || "💝"}</span>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">{b.title}</p>
-                                    <p className="text-xs text-rose-500">{b.category}</p>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 mb-1 block">
+                                        {i === 0 ? "🏠 Challenge Keluarga Hari Ini" : "💑 Challenge Pasangan Hari Ini"}
+                                    </span>
+                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{b.title}</p>
+                                    {b.description && <p className="text-xs text-slate-400 truncate mt-0.5">{b.description}</p>}
                                 </div>
-                                <span className="text-xs bg-rose-100 dark:bg-rose-900/50 text-rose-600 font-bold px-2 py-1 rounded-full whitespace-nowrap">Belum ✗</span>
+                                <span className="text-xs bg-rose-100 dark:bg-rose-900/50 text-rose-600 font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0">Mulai →</span>
                             </Link>
                         ))}
                     </div>

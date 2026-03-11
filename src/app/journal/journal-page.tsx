@@ -6,9 +6,9 @@ import { type Locale } from "date-fns"
 import { id as localeID, enUS } from "date-fns/locale"
 import { compressImage } from "@/lib/image-utils"
 import Image from "next/image"
-import { addJournal as createJournalEntry, deleteJournal as deleteJournalEntry } from "./actions"
+import { addJournal as createJournalEntry, deleteJournal as deleteJournalEntry, updateJournal } from "./actions"
 import { BottomNav } from "@/components/bottom-nav"
-import { ImagePlus, Send, SmilePlus, Trash2, Heart, ChevronLeft, ChevronRight, CalendarDays, X, MessageCircle } from "lucide-react"
+import { ImagePlus, Send, SmilePlus, Trash2, Heart, ChevronLeft, ChevronRight, CalendarDays, X, MessageCircle, Pencil, Loader2, Check } from "lucide-react"
 import { toast } from "@/components/ui/toast"
 import { useLanguage } from "@/lib/language-context"
 
@@ -36,17 +36,14 @@ import { toggleLike, addComment } from "./actions"
 
 const ITEMS_PER_PAGE = 5
 
-// Removed client-side todayString() to rely on server provided todayStr
-// Helper to ensure SQLite naive timestamps are parsed as UTC
 const sanitizeUTC = (dateStr: string | null) => {
     if (!dateStr) return null
     if (dateStr.includes('T') && (dateStr.endsWith('Z') || dateStr.includes('+'))) return dateStr
-    // Convert "YYYY-MM-DD HH:mm:ss" to "YYYY-MM-DDTHH:mm:ssZ"
     return dateStr.replace(' ', 'T') + 'Z'
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { entry: JournalEntry, currentUserId: number, onDelete: (id: string) => void, locale: Locale, lang: string, t: any }) {
+function JournalPostItem({ entry, currentUserId, onDelete, onEdit, locale, lang, t }: { entry: JournalEntry, currentUserId: number, onDelete: (id: string) => void, onEdit: (id: string, content: string, mood: string) => void, locale: Locale, lang: string, t: any }) {
     const hasLiked = entry.likes?.some(l => l.userId === currentUserId)
     const [likeCount, setLikeCount] = useState(entry.likes?.length || 0)
     const [isLiked, setIsLiked] = useState(hasLiked)
@@ -55,6 +52,32 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
     const [comments, setComments] = useState(entry.comments || [])
     const [isLiking, setIsLiking] = useState(false)
     const [isCommenting, setIsCommenting] = useState(false)
+
+    // Edit state
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [editContent, setEditContent] = useState(entry.content)
+    const [editMood, setEditMood] = useState(entry.mood || "")
+    const [isSaving, setIsSaving] = useState(false)
+
+    const isOwner = entry.userId === currentUserId
+
+    const moodOptionsEdit = lang === "id"
+        ? ["😊 Bahagia", "🙏 Bersyukur", "😌 Tenang", "💪 Semangat", "😴 Lelah", "😔 Sedih", ""]
+        : ["😊 Happy", "🙏 Grateful", "😌 Calm", "💪 Energized", "😴 Tired", "😔 Sad", ""]
+
+    const handleSaveEdit = async () => {
+        if (!editContent.trim() || isSaving) return
+        setIsSaving(true)
+        const res = await updateJournal(entry.id, editContent, editMood || undefined)
+        if (res.success) {
+            onEdit(entry.id, editContent, editMood)
+            toast("Jurnal berhasil diperbarui", "success")
+            setShowEditModal(false)
+        } else {
+            toast(res.error || "Gagal memperbarui jurnal", "error")
+        }
+        setIsSaving(false)
+    }
 
     const [prevEntry, setPrevEntry] = useState(entry)
     if (entry !== prevEntry) {
@@ -92,6 +115,72 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
     }
 
     return (
+        <>
+        {/* ── Edit Modal ── */}
+        {showEditModal && (
+            <div className="fixed inset-0 z-9999 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-indigo-50 dark:bg-indigo-950/30">
+                        <div className="bg-indigo-100 dark:bg-indigo-900/40 p-2 rounded-full">
+                            <Pencil className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 flex-1">Edit Jurnal</h3>
+                        <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                    <div className="p-5 space-y-4">
+                        <textarea
+                            value={editContent}
+                            onChange={e => setEditContent(e.target.value)}
+                            placeholder="Tulis isi jurnal..."
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-400 resize-none min-h-[140px] text-sm"
+                            disabled={isSaving}
+                        />
+                        <div>
+                            <p className="text-xs text-slate-500 mb-2 font-semibold uppercase tracking-wider">Mood</p>
+                            <div className="flex flex-wrap gap-2">
+                                {moodOptionsEdit.map((m) => (
+                                    <button
+                                        key={m || "none"}
+                                        type="button"
+                                        onClick={() => setEditMood(m)}
+                                        className={`px-3 py-1.5 text-sm rounded-xl transition-colors font-medium border ${
+                                            editMood === m
+                                                ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700"
+                                                : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-indigo-300"
+                                        }`}
+                                    >
+                                        {m || "Tidak ada mood"}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex gap-3 px-5 pb-5">
+                        <button
+                            type="button"
+                            onClick={() => setShowEditModal(false)}
+                            disabled={isSaving}
+                            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSaveEdit}
+                            disabled={!editContent.trim() || isSaving}
+                            className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                            {isSaving ? "Menyimpan..." : "Simpan"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* ── Journal Card ── */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-3 items-center">
@@ -104,10 +193,25 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
                         </p>
                     </div>
                 </div>
-                {entry.userId === currentUserId && (
-                    <button onClick={() => onDelete(entry.id)} title="Hapus jurnal" aria-label="Hapus jurnal" className="text-slate-300 hover:text-red-500 transition-colors p-1">
-                        <Trash2 className="w-4 h-4" />
-                    </button>
+                {isOwner && (
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => { setEditContent(entry.content); setEditMood(entry.mood || ""); setShowEditModal(true); }}
+                            title="Edit jurnal"
+                            aria-label="Edit jurnal"
+                            className="text-slate-300 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors p-1.5 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => onDelete(entry.id)}
+                            title="Hapus jurnal"
+                            aria-label="Hapus jurnal"
+                            className="text-slate-300 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -148,7 +252,7 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
                 <div className="ml-[52px] mt-4 pt-4 border-t border-slate-50 dark:border-slate-800 space-y-4">
                     {comments.map((c) => (
                         <div key={c.id} className="flex gap-3 text-sm">
-                             <UserAvatar name={c.user.name} avatarUrl={c.user.avatarUrl} avatarColor={c.user.avatarColor} className="w-8 h-8 flex-shrink-0" />
+                             <UserAvatar name={c.user.name} avatarUrl={c.user.avatarUrl} avatarColor={c.user.avatarColor} className="w-8 h-8 shrink-0" />
                              <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none w-full">
                                  <h4 className="font-bold text-slate-800 dark:text-slate-200">{c.user.name}</h4>
                                  <p className="text-slate-600 dark:text-slate-300 mt-1">{c.content}</p>
@@ -180,6 +284,7 @@ function JournalPostItem({ entry, currentUserId, onDelete, locale, lang, t }: { 
                 </div>
             )}
         </div>
+        </>
     )
 }
 
@@ -194,11 +299,8 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
     useEffect(() => {
         setJournals(prev => {
             const serverIds = new Set(initialJournals.map(j => j.id))
-            // Keep optimistic entries not yet in server data
             const optimisticOnly = prev.filter(j => !serverIds.has(j.id))
-            // Filter out locally deleted entries from server data
             const serverFiltered = initialJournals.filter(j => !deletedIdsRef.current.has(j.id))
-            // Merge: optimistic first (newest), then server data
             return [...optimisticOnly, ...serverFiltered]
         })
     }, [initialJournals])
@@ -217,7 +319,6 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
-
         try {
             const compressedBase64 = await compressImage(file, 500, 0.7)
             setMediaUrl(compressedBase64)
@@ -239,7 +340,6 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
         const result = await createJournalEntry(content, mood, mediaPayload)
 
         if (result.success && result.entry) {
-            // Optimistic update: immediately add new entry to state
             setJournals(prev => [result.entry as JournalEntry, ...prev])
             toast(t.journalAdded, "success")
             setContent("")
@@ -261,6 +361,10 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
             setJournals(journals.filter(j => j.id !== id))
             toast(t.journalDeleted, "success")
         }
+    }
+
+    function handleEdit(id: string, newContent: string, newMood: string) {
+        setJournals(prev => prev.map(j => j.id === id ? { ...j, content: newContent, mood: newMood || null } : j))
     }
 
     // Filter by date
@@ -287,7 +391,6 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-slate-900 dark:text-slate-100">
-            {/* Header Area */}
             {/* Header Area */}
             <div className="bg-linear-to-br from-emerald-500 to-teal-600 px-6 pt-8 pb-12 rounded-b-4xl shadow-lg mb-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
@@ -409,6 +512,7 @@ export default function JournalPage({ initialJournals, currentUserId, todayStr }
                                 entry={entry} 
                                 currentUserId={currentUserId} 
                                 onDelete={handleDelete}
+                                onEdit={handleEdit}
                                 locale={locale}
                                 lang={lang}
                                 t={t}

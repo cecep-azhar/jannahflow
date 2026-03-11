@@ -105,6 +105,31 @@ export async function addComment(journalId: string, content: string) {
     }
 }
 
+export async function updateJournal(id: string, content: string, mood?: string) {
+    const user = await getCurrentUser();
+    if (!user) return { error: "Unauthorized" };
+
+    // Fetch the journal to verify ownership
+    const existing = await db.query.journals.findFirst({ where: eq(journals.id, id) });
+    if (!existing) return { error: "Not found" };
+
+    const isOwner = existing.userId === user.id;
+    const isParent = user.role === "parent";
+    if (!isOwner && !isParent) return { error: "Unauthorized" };
+
+    try {
+        await db.update(journals)
+            .set({ content: content.trim(), mood: mood || null })
+            .where(eq(journals.id, id));
+        revalidatePath("/dashboard");
+        revalidatePath("/journal");
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { error: "Failed to update journal" };
+    }
+}
+
 export async function deleteJournal(id: string) {
     const user = await getCurrentUser();
     if (!canDeleteRecord(user)) throw new Error("Unauthorized to delete");
