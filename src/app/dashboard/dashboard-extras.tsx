@@ -114,7 +114,6 @@ export async function DashboardExtras({ userId, isPro }: { userId: number; isPro
         .limit(5);
 
     // 5. Weekly leaderboard — correct point calc, matching leaderboard/page.tsx
-    const allWorships = await db.select().from(worships);
     const weeklyData = await Promise.all(allUsers.map(async (member) => {
         const weekLogs = await db.select().from(mutabaahLogs).where(
             and(
