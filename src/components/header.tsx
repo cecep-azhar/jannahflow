@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Star, Settings, PieChart, LogOut } from "lucide-react";
+import { Star, Settings, PieChart, LogOut, Info } from "lucide-react";
 import Image from "next/image";
 import { AppLink } from "@/components/app-link";
 import { useLoading } from "@/components/loading-provider";
@@ -67,6 +67,14 @@ export function Header({
             title="Pengaturan"
          >
             <Settings className="w-4 h-4" />
+         </AppLink>
+
+         <AppLink
+            href="/tentang"
+            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+            title="Info Aplikasi"
+         >
+            <Info className="w-4 h-4" />
          </AppLink>
 
           <form action={logout} onSubmit={() => showLoading()}>
