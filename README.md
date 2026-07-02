@@ -18,6 +18,10 @@
   <img src="https://img.shields.io/badge/SQLite_/_Turso-blue?style=flat-square&logo=sqlite" />
 </p>
 
+<div style="margin-top: 30px;">
+  <img src="src/app/assets/screenshoot/image.png" alt="JannahFlow Preview" style="max-height: 600px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);" />
+</div>
+
 </div>
 
 ---
